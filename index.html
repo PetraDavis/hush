@@ -34,8 +34,11 @@ canvas{display:block}
 #prog div{height:4px;background:rgba(255,255,255,.14);border-radius:2px;overflow:hidden;margin-bottom:.35rem}#prog b{display:block;height:100%;width:0;background:var(--accent)}
 #hint{position:fixed;left:50%;top:55%;transform:translateX(-50%);font-family:var(--ui);font-size:.75rem;color:var(--accent);pointer-events:none}
 #title{position:fixed;inset:0;z-index:7;background:transparent;font-family:'Caveat','Segoe Print',cursive}#title .keys{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-family:var(--ui);font-size:.72rem;color:#6a6258;padding:0 16px;pointer-events:none}
-#tset{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-1.2deg);width:min(24rem,calc(100% - 32px));background:#efe4cb;color:#1e1a2a;padding:1.2rem 1.5rem;box-shadow:0 10px 40px rgba(0,0,0,.7);font-size:1.6rem;display:flex;flex-direction:column;gap:.7rem}
+#tset{position:fixed;z-index:9;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;font-family:'Caveat','Segoe Print',cursive;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-1.2deg);width:min(24rem,calc(100% - 32px));background:#efe4cb;color:#1e1a2a;padding:1.2rem 1.5rem;box-shadow:0 10px 40px rgba(0,0,0,.7);font-size:1.6rem;display:flex;flex-direction:column;gap:.7rem}
 #tset h2{margin:0;font-size:2.2rem;font-weight:700}#tset label{display:flex;align-items:center;justify-content:space-between;gap:1rem}#tset input[type=range]{width:55%;accent-color:#3a2a2a}#tset input[type=checkbox]{width:1.2rem;height:1.2rem;accent-color:#3a2a2a}
+#tset select{font:inherit;font-size:1.3rem;background:#f6eedb;color:#1e1a2a;border:1px solid #8a7a6a;border-radius:4px}
+#ovSet{font-family:var(--ui);font-size:.8rem;letter-spacing:.06em;color:var(--fg);background:#16161c;border:1px solid #3a3a44;border-radius:6px;padding:.45rem 1.1rem;cursor:pointer;align-self:center}#ovSet:hover{background:#22222a}
+@media (max-height:520px){#tset{font-size:1.25rem;gap:.35rem;padding:.8rem 1.2rem}#tset h2{font-size:1.6rem}}
 #tset button{align-self:flex-end;font:inherit;font-size:1.6rem;background:none;border:0;color:#1e1a2a;cursor:pointer;text-decoration:underline}#tset button:hover{color:#000}
 body:has(#title:not([hidden])) #cross{display:none}
 #blurE{position:fixed;inset:0;pointer-events:none;opacity:0;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);-webkit-mask-image:radial-gradient(ellipse at center,transparent 42%,#000 95%);mask-image:radial-gradient(ellipse at center,transparent 42%,#000 95%)}
@@ -43,9 +46,9 @@ body:has(#title:not([hidden])) #cross{display:none}
 #skipB{position:fixed;z-index:3;top:calc(env(safe-area-inset-top,0px) + 34px);right:16px;font-family:var(--ui);font-size:.7rem;letter-spacing:.06em;color:var(--dim);background:var(--panel);border:1px solid #2c2d33;border-radius:6px;padding:.3rem .6rem;cursor:pointer}#skipB:hover{color:var(--fg)}#tfade.on{opacity:1}
 .brand{font-family:'Caveat','Segoe Print',cursive!important;font-size:2.4rem!important;letter-spacing:.12em;color:#8a2020!important;margin:0 0 .4rem!important}
 </style>
-<div id="overlay" hidden><div class="box"><h1>Hush</h1><p>Click to start - WASD to move, Shift to sprint, Space to jump, mouse to look, C or Ctrl to crouch, E to open doors, use things, sit and pick her up or hide (closets, under beds, the pantry; hold Shift to hold your breath), L flashlight, M to mute</p><p id="flashOpt">F: reduce flashing (off)</p></div></div>
+<div id="overlay" hidden><div class="box"><h1>Hush</h1><p>Click to start - WASD to move, Shift to sprint, Space to jump, mouse to look, C or Ctrl to crouch, E to open doors, use things, sit and pick her up or hide (closets, under beds, the pantry; hold Shift to hold your breath), L flashlight, M to mute</p><p id="flashOpt">F: reduce flashing (off)</p><button id="ovSet" type="button">Settings</button></div></div>
 <div id="title"><div class="keys">WASD move - Shift sprint - Space jump - C crouch - E use / hide - L flashlight - T skip an hour - M mute - F reduce flashing</div>
-<div id="tset" hidden><h2>Settings</h2><label>Volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><button id="tsetClose" type="button">Done</button></div></div><div id="tfade" hidden></div>
+</div><div id="tfade" hidden></div><div id="tset" hidden><h2>Settings</h2><label>Master volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Voice chat <input id="sVoice" type="range" min="0" max="1.5" step="0.05"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><label>Invert Y <input id="sInvY" type="checkbox"></label><label>Graphics <select id="sQ"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><button id="tsetClose" type="button">Done</button></div>
 <button id="skipB" type="button" hidden>Skip hour [T]</button><div id="blurE"></div><div id="cross"></div><div id="hint" hidden>[E] Door</div><div id="msg">It's locked.</div><div id="sub" hidden></div><div id="hud" hidden></div><div id="need" hidden><svg viewBox="0 0 24 24" aria-hidden="true"></svg><span></span></div><div id="mon" hidden><div class="hd">BABY MONITOR<b id="monL"></b></div><div class="bars"></div><div id="monT">quiet</div></div><div id="prog" hidden><div><b></b></div><span></span></div><div id="dead" hidden><div class="box"><p class="brand">HUSH</p><h1>You shouldn't have checked.</h1><p>It was waiting for you.</p><button id="restart" type="button">Restart</button></div></div><div id="fade" hidden></div><div id="tbc" hidden><p class="brand">HUSH</p><h1>To be continued...</h1><button id="tbcR" type="button">Restart</button></div><div id="end" hidden><div class="box"><p class="brand">HUSH</p><h1>The parents are home.</h1><p>End of the prototype. Reload the page to play again.</p></div></div>
 <div id="note" hidden><div class="paper"><p class="hd">Thank you for coming on such short notice!</p>
 <ul><li>Feed her around 7 PM, 10 PM, 1 AM and 4 AM, or whenever she gets hungry. Bottles are in the fridge. Warm one in the bottle warmer on the counter, never the microwave.</li>
@@ -1518,7 +1521,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){overlay.hi
 window.__pause={get paused(){return paused},set:v=>{if(!v)started=true;overlay.hidden=!v;setPaused(v)}};
 overlay.onclick=()=>{started=true;setPaused(false);try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}overlay.hidden=true};
 document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement&&!ended&&!window.__dead&&!window.__tbc){overlay.hidden=false;setPaused(true);if(noteOpen)openNote(false)}});
-document.addEventListener('mousemove',e=>{if(document.pointerLockElement!==renderer.domElement)return;yaw-=e.movementX*.0022*SENS;pitch=Math.max(-1.4,Math.min(1.4,pitch-e.movementY*.0022*SENS))});
+document.addEventListener('mousemove',e=>{if(document.pointerLockElement!==renderer.domElement)return;yaw-=e.movementX*.0022*SENS;pitch=Math.max(-1.4,Math.min(1.4,pitch-e.movementY*.0022*SENS*(window.__invY?-1:1)))});
 addEventListener('keydown',e=>{if(paused)return;keys[e.code]=true;if(e.code==='Escape'&&noteOpen)openNote(false);if(e.code==='KeyE'&&!e.repeat)interact();if(e.code==='Space'){e.preventDefault();if(!seated&&grounded&&!CARE.busy()&&!(window.__mp&&__mp.ghost)){vy=4.3;grounded=false;CARE.jump()}}});addEventListener('keyup',e=>keys[e.code]=false);addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 renderer.domElement.addEventListener('mousedown',()=>{if(document.pointerLockElement)interact()});
 const ray=new THREE.Raycaster();addInter(sw,'Light switch',()=>setLight(!lightOn));
@@ -2587,7 +2590,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  const lookP=new Map();
  Rz.addEventListener('pointerdown',e=>{e.preventDefault();lookP.set(e.pointerId,{x:e.clientX,y:e.clientY});try{Rz.setPointerCapture(e.pointerId)}catch(err){}});
  Rz.addEventListener('pointermove',e=>{const p=lookP.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;if(paused||(window.__cut&&!window.__fightMv))return;
-  const k=.0052*(typeof SENS==='number'?SENS:1);yaw-=dx*k;pitch=Math.max(-1.4,Math.min(1.4,pitch-dy*k))});
+  const k=.0052*(typeof SENS==='number'?SENS:1);yaw-=dx*k;pitch=Math.max(-1.4,Math.min(1.4,pitch-dy*k*(window.__invY?-1:1)))});
  const lEnd=e=>lookP.delete(e.pointerId);Rz.addEventListener('pointerup',lEnd);Rz.addEventListener('pointercancel',lEnd);
  // --- buttons ---
  tc.querySelectorAll('#tcB button').forEach(b=>{
@@ -2921,7 +2924,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    if(S.st==='wind'&&S.atk==='lunge'){g.position.x+=Math.sin(g.rotation.y)*.08*Math.sin(S.T*40);g.position.z+=Math.cos(g.rotation.y)*.08*Math.sin(S.T*40)}
    if(S.st==='wind'&&S.atk==='sweep')g.rotation.y-=.5*(1-S.stT/S.wT);if(S.st==='strike'&&S.atk==='sweep')g.rotation.y+=1.2;
    // the red shape on the floor where the blow lands
-   {const Tl=tel(),show=(S.st==='wind'||S.st==='strike')&&S.atk;Tl.g.visible=!!show;if(show){const nf=!!window.__noFlash,pr=S.st==='strike'?1:Math.max(0,1-S.stT/S.wT);
+   {const Tl=tel(),show=(S.st==='wind'||S.st==='strike')&&S.atk;Tl.g.visible=!!show;if(show){const nf=!!(window.__getCalm&&__getCalm()),pr=S.st==='strike'?1:Math.max(0,1-S.stT/S.wT);
      Tl.g.position.set(S.ax,FLR+.03,S.az);Tl.g.rotation.set(0,S.ad,0);['sweep','swipe','lunge'].forEach(n=>{const m=Tl[n];m.visible=n===S.atk;m.material.opacity=(.12+.38*pr)*(nf||S.st==='strike'?1:.85+.15*Math.sin(S.T*18))});
      if(S.atk==='lunge'){Tl.lunge.scale.set(1,S.al+.6,1);Tl.lunge.position.set(0,0,(S.al+.6)/2-.3)}}}
    // the camera: yours, steered by the mouse or the right thumb
@@ -3330,7 +3333,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    if(c){const x=c.ar==='r'?c.x:mX(c.x),z=c.ar==='r'?c.z:mZ(c.z),d=Math.hypot(x-L.x,c.cy-L.y,z-L.z);
     // gentle falloff: full within 6 m, never under 40%, slightly muffled through floors
     g=d<=6?1:Math.max(.4,1-(d-6)*.075);muf=floorOf(c.cy-1.6,c.ar)!==myF;if(muf)g=Math.max(.4,g*.85)}
-   if(!isFinite(g))g=1;const t=V.ctx.currentTime;r.g.gain.setTargetAtTime(g,t,.15);r.flt.frequency.setTargetAtTime(muf?1100:18000,t,.2)})}
+   if(!isFinite(g))g=1;const t=V.ctx.currentTime;r.g.gain.setTargetAtTime(g*(window.__voiceVol!=null?__voiceVol:1)*(muted?0:Math.min(1.25,VOL/.8)),t,.15);r.flt.frequency.setTargetAtTime(muf?1100:18000,t,.2)})}
  addEventListener('keydown',e=>{if(e.code!=='KeyM'||e.repeat||!MP.active)return;if(V.denied){subtitle('No microphone permission: you are muted.',2000);return}setMute(!V.muted);subtitle(V.muted?'Microphone muted':'Microphone on',1200)});
  // HUD: mic + players
  const micEl=document.createElement('div');micEl.id='mpMic';micEl.hidden=true;document.body.appendChild(micEl);
@@ -3564,6 +3567,54 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
   let n=0;const iv=setInterval(()=>{if(go()||++n>40)clearInterval(iv)},250)}
  hashJoin();addEventListener('hashchange',()=>{if(TITLE.on)hashJoin()});
  MP.dbg={roster:()=>roster,P,AV,V,get FL(){return FL},readAll,hostGame,joinGame,hostStart,teardown,held,get sEV(){return sEV},get vote(){return vote},myReport};
+})();
+
+</script>
+<script>
+// ===== 17. Settings: voice volume, invert Y, graphics quality (Low / Medium / High). Saved in localStorage. =====
+(function(){'use strict';const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush set] '+(t||''),e)}};
+ const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+ const touch=(()=>{try{return matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>1&&/Mac|iP/.test(navigator.platform||'')}catch(e){return false}})();
+ const small=Math.min(screen.width||999,screen.height||999)<700;
+ const QS={low:{pr:.8,prMax:1,sh:false,far:45,fog:.055,pts:5},medium:{pr:1.25,prMax:1.25,sh:true,soft:false,map:512,far:90,fog:0,pts:10},high:{pr:2,prMax:2,sh:true,soft:true,map:0,far:160,fog:0,pts:99}};
+ let q=ls.get('hushQ');if(!QS[q])q=touch?(small?'low':'medium'):'high';
+ const v=parseFloat(ls.get('hushVoice'));window.__voiceVol=v>=0?v:1;window.__invY=ls.get('hushInvY')==='1';
+ const SET={get q(){return q},QS,touch};window.__set=SET;
+ const mapSz=new Map();
+ function matsDirty(sc){sc.traverse(o=>{const m=o.material;if(!m)return;(Array.isArray(m)?m:[m]).forEach(x=>x.needsUpdate=true)})}
+ function apply(nq){if(QS[nq])q=nq;const c=QS[q],dpr=window.devicePixelRatio||1;
+  safe(()=>{renderer.setPixelRatio(q==='low'?Math.min(dpr,c.prMax)*c.pr:Math.min(dpr,c.prMax));renderer.setSize(innerWidth,innerHeight)},'pr');
+  safe(()=>{const want=c.sh,typ=c.soft?THREE.PCFSoftShadowMap:THREE.PCFShadowMap,ch=renderer.shadowMap.enabled!==want||renderer.shadowMap.type!==typ;
+   renderer.shadowMap.enabled=want;renderer.shadowMap.type=typ;
+   scene.traverse(o=>{if(o.isLight&&o.shadow&&o.castShadow){if(!mapSz.has(o))mapSz.set(o,o.shadow.mapSize.x);const sz=c.map?Math.min(c.map,mapSz.get(o)):mapSz.get(o);
+    if(o.shadow.mapSize.x!==sz){o.shadow.mapSize.set(sz,sz);if(o.shadow.map){o.shadow.map.dispose();o.shadow.map=null}}}});
+   if(ch){matsDirty(scene);safe(()=>matsDirty(TITLE.dbg.sc))}},'shadow');
+  safe(()=>{cam.far=c.far;cam.updateProjectionMatrix()},'far');
+  lastPick=0;}
+ SET.apply=apply;
+ // fog floor on Low hides the shorter draw distance; applied only while rendering so the game's own fog logic is untouched
+ const R0=renderer.render.bind(renderer);
+ renderer.render=function(sc,c){const f=QS[q].fog;if(f&&sc===scene&&sc.fog&&sc.fog.density!==undefined){const d=sc.fog.density;sc.fog.density=Math.max(d,f);try{R0(sc,c)}finally{sc.fog.density=d}}else R0(sc,c)};
+ // light budget: only the nearest N point lights in the house are live. The count never changes, so no shaders recompile.
+ let pts=[],lastPick=0,lastCol=0;const wp=new THREE.Vector3();
+ function collect(){pts=[];scene.traverse(o=>{if(o.isPointLight){let p=o.parent,onCam=false;while(p){if(p===cam)onCam=true;p=p.parent}if(!onCam)pts.push(o)}})}
+ function budget(){const now=performance.now();if(now-lastCol>4000){lastCol=now;collect()}if(now-lastPick<250)return;lastPick=now;
+  const K=Math.min(QS[q].pts,pts.length);if(K>=pts.length){pts.forEach(l=>{if(l.userData.__cull){l.visible=true;l.userData.__cull=0}});return}
+  const cp=cam.position,sc=pts.map(l=>{l.getWorldPosition(wp);const d=wp.distanceTo(cp);return{l,s:(l.intensity>0.01?0:100)+d}}).sort((a,b)=>a.s-b.s);
+  sc.forEach((e,i)=>{const on=i<K;if(e.l.visible!==on){e.l.visible=on;e.l.userData.__cull=on?0:1}})}
+ setInterval(()=>{try{budget()}catch(e){}},120);
+ // the settings panel (title screen and pause)
+ const $=id=>document.getElementById(id),panel=$('tset');
+ safe(()=>{const sq=$('sQ');sq.value=q;sq.onchange=()=>{ls.set('hushQ',sq.value);apply(sq.value);subtitle('Graphics: '+sq.options[sq.selectedIndex].text,1200)};
+  const vv=$('sVoice');vv.value=window.__voiceVol;vv.oninput=()=>{window.__voiceVol=+vv.value;ls.set('hushVoice',vv.value)};
+  const iy=$('sInvY');iy.checked=window.__invY;iy.onchange=()=>{window.__invY=iy.checked;ls.set('hushInvY',iy.checked?'1':'0')};
+  ['keydown','keyup'].forEach(k=>panel.addEventListener(k,e=>e.stopPropagation()));
+  panel.addEventListener('click',e=>e.stopPropagation());
+  const sync=()=>{$('sCalm').checked=__getCalm();$('sVol').value=VOL;$('sVolM').value=VOLM;$('sVolS').value=VOLS;$('sSens').value=SENS;sq.value=q;vv.value=window.__voiceVol;iy.checked=window.__invY};
+  $('ovSet').addEventListener('click',e=>{e.stopPropagation();sync();panel.hidden=false});
+  new MutationObserver(()=>{if(!panel.hidden)sync()}).observe(panel,{attributes:true,attributeFilter:['hidden']});
+  addEventListener('keydown',e=>{if(e.code==='Escape'&&!panel.hidden)panel.hidden=true},true)},'panel');
+ apply(q);
 })();
 
 </script>
