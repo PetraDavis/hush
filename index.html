@@ -1136,7 +1136,7 @@ function update(dt,t){
    if(rk&&seated){cam.position.y+=Math.sin(rockT*1.7)*.025;bb.position.y=ARM_P.y+Math.sin(rockT*1.7+.6)*.01}
    const tgt=asleep?.12:rkA?.12+.88*Math.min(1,N.sleepy*4):1;eyeO+=(tgt-eyeO)*Math.min(1,dt*(tgt<eyeO?.8:4));eyes2.forEach(e=>e.scale.y=eyeO)}
   // noise from her needs, from you, and relief from caring
-  const[k,v]=top(),cry=v>CRY_AT,fuss=v>FUSS_AT;
+  const[k,v]=top(),cry=v>CRY_AT,fuss=v>FUSS_AT;window.__crying=cry;
   if(!MPC){const seatNear=inSeat&&nearSeat();let dn=cry?.045*IMPATIENCE*(CAR?.7:seatNear?.8:1):fuss?.016*IMPATIENCE*(CAR?.5:seatNear?.7:1):asleep?-.05:seatNear?-.035:-.025;
   if(act||(MPA&&__mp.anyBusy()))dn-=.07;if(GLD)dn-=.03;
   const p=RP;if(MPA&&__mp.ghost)lastPos=null;else{if(lastPos){const sp=Math.hypot(p.x-lastPos.x,p.z-lastPos.z)/Math.max(dt,1e-3);if(sp>2.6)dn+=.012}lastPos={x:p.x,z:p.z}}if(MPA)dn+=__mp.runNoise();
@@ -3630,4 +3630,70 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  apply(q);
 })();
 
+</script>
+<script>
+// ===== 18. Achievements: saved in localStorage, a toast when one unlocks, a list on the title screen. Hidden ones stay "???" =====
+(function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush ach] '+(t||''),e)}};
+ const A=[
+  {id:'parents',n:"Six O'Clock",d:'Reach the end of a night and hand her back to her parents.'},
+  {id:'dawn',n:'First Light',d:'Save her before dawn.'},
+  {id:'death',n:'Taken',d:'Be taken by the house.'},
+  {id:'cult',n:'Family',d:'Kneel and wait for them.',h:1},
+  {id:'secret',n:'The Blade',d:'Walk away with her at dawn, carrying an old sword.',h:1},
+  {id:'night1',n:'Babysitter',d:'Survive a whole night.'},
+  {id:'night3',n:'The Last Night',d:'Survive Night 3.'},
+  {id:'nightmare',n:'Nightmare',d:'Survive a night on Nightmare.'},
+  {id:'nohide',n:'Nowhere to Hide',d:'Survive a night without hiding once.'},
+  {id:'nocry',n:'Hush, Little Baby',d:'Survive a night without letting her cry.'},
+  {id:'notes',n:'Archivist',d:'Find every note in the house on one night.'},
+  {id:'nohit',n:'Untouched',d:'Win a fight without taking a single hit.',h:1},
+  {id:'together',n:'Not Alone',d:'Survive a night with friends.'},
+  {id:'four',n:'Full House',d:'Play a night with four people.'}];
+ const ls={get(){try{return JSON.parse(localStorage.getItem('hushAch')||'{}')||{}}catch(e){return{}}},set(v){try{localStorage.setItem('hushAch',JSON.stringify(v))}catch(e){}}};
+ let got=ls.get();
+ // this night's record (saved with the game, so Continue keeps it)
+ let run={hid:0,cried:0,boss:0,hit:0};
+ XT.parts.ach={save:()=>Object.assign({},run),load:v=>{if(v&&typeof v==='object')run=Object.assign({hid:0,cried:0,boss:0,hit:0},v)}};
+ const css=document.createElement('style');css.textContent=`#achT{position:fixed;z-index:12;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translate(-50%,-160%);transition:transform .45s ease;background:rgba(14,12,16,.94);border:1px solid #c9a45c;border-radius:8px;padding:.5rem 1rem;font-family:var(--ui);color:#efe6da;font-size:.8rem;max-width:calc(100% - 32px);pointer-events:none;text-align:center}
+#achT.on{transform:translate(-50%,0)}#achT small{display:block;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:#d9c48a}
+#achB{position:absolute;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 40px);font:600 .78rem var(--ui);letter-spacing:.06em;color:#e8dcc8;background:rgba(20,16,20,.8);border:1px solid #5a4a3a;border-radius:6px;padding:.5rem .9rem;cursor:pointer;z-index:2}
+#achB:hover,#achB:focus-visible{background:#2a2026;outline:none}
+#achP{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(4,4,7,.6)}
+#achP .pp{width:min(30rem,100%);max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;background:#efe4cb;color:#1e1a2a;box-shadow:0 10px 40px rgba(0,0,0,.7);padding:1rem 1.2rem;font-family:'Caveat','Segoe Print',cursive;transform:rotate(-.6deg)}
+#achP h2{margin:0 0 .3rem;font-size:2rem}#achP .n{font:.75rem var(--ui);color:#5a4a40;margin:0 0 .5rem}#achP ul{list-style:none;margin:0;padding:0}
+#achP li{display:flex;gap:.6rem;align-items:flex-start;padding:.35rem 0;border-top:1px dashed #b8a888;font-family:var(--ui)}#achP li i{flex:none;width:1.3rem;height:1.3rem;border-radius:50%;border:1.5px solid #8a7a60;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:.75rem;margin-top:.1rem}
+#achP li.on i{background:#3a1e1a;border-color:#3a1e1a;color:#efe4cb}#achP li b{display:block;font-size:.85rem}#achP li span{font-size:.72rem;color:#5a4a40}#achP li.off{opacity:.6}
+#achP button{margin-top:.7rem;font:600 .82rem var(--ui);color:#f4ecdc;background:#3a1e1a;border:1px solid #5a2e28;border-radius:5px;padding:.5rem 1rem;cursor:pointer}`;document.head.appendChild(css);
+ const toast=document.createElement('div');toast.id='achT';toast.setAttribute('role','status');document.body.appendChild(toast);
+ const Q=[];let busy=false;
+ function showNext(){if(busy||!Q.length)return;busy=true;const a=Q.shift();toast.innerHTML='<small>Achievement</small>'+a.n;toast.classList.add('on');
+  setTimeout(()=>{toast.classList.remove('on');setTimeout(()=>{busy=false;showNext()},500)},3600)}
+ function unlock(id){if(got[id])return;const a=A.find(x=>x.id===id);if(!a)return;got[id]=Date.now();ls.set(got);Q.push(a);showNext();draw()}
+ // the list, on the title screen
+ const btn=document.createElement('button');btn.id='achB';btn.type='button';safe(()=>document.getElementById('title').appendChild(btn),'btn');
+ const P=document.createElement('div');P.id='achP';P.hidden=true;P.innerHTML='<div class="pp" role="dialog" aria-label="Achievements"><h2>Achievements</h2><p class="n"></p><ul></ul><button type="button">Close</button></div>';document.body.appendChild(P);
+ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function draw(){const n=A.filter(a=>got[a.id]).length;btn.textContent='Achievements '+n+'/'+A.length;P.querySelector('.n').textContent=n+' of '+A.length+' unlocked';
+  P.querySelector('ul').innerHTML=A.map(a=>{const on=!!got[a.id],hid=a.h&&!on;return '<li class="'+(on?'on':'off')+'"><i>'+(on?'&#10003;':'')+'</i><div><b>'+(hid?'???':esc(a.n))+'</b><span>'+(hid?'A hidden achievement.':esc(a.d))+'</span></div></li>'}).join('')}
+ draw();
+ btn.addEventListener('click',e=>{e.stopPropagation();draw();P.hidden=false;setTimeout(()=>safe(()=>P.querySelector('button').focus()),30)});
+ P.addEventListener('click',e=>{e.stopPropagation();if(e.target===P||e.target.tagName==='BUTTON')P.hidden=true});
+ ['keydown','keyup'].forEach(k=>P.addEventListener(k,e=>{e.stopPropagation();if(e.key==='Escape')P.hidden=true}));
+ setInterval(()=>safe(()=>{const t=window.TITLE||null;btn.hidden=!(document.getElementById('title')&&!document.getElementById('title').hidden)},'vis'),500);
+ // watching the night
+ setInterval(()=>safe(()=>{const mp=window.__mp;
+  if(XT.hide&&XT.hide.hid)run.hid=1;
+  if(window.__crying)run.cried=1;
+  if(XT.notes&&XT.notes.found&&XT.notes.found.length&&XT.notes.all)unlock('notes');
+  const S=XT.bladeFight&&XT.bladeFight.S;if(S&&S.D&&S.st!=='intro'&&!S.spec){run.boss=1;if(S.php<S.D.hp||S.dead)run.hit=1}
+  if(mp&&mp.active&&mp.started&&safe(()=>mp.dbg.roster().length,'n')>=4)unlock('four')},'watch'),250);
+ const oe=XT.ending;
+ XT.ending=function(id,extra){const r=oe.apply(this,arguments);
+  safe(()=>{if(['parents','dawn','death','cult','secret'].includes(id))unlock(id);
+   const won=id==='parents'||id==='dawn'||id==='secret';
+   if(won){unlock('night1');if((XT.night||1)>=3)unlock('night3');if(XT.diffKey&&XT.diffKey()==='nightmare')unlock('nightmare');if(!run.hid)unlock('nohide');if(!run.cried)unlock('nocry');
+    if(window.__mp&&__mp.active)unlock('together')}
+   if(id==='secret'&&run.boss&&!run.hit)unlock('nohit')},'end');return r};
+ XT.ach={A,get got(){return got},unlock,get run(){return run},reset(){got={};ls.set(got);draw()}};
+})();
 </script>
