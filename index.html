@@ -3682,7 +3682,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    if(R.gh){MP.ghost=true;safe(()=>{seated=null;if(XT.torch)XT.torch.on=false},'rjgh');ghostEl.hidden=false;ghostHud()}return}const dx=(m.slot-1.5)*.8;if(!blocked(cam.position.x+dx,cam.position.z))cam.position.x+=dx});
  // host start
  let starting=false;function hostStart(){if(!MP.host||MP.started||starting)return;
-  if(MP.mode==='hunt'){if(!huntUnlocked()){MP.mode='coop';lobbyDraw();return}if(roster.length<2){lobbyStatus('Hunt needs at least 2 players.',true);return}MP.hm={demon:roster[Math.floor(Math.random()*roster.length)].id}}
+  if(MP.mode==='hunt'){if(roster.length<2){lobbyStatus('Hunt needs at least 2 players.',true);return}MP.hm={demon:roster[Math.floor(Math.random()*roster.length)].id}}
   starting=true;graceT=performance.now()+45000;const c=cfg();bcast({t:'start',cfg:c});
   // let the start message leave before this page freezes building the night
   setTimeout(()=>{starting=false;safe(()=>startGame(c,false),'start')},600)}
@@ -3736,7 +3736,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  L$('mpHost').onclick=()=>hostGame();L$('mpJoin').onclick=()=>joinGame(codeIn.value);codeIn.addEventListener('keydown',e=>{if(e.key==='Enter')joinGame(codeIn.value)});
  L$('mpStart').onclick=()=>hostStart();L$('mpBack').onclick=()=>cancelConnect();
  L$('mpDiff').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!MP.host||MP.started)return;const d=b.dataset.d;safe(()=>{XT.parts.diff.load(d);XT.ls.set('hushDiff',d);TITLE.redraw&&TITLE.redraw()},'diff');lobbyDraw();bcastRoster(true)});
- L$('mpMode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!MP.host||MP.started)return;const m=b.dataset.m;if(m==='hunt'&&!huntUnlocked())return;MP.mode=m;lobbyDraw();bcastRoster(true)});
+ L$('mpMode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!MP.host||MP.started)return;const m=b.dataset.m;MP.mode=m;lobbyDraw();bcastRoster(true)});
  L$('mpClose').onclick=()=>{rjClear();if(!MP.active&&peer)cancelConnect();if(MP.active&&!MP.started){teardown(false)}lobbyEl.hidden=true;lobbyDraw()};
  const invEl=document.createElement('button');invEl.id='mpInv';invEl.type='button';invEl.textContent='Copy invite link';invEl.hidden=true;safe(()=>document.getElementById('title').appendChild(invEl),'inv');
  const link=()=>SITE+'#join='+(MP.code||'');
@@ -3749,7 +3749,8 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
   L$('mpCodeShow').textContent=MP.code||'';invEl.hidden=!(inS&&!MP.started&&TITLE.on);
   L$('mpRoster').innerHTML=roster.slice().sort((a,b)=>a.slot-b.slot).map(p=>'<li><i style="background:'+COL[p.slot%4]+'"></i>'+esc(p.name)+(p.id===MP.id?' (you)':'')+(p.join===0||p.id===MP.hostId?' &middot; host':'')+'</li>').join('');
   {const dk=MP.host?XT.diffKey():MP.hostDiff||'normal';L$('mpDiff').querySelectorAll('button').forEach(b=>{const on=b.dataset.d===dk;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');b.disabled=!MP.host||MP.started})}
-  {const hu=MP.host?huntUnlocked():!!MP.hostHu;if(MP.mode==='hunt'&&!hu)MP.mode='coop';L$('mpMode').querySelectorAll('button').forEach(b=>{const m=b.dataset.m,on=MP.mode===m;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');
+  {const hu=true;// Hunt is always available in multiplayer (v65)
+   L$('mpMode').querySelectorAll('button').forEach(b=>{const m=b.dataset.m,on=MP.mode===m;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');
     b.disabled=!MP.host||MP.started||(m==='hunt'&&!hu);if(m==='hunt')b.textContent=hu?'Hunt':'???'});
    L$('mpModeD').textContent=MP.mode==='hunt'?'Hunt: one of you, picked at random, is the snake demon. The rest must survive until 6 AM, or find the katana and cut her down. Needs 2 or more players.':hu?'Co-op: everyone looks after her together.':'Co-op: everyone looks after her together. Another mode is hidden somewhere in the house.'}
   if(inS&&MP.host&&!MP.started&&MP.mode==='hunt'&&roster.length<2){lobbyStatus('Hunt needs at least 2 players. Share the code.');return}
@@ -3960,7 +3961,7 @@ btn.addEventListener('mousedown',e=>e.stopPropagation());btn.addEventListener('p
   g.position.set(7.2,BF+.012,-13.4);g.rotation.y=.6;BSM.G.add(g);
   const hb=new THREE.Mesh(BG(.32,.22,.34),hitM);hb.position.set(7.2,BF+.1,-13.4);BSM.G.add(hb);
   hb.userData.i={label:'Something under the plank',act(){try{localStorage.setItem('hushHuntUnlocked','1')}catch(e){}g.visible=false;const i=inter.indexOf(hb);if(i>=0)inter.splice(i,1);
-   subtitle('Your hand finds something under the plank: a mask of pale yellow snake scales, still warm. (Hunt unlocked: host it from Play together.)',5500);safe(()=>MP.lobbyDraw&&MP.lobbyDraw(),'lobby')}};inter.push(hb);
+   subtitle('Your hand finds something under the plank: a mask of pale yellow snake scales, still warm. (You keep it.)',5500);safe(()=>MP.lobbyDraw&&MP.lobbyDraw(),'lobby')}};inter.push(hb);
   // the gap's hiding spot sits in front of it, so it is found by squeezing in between the crates
   let feel=0;XT.onUpdate(dt=>{if(!g.visible||!XT.hide||XT.hide.hid!=='crates'){feel=0;return}feel+=dt;if(feel>1.5){feel=-1e9;hb.userData.i.act()}});
   XT.huntMask={g,hb}},'mask');
