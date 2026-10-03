@@ -2586,7 +2586,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // --- right side: drag to look (a quick tap there does nothing, so look and buttons never fight) ---
  const lookP=new Map();
  Rz.addEventListener('pointerdown',e=>{e.preventDefault();lookP.set(e.pointerId,{x:e.clientX,y:e.clientY});try{Rz.setPointerCapture(e.pointerId)}catch(err){}});
- Rz.addEventListener('pointermove',e=>{const p=lookP.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;if(paused||window.__cut)return;
+ Rz.addEventListener('pointermove',e=>{const p=lookP.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;if(paused||(window.__cut&&!window.__fightMv))return;
   const k=.0052*(typeof SENS==='number'?SENS:1);yaw-=dx*k;pitch=Math.max(-1.4,Math.min(1.4,pitch-dy*k))});
  const lEnd=e=>lookP.delete(e.pointerId);Rz.addEventListener('pointerup',lEnd);Rz.addEventListener('pointercancel',lEnd);
  // --- buttons ---
@@ -2603,8 +2603,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  const bE=tc.querySelector('[data-k="KeyE"]'),bC=tc.querySelector('[data-t="KeyC"]'),bS=tc.querySelector('[data-t="ShiftLeft"]'),bH=tc.querySelector('[data-h]'),bLt=tc.querySelector('[data-k="KeyL"]');
  let shown=false;addEventListener('resize',()=>{if(J.id===null)safe(idle,'idle')});
  function ui(){if(!on){tc.hidden=true;rot.hidden=true;return}
-  const play=started&&!paused&&!TITLE.on&&!ended&&!window.__dead&&!window.__tbc&&!window.__cut&&!noteOpen&&!(XT.journal&&XT.journal.open_);
-  tc.hidden=!play;if(!play&&J.id!==null){J.id=null;window.__joy={x:0,y:0}}if(!play)window.__holdBreath=0;
+  const fm=!!window.__fightMv&&!paused,play=fm||started&&!paused&&!TITLE.on&&!ended&&!window.__dead&&!window.__tbc&&!window.__cut&&!noteOpen&&!(XT.journal&&XT.journal.open_);
+  tc.hidden=!play;tc.querySelector('#tcB').hidden=fm;if(!play&&J.id!==null){J.id=null;window.__joy={x:0,y:0}}if(!play)window.__holdBreath=0;
   if(play&&!shown&&J.id===null)idle();shown=play;
   const hid=XT.hide&&XT.hide.hid;if(hid){window.__joy={x:0,y:0};if(keys.ShiftLeft&&!window.__holdBreath)keys.ShiftLeft=false}
   bH.textContent=hid?'Hold breath':'Hide';bE.textContent=hid?'Leave':'Use';
@@ -2743,47 +2743,61 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 @media (max-width:1000px){#bf .help{display:none}}`;document.head.appendChild(css3);
  const bf=document.createElement('div');bf.id='bf';bf.hidden=true;
  bf.innerHTML='<div class="hurt"></div><div class="boss"><p>The thing below the floor</p><div class="bar"><span><i></i></span><span><i></i></span><span><i></i></span></div></div><div class="cue" hidden></div><div class="me"><div class="hp"></div><div class="st"></div></div><div class="help"></div><div class="intro" hidden></div>'+
-  '<div id="bfB" hidden><button type="button" data-a="dl">&#9664; Dodge</button><button type="button" data-a="dr">Dodge &#9654;</button><button type="button" data-a="bl">Block</button><button type="button" class="sl" data-a="sl">Slash</button></div>';
+  '<div id="bfB" hidden><button type="button" data-a="jp">Jump</button><button type="button" data-a="dg">Dodge</button><button type="button" data-a="bl">Block</button><button type="button" class="sl" data-a="sl">Slash</button></div>';
  document.body.appendChild(bf);
  const bfQ=s=>bf.querySelector(s),introEl=bfQ('.intro'),cueEl=bfQ('.cue'),hpEl=bfQ('.hp'),stEl=bfQ('.st'),hurtEl=bfQ('.hurt'),bars=[...bf.querySelectorAll('.bar i')],tB=bfQ('#bfB');
- bfQ('.help').textContent='Left-click / J: slash  -  hold Right-click / K: block (just before the hit: parry)  -  Space: dodge (A / D picks the side)';
+ bfQ('.help').textContent='WASD: move  -  Shift: sprint  -  Left-click / J: slash  -  hold Right-click / K: block (just before the hit: parry)  -  Space: dodge-roll (standing still: jump)  -  F: jump';
  const DF={easy:{hp:6,bh:5,sp:.8,pw:.35},normal:{hp:4,bh:6,sp:1,pw:.25},nightmare:{hp:3,bh:7,sp:1.25,pw:.18}};
  const tch=()=>!!window.__touchMode;
- const ATK={sweep:{w:1.0,r:.8,cls:'dodge',txt:()=>tch()?'Tail sweep: dodge!':'Tail sweep: dodge [Space]',pose:'crawl',hz:.7},
-  lunge:{w:1.05,r:1.15,cls:'side',txt:()=>tch()?'Lunge: dodge sideways!':'Lunge: dodge sideways [A/D + Space]',pose:'scare',hz:1.1},
-  swipe:{w:.9,r:.7,cls:'block',txt:()=>tch()?'Claws: block!':'Claws: block [Right-click]',pose:'loom',hz:1.4}};
- let FS=null;const IN={l:0,r:0,blk:false,blkT:-9};
+ // rng: how close she wants to be when she starts the attack
+ const ATK={sweep:{w:1.0,r:.8,cls:'dodge',txt:()=>tch()?'Tail sweep: jump or roll away!':'Tail sweep: jump [F], roll out [Space] or run',pose:'crawl',hz:.7,rng:1.8},
+  lunge:{w:1.05,r:1.15,cls:'side',txt:()=>tch()?'Lunge: get out of the line!':'Lunge: step out of the line [A / D]',pose:'scare',hz:1.1,rng:3.6},
+  swipe:{w:.9,r:.7,cls:'block',txt:()=>tch()?'Claws: block, or back away!':'Claws: block [Right-click] or back away',pose:'loom',hz:1.4,rng:1.25}};
+ // the shape of each blow on the floor: sweep is a wide arc around her, the claws a short cone in front, the lunge a straight line
+ const GEO={sweep:{r:2.7,a:1.75},swipe:{r:2.0,a:.96},lunge:{w:.75}};
+ let FS=null;const IN={l:0,r:0,f:0,b:0,run:0,blk:false,blkT:-9};
  const sfx=(f,q,g,d,ty)=>safe(()=>{if(AC)burst(AC.currentTime,f,q,g,d,ty)},'sfx');
  const cue=(txt,cls,dur)=>{cueEl.hidden=!txt;cueEl.textContent=txt||'';cueEl.className='cue '+(cls||'');if(FS)FS.cueT=dur||0};
+ // movement wish in world space from the keys or the touch stick (length up to 1)
+ function moveVec(){let f=IN.f-IN.b,s=IN.r-IN.l;const j=window.__joy,jm=j?Math.min(1,Math.hypot(j.x,j.y)):0;if(jm>.12){f=-j.y/Math.max(jm,1e-3)*jm;s=j.x/Math.max(jm,1e-3)*jm}
+  const n=Math.hypot(f,s);if(n>1){f/=n;s/=n}const sy=Math.sin(yaw),cy=Math.cos(yaw);return{x:-sy*f+cy*s,z:-cy*f-sy*s}}
+ function jump(S){if(S.py>.001||S.dodgeT>0)return;S.vy=4.3;sfx(300,1,.08,.15,'lowpass')}
+ function roll(S,mv){if(S.dodgeT>-.15||S.py>.05)return;let x=mv.x,z=mv.z,n=Math.hypot(x,z);
+  if(n<.1){x=S.p.x-S.g.position.x;z=S.p.z-S.g.position.z;n=Math.hypot(x,z)||1}S.rd={x:x/n,z:z/n};S.dodgeT=.36;sfx(900,1,.12,.25,'lowpass')}
  function act(a,down){if(!FS||FS.st==='intro'||FS.st==='ready'||FS.over||FS.spec||(paused&&!FS.MP))return;const S=FS;
   if(a==='bl'){if(down&&!IN.blk){IN.blk=true;IN.blkT=S.T}else if(!down)IN.blk=false;return}
   if(!down)return;
   if(a==='sl'){if(S.cd>0||IN.blk||S.dodgeT>0)return;S.cd=.5;S.swing=S.T;slash();sfx(4200,2,.16,.22,'bandpass');
+   // the cut lands within about 2.2 m and roughly in front of you
+   const dx=S.g.position.x-S.p.x,dz=S.g.position.z-S.p.z,d=Math.hypot(dx,dz),ang=Math.acos(Math.max(-1,Math.min(1,(-dx*Math.sin(yaw)-dz*Math.cos(yaw))/Math.max(d,1e-3))));
+   if(d>2.2||ang>.8){if(d>2.2&&d<3.4)cue('Too far','bad',.5);return}
    const open=S.st==='idle'||S.st==='recover'||S.st==='stag';
    if(!open){cue('She knocks the blade aside','bad',.7);sfx(2600,8,.2,.15,'bandpass');return}
    S.flinch=.18;sfx(140,1,.3,.3,'lowpass');
    // in multiplayer only the host deals the damage; everyone else sends the cut
    if(S.MP&&!S.host){safe(()=>__mp.send({t:'bslash'}),'bslash');return}
    damage(S);return}
-  if(a==='dl'||a==='dr'||a==='dg'){if(S.dodgeT>-.15)return;let d=a==='dl'?-1:a==='dr'?1:(IN.r?1:IN.l?-1:(S.px>0?-1:1));
-   if(Math.abs(S.px+d*.9)>1.0)d=-d;S.dodgeT=.32;S.dFrom=S.px;S.dTo=Math.max(-.95,Math.min(.95,S.px+d*.9));sfx(900,1,.12,.25,'lowpass')}}
+  if(a==='jp'){jump(S);return}
+  if(a==='dg'){const mv=moveVec();if(Math.hypot(mv.x,mv.z)<.1&&!tch()){jump(S);return}roll(S,mv)}}
  // a cut lands (the host's copy of the fight decides; single-player is its own host)
  function damage(S){if(!S||S.st==='intro'||S.st==='ready'||S.st==='finish'||S.st==='lost')return;const open=S.st==='idle'||S.st==='recover'||S.st==='stag';if(!open)return;
   const dm=S.st==='stag'?2:1;S.bhp=Math.max(0,S.bhp-dm);S.flinch=.18;safe(()=>XT.demonSfx&&XT.demonSfx.hiss(S.g.position.x,S.g.position.z,1.2),'hiss');
-  if(S.st==='idle')S.stT=Math.min(S.stT,.15+Math.random()*.35);
+  if(S.st==='idle'&&S.mv.m!=='app'){S.mv.t=Math.min(S.mv.t,.15+Math.random()*.35)}
   const per=S.D.bh,np=Math.min(2,Math.floor((3*per-S.bhp)/per));
   if(S.bhp<=0){S.st='finish';S.fT=0;cue('');return}
   if(np>S.ph){S.ph=np;S.st='roar';S.stT=1.7}}
- addEventListener('keydown',e=>{if(!FS||FS.st==='intro'||FS.st==='ready'||FS.over)return;const c=e.code;
-  if(c==='KeyA'||c==='ArrowLeft')IN.l=1;else if(c==='KeyD'||c==='ArrowRight')IN.r=1;else if(c==='Space'){e.preventDefault();if(!e.repeat)act('dg',true)}
-  else if(c==='KeyJ'){if(!e.repeat)act('sl',true)}else if(c==='KeyK'||c==='ShiftLeft'||c==='ShiftRight'){if(!e.repeat)act('bl',true)}},true);
- addEventListener('keyup',e=>{const c=e.code;if(c==='KeyA'||c==='ArrowLeft')IN.l=0;else if(c==='KeyD'||c==='ArrowRight')IN.r=0;else if(c==='KeyK'||c==='ShiftLeft'||c==='ShiftRight')act('bl',false)});
+ const KM={KeyW:'f',ArrowUp:'f',KeyS:'b',ArrowDown:'b',KeyA:'l',ArrowLeft:'l',KeyD:'r',ArrowRight:'r',ShiftLeft:'run',ShiftRight:'run'};
+ addEventListener('keydown',e=>{if(!FS||FS.st==='intro'||FS.over)return;const c=e.code;if(KM[c]){IN[KM[c]]=1;return}if(FS.st==='ready')return;
+  if(c==='Space'){e.preventDefault();e.stopPropagation();if(!e.repeat)act('dg',true)}else if(c==='KeyF'){e.stopPropagation();if(!e.repeat)act('jp',true)}
+  else if(c==='KeyJ'){if(!e.repeat)act('sl',true)}else if(c==='KeyK'){if(!e.repeat)act('bl',true)}},true);
+ addEventListener('keyup',e=>{const c=e.code;if(KM[c])IN[KM[c]]=0;else if(c==='KeyK')act('bl',false)});
+ addEventListener('blur',()=>{IN.l=IN.r=IN.f=IN.b=IN.run=0});
  function introHtml(){const T=tch();return '<h3>How to fight her</h3><ul>'+
-  (T?'<li><b>Slash</b> button: cut her when she is open (after she attacks, or while she is stunned)</li><li>Hold <b>Block</b> against the claws. Block just before they land to <b>parry</b> and stun her</li><li><b>Dodge</b> buttons: roll out of the tail sweep and sidestep the lunge</li>'
-  :'<li><b>Left-click</b> or <b>J</b>: slash. She can only be cut when she is open: after an attack, or while stunned</li><li>Hold <b>Right-click</b> or <b>K</b>: block the claws. Block just before they land to <b>parry</b> and stun her</li><li><b>Space</b>: dodge (A / D picks the side). Dodge the tail sweep, sidestep the lunge</li>')+
-  '<li>Watch the warning at the top of the screen. It tells you what is coming</li></ul><div class="go">'+(T?'Tap':'Click')+' when you are ready</div>'}
+  (T?'<li>Left thumb: move. Drag on the right: look. Push the stick all the way to run</li><li><b>Slash</b>: cut her when she is open (after she attacks, or while she is stunned). Get close and face her</li><li>Hold <b>Block</b> against the claws. Block just before they land to <b>parry</b> and stun her</li><li><b>Dodge</b> rolls the way you are moving. <b>Jump</b> over the tail</li>'
+  :'<li><b>WASD</b> to move, the mouse to look, <b>Shift</b> to run</li><li><b>Left-click</b> or <b>J</b>: slash. Get close and face her. She can only be cut when she is open: after an attack, or while stunned</li><li>Hold <b>Right-click</b> or <b>K</b>: block the claws. Block just before they land to <b>parry</b> and stun her</li><li><b>Space</b>: roll the way you are moving (standing still: jump). <b>F</b>: jump</li>')+
+  '<li>The red shape on the floor shows where the blow will land. Get out of it, or jump the tail</li></ul><div class="go">'+(T?'Tap':'Click')+' when you are ready</div>'}
  function dismissIntro(){const S=FS;if(!S||S.st!=='ready'||S.rdy)return;S.rdy=true;introEl.hidden=true;
-  if(!S.MP){S.st='idle';S.stT=1.2;S.T=0;return}
+  if(!S.MP){S.st='idle';S.stT=1.2;S.T=0;S.enterIdle(1.2);return}
   if(S.host)S.rdyIds.add(S.me);else safe(()=>__mp.send({t:'bready'}),'bready');
   if(S.st==='ready')cue('Waiting for the others','',30)}
  document.addEventListener('pointerdown',e=>{if(!FS||FS.st!=='ready'||FS.rdy||(paused&&!FS.MP))return;if(e.target.closest&&e.target.closest('#ov,#overlay,#tset,#mp,#mpPanel'))return;
@@ -2800,9 +2814,18 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function drawHud(S){const per=S.D.bh;bars.forEach((b,i)=>{const v=Math.max(0,Math.min(per,S.bhp-(2-i)*per));b.style.width=(100*v/per)+'%'});
   hpEl.innerHTML='&#9829;'.repeat(Math.max(0,S.php))+'<s>'+'&#9829;'.repeat(Math.max(0,S.D.hp-S.php))+'</s>';
   stEl.innerHTML=(IN.blk?'<b>Blocking</b>':'Guard down')+' &middot; '+(S.cd>0?'Blade recovering':'<b>Blade ready</b>');tB.hidden=!tch()}
+ // floor markings for the blows (built once)
+ let TEL=null;function tel(){if(TEL)return TEL;const mk=geo=>{const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:0xc01818,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,fog:false}));m.userData.noMap=1;m.renderOrder=3;return m};
+  const g=new THREE.Group();g.rotation.order='YXZ';
+  const sw=mk(new THREE.RingGeometry(.35,GEO.sweep.r,40,1,-Math.PI/2-GEO.sweep.a,2*GEO.sweep.a)),cl=mk(new THREE.RingGeometry(.2,GEO.swipe.r,24,1,-Math.PI/2-GEO.swipe.a,2*GEO.swipe.a)),ln=mk(new THREE.PlaneGeometry(2*GEO.lunge.w,1));
+  [sw,cl,ln].forEach(m=>{m.rotation.x=-Math.PI/2;g.add(m)});g.visible=false;scene.add(g);TEL={g,sweep:sw,swipe:cl,lunge:ln};return TEL}
+ // is (x,z) inside the blow's shape? (ax,az: where she stood when it started, ad: the way she faced, al: how far the lunge goes)
+ function inGeo(S,k,x,z){const dx=x-S.ax,dz=z-S.az,d=Math.hypot(dx,dz),fx=Math.sin(S.ad),fz=Math.cos(S.ad),al=dx*fx+dz*fz,ang=Math.acos(Math.max(-1,Math.min(1,al/Math.max(d,1e-3))));
+  if(k==='sweep')return d<GEO.sweep.r+.25&&ang<GEO.sweep.a;if(k==='swipe')return d<GEO.swipe.r+.2&&ang<GEO.swipe.a;
+  return al>-.4&&al<S.al+.6&&Math.abs(dx*fz-dz*fx)<GEO.lunge.w}
  function startFight(){const D=DEMON.dbg,g=D.g;safe(()=>D.stop(),'stop');const GL=(window.__demon&&__demon.glow)||D.glow;safe(()=>{if(!lightOn)setLight(true)},'light');
   const W=(x,y,z)=>unit.localToWorld(new THREE.Vector3(x,y,z));unit.updateMatrixWorld(true);
-  const P0=W(0,1.6,1.6),P1=W(0,1.2,.95),PF=W(0,1.6,1.2),KT=W(0,.65,.06),winP=new THREE.Vector3(mX(-3.75),0,mZ(0)),stopP=new THREE.Vector3(mX(-1.0),0,mZ(.9));
+  const P0=W(0,1.6,1.6),P1=W(0,1.2,.95),PF=W(0,1.6,1.2),KT=W(0,.65,.06),winP=new THREE.Vector3(mX(-3.75),0,mZ(0)),stopP=new THREE.Vector3(mX(-1.0),0,mZ(.9)),SPEC=W(-1.2,2.3,.75);
   const vm=katana();vm.userData.noMap=1;vm.visible=false;scene.add(vm);
   const ash=[],ashM=new THREE.MeshBasicMaterial({color:0x2a2420});
   const L=[[.2,null,'(The last piece clicks into place. Behind the shelf, something in the wall unlatches, and a panel of the wall grinds aside.)',3.2],
@@ -2813,63 +2836,99 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const say=t=>{while(st.i<L.length&&t>=L[st.i][0]){const [,k,txt,d]=L[st.i];subtitle(txt,d*1000);if(k&&XT.voice)XT.voice(txt,k,d*.85,.45);st.i++}};
   const fwd=new THREE.Vector3(stopP.x-PF.x,0,stopP.z-PF.z).normalize(),rt=new THREE.Vector3(-fwd.z,0,fwd.x);
   const dk=XT.diffKey?XT.diffKey():'normal',DD0=DF[dk]||DF.normal;
-  // multiplayer: every living player gets a sword and a lane of their own; her health and speed grow with the fighters
+  // multiplayer: every living player gets a sword; her health and speed grow with the fighters
   const MP=!!(window.__mp&&__mp.active),me=MP?__mp.id:null,host=!MP||__mp.host,FT=MP?__mp.fighters():[],NF=Math.max(1,FT.length),spec=MP&&(__mp.ghost||!FT.includes(me));
   const DD=MP?Object.assign({},DD0,{bh:Math.max(1,Math.round(DD0.bh*__mp.bossK('hp',NF))),sp:DD0.sp*__mp.bossK('sp',NF)}):DD0;
-  const lane0=MP&&!spec?(FT.indexOf(me)-(NF-1)/2)*1.9:0;
-  const S=FS={st:'intro',D:DD,g,php:DD.hp,bhp:DD.bh*3,ph:0,stT:1.4,atk:null,last:[],px:0,hx:0,dist:2.7,T:0,cd:0,dodgeT:-1,dFrom:0,dTo:0,iT:0,swing:-9,flinch:0,cueT:0,lane:0,hit:false,over:false,fT:0,lk:null,shake:0,
-   MP,me,host,spec,lane0,tg:me,rdy:false,rdyIds:new Set(),rdyT:0,aid:0,seenAid:0,seenPh:0,rA:-1,rW:null,rH:false,blkd:false,dead:false,wT:1};
+  const lane0=MP&&!spec?(FT.indexOf(me)-(NF-1)/2)*1.2:0;
+  const S=FS={st:'intro',D:DD,g,php:DD.hp,bhp:DD.bh*3,ph:0,stT:1.4,atk:null,last:[],T:0,cd:0,dodgeT:-1,rd:{x:0,z:0},iT:0,swing:-9,flinch:0,cueT:0,hit:false,over:false,fT:0,lk:null,shake:0,
+   MP,me,host,spec,lane0,tg:me,rdy:false,rdyIds:new Set(),rdyT:0,aid:0,seenAid:0,seenPh:0,rA:-1,rW:null,rH:false,blkd:false,dead:false,wT:1,
+   p:new THREE.Vector3(PF.x,0,PF.z),py:0,vy:0,bx:null,bz:0,br:0,ax:0,az:0,ad:0,al:4,mv:{m:'circle',t:1,dir:1,gx:0,gz:0},nx:null,apT:0,lpx:0,lpz:0,spd:0};
+  {const q=PF.clone().addScaledVector(rt,lane0);if(!blocked(q.x,q.z))S.p.set(q.x,0,q.z)}
   if(spec)S.over=true;
-  IN.l=IN.r=0;IN.blk=false;
-  const pos=()=>S.spec?PF.clone().addScaledVector(fwd,-1.3).add(new THREE.Vector3(0,.3,0)):PF.clone().addScaledVector(rt,S.lane0+S.px);
-  // the target's lateral place in the room (single-player: always you)
-  const tLat=()=>!S.MP||S.tg===S.me?S.lane0+S.px:safe(()=>__mp.laneOf(S.tg),'lane')||0;
-  const mine=()=>!S.spec&&!S.dead&&(!S.MP||S.tg===S.me);
+  IN.l=IN.r=IN.f=IN.b=IN.run=0;IN.blk=false;
+  const EYE=PF.y,FLR=stopP.y;
+  const pos=()=>S.spec||S.dead?SPEC.clone():new THREE.Vector3(S.p.x,EYE+S.py,S.p.z);
+  // where the one she is after stands (single-player: always you)
+  const tgtPos=()=>{if(!S.MP||S.tg===S.me)return S.dead||S.spec?null:{x:S.p.x,z:S.p.z};return safe(()=>__mp.posOf(S.tg),'pos')||null};
   const hurt=()=>{if(S.iT>0||S.dead)return;S.php--;S.iT=.9;S.shake=.35;hurtEl.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>hurtEl.classList.remove('on')));sfx(120,1,.45,.35,'lowpass');sfx(700,2,.15,.2,'bandpass');
    if(S.php<=0){if(S.MP){S.dead=true;S.over=true;vm.visible=false;cue('');subtitle('(The blade slips out of your hand. You can only watch.)',3000);safe(()=>__mp.bossDead(),'bdead')}else{S.st='lost';S.fT=0;S.over=true;cue('');subtitle('(The blade slips out of your hand.)',2500)}}};
   const spd=()=>Math.max(.5,DD.sp*[1,1.2,1.42][S.ph]);
   function pick(){const ks=['sweep','lunge','swipe'];let k;do{k=ks[Math.floor(Math.random()*3)]}while(S.last.length>=2&&S.last[0]===k&&S.last[1]===k);S.last=[k,S.last[0]];
    if(S.MP){const F=safe(()=>__mp.fighters(),'fighters')||[];S.tg=F.length?F[Math.floor(Math.random()*F.length)]:S.me}return k}
+  // ---- her movement (the host's copy decides) ----
+  const free=(x,z)=>!blocked(x,z)&&!blocked(x+.3,z)&&!blocked(x-.3,z)&&!blocked(x,z+.3)&&!blocked(x,z-.3);
+  const moveB=(dx,dz)=>{let m=false;if(free(S.bx+dx,S.bz)){S.bx+=dx;m=true}if(free(S.bx,S.bz+dz)){S.bz+=dz;m=true}return m};
+  const turn=(a,rate,dt)=>{let d=a-S.br;d=Math.atan2(Math.sin(d),Math.cos(d));S.br+=Math.max(-rate*dt,Math.min(rate*dt,d))};
+  // idle: she circles you or slithers somewhere else, then closes to the range of the blow she has picked
+  S.enterIdle=dur=>{S.st='idle';S.stT=dur;S.nx=pick();const M=S.mv;M.t=dur;M.dir=Math.random()<.5?-1:1;M.m='circle';
+   if(Math.random()<.35){const T=tgtPos();if(T)for(let i=0;i<8;i++){const a=Math.random()*Math.PI*2,r=2.4+Math.random()*1.4,x=T.x+Math.sin(a)*r,z=T.z+Math.cos(a)*r;if(free(x,z)){M.m='repo';M.gx=x;M.gz=z;break}}}};
+  function ai(dt,sp){const T=tgtPos()||{x:S.bx+Math.sin(S.br)*2,z:S.bz+Math.cos(S.br)*2};const dx=T.x-S.bx,dz=T.z-S.bz,d=Math.hypot(dx,dz)||1e-3,ux=dx/d,uz=dz/d,face=Math.atan2(dx,dz);
+   if(S.st==='idle'){const M=S.mv;M.t-=dt;turn(face,4.5,dt);
+    if(M.m==='circle'){const rad=Math.max(-1,Math.min(1,(d-2.8)*.8)),vx=-uz*M.dir*1.3+ux*rad,vz=ux*M.dir*1.3+uz*rad,v=Math.hypot(vx,vz)||1,k=1.7*sp/v;if(!moveB(vx*k*dt,vz*k*dt))M.dir=-M.dir}
+    else if(M.m==='repo'){const gx=M.gx-S.bx,gz=M.gz-S.bz,gd=Math.hypot(gx,gz);if(gd<.3)M.t=Math.min(M.t,.2);else if(!moveB(gx/gd*2.6*sp*dt,gz/gd*2.6*sp*dt))M.m='circle';turn(Math.atan2(gx,gz),6,dt)}
+    else{S.apT-=dt;const R=ATK[S.nx].rng,e=d-R;if(Math.abs(e)>.3&&S.apT>0){const s=Math.sign(e)*(e>0?2.4:1.6)*sp;if(!moveB(ux*s*dt,uz*s*dt))S.apT=Math.min(S.apT,.15)}
+     else{S.atk=S.nx;S.aid++;S.st='wind';S.stT=Math.max(.45,ATK[S.atk].w/sp);S.wT=S.stT;S.ax=S.bx;S.az=S.bz;S.ad=S.br;S.al=reach()}}
+    if(M.m!=='app'&&M.t<=0){M.m='app';S.apT=2.4}}
+   else if(S.st==='wind'){const k=1-S.stT/S.wT;if(k<.65)turn(face,3.2,dt);if(S.atk==='swipe'&&d>1.15)moveB(ux*.7*sp*dt,uz*.7*sp*dt);S.ax=S.bx;S.az=S.bz;S.ad=S.br;S.al=reach()}
+   else if(S.st==='strike'){if(S.atk==='lunge'){const k=sm(1-Math.max(0,S.stT)/.3),tx=S.ax+Math.sin(S.ad)*S.al*k,tz=S.az+Math.cos(S.ad)*S.al*k;if(free(tx,tz)){S.bx=tx;S.bz=tz}}
+    else if(S.atk==='swipe')moveB(Math.sin(S.br)*1.2*dt,Math.cos(S.br)*1.2*dt)}
+   else if(S.st==='stag'||S.st==='recover')turn(face,1.2,dt)}
+  // how far the lunge can go before she meets a wall
+  function reach(){const fx=Math.sin(S.br),fz=Math.cos(S.br);let r=0;while(r<4.5&&free(S.bx+fx*(r+.15),S.bz+fz*(r+.15)))r+=.15;return Math.max(1,r)}
   function fight(dt){S.T+=dt;S.cd=Math.max(0,S.cd-dt);S.iT=Math.max(0,S.iT-dt);S.flinch=Math.max(0,S.flinch-dt);S.shake=Math.max(0,S.shake-dt);
    if(S.cueT>0){S.cueT-=dt;if(S.cueT<=0&&S.st!=='wind')cue('')}
-   // player movement and dodge
-   if(!S.spec&&!S.dead){if(S.dodgeT>0){S.dodgeT-=dt;const k=sm(1-Math.max(0,S.dodgeT)/.32);S.px=S.dFrom+(S.dTo-S.dFrom)*k}else{S.dodgeT-=dt;S.px=Math.max(-.95,Math.min(.95,S.px+(IN.r-IN.l)*1.1*dt))}}
-   const sp=spd();let dTarget=2.7,pose='stand';
-   // a new attack is announced (to everyone; the cue names who it is aimed at)
+   if(S.bx===null){S.bx=g.position.x;S.bz=g.position.z;S.br=Math.atan2(S.p.x-S.bx,S.p.z-S.bz);if(!free(S.bx,S.bz)){const q=PF.clone().addScaledVector(fwd,2.4);S.bx=q.x;S.bz=q.z}}
+   // you: walk, run, roll, jump, with the room's walls and furniture in the way
+   if(!S.spec&&!S.dead){const mv=moveVec();let vx,vz;
+    if(S.dodgeT>0){S.dodgeT-=dt;vx=S.rd.x*6.2;vz=S.rd.z*6.2}else{S.dodgeT-=dt;const j=window.__joy,run=IN.run||(tch()&&j&&Math.hypot(j.x,j.y)>.95),v=(run?4.6:2.9)*(IN.blk?.55:1);vx=mv.x*v;vz=mv.z*v}
+    const nx=S.p.x+vx*dt,nz=S.p.z+vz*dt;if(!blocked(nx,S.p.z))S.p.x=nx;if(!blocked(S.p.x,nz))S.p.z=nz;
+    if(S.py>0||S.vy>0){S.vy-=12*dt;S.py+=S.vy*dt;if(S.py<=0){S.py=0;S.vy=0}}}
+   const sp=spd();
+   // a new attack is announced (to everyone in reach of it; the others see who it is aimed at)
    if(S.st==='wind'&&S.aid!==S.seenAid){S.seenAid=S.aid;const A=ATK[S.atk];
-    if(mine()||!S.MP)cue(A.txt(),A.cls,9);else cue(A.txt().split(':')[0]+' at '+(safe(()=>__mp.nameOf(S.tg),'name')||'someone'),'',9);
+    if(!S.MP||S.tg===S.me)cue(A.txt(),A.cls,9);else cue(A.txt().split(':')[0]+' at '+(safe(()=>__mp.nameOf(S.tg),'name')||'someone'),A.cls,9);
     safe(()=>XT.demonSfx.hiss(S.g.position.x,S.g.position.z,1.3),'hiss');sfx(A.hz*1000,6,.12,.5,'bandpass')}
    // she gets faster / furious
    if(S.ph!==S.seenPh){S.seenPh=S.ph;if(S.ph>0){cue(S.ph===1?'She is getting faster':'She is furious','bad',1.6);
     safe(()=>{XT.voice&&XT.voice(S.ph===1?'You cut me. Nobody has cut me in so long.':'Little sitter. I will wear your face.','chorus',2.2,.45);XT.demonSfx.crack(S.g.position.x,S.g.position.z,1.3)},'roar')}}
-   S.stT-=dt;
-   if(S.st==='idle'){pose='walk';if(S.host&&S.stT<=0){S.atk=pick();S.aid++;const A=ATK[S.atk];S.st='wind';S.stT=Math.max(.45,A.w/sp);S.wT=S.stT}}
-   else if(S.st==='wind'){const A=ATK[S.atk];pose=A.pose;dTarget=S.atk==='lunge'?3.1:S.atk==='swipe'?1.9:2.3;
-    if(S.host&&S.stT<=0){S.st='strike';S.stT=.24;S.hit=false}}
-   else if(S.st==='strike'){pose=ATK[S.atk].pose;if(S.atk==='lunge'){dTarget=.6;S.hx=S.lane}else if(S.atk==='sweep')dTarget=1.6;else dTarget=1.5;
-    if(S.host&&S.stT<=0){S.st='recover';S.stT=ATK[S.atk].r/Math.sqrt(sp)}}
-   else if(S.st==='recover'){pose='loom';dTarget=S.atk==='lunge'?1.3:2.1;if(S.host&&S.stT<=0){S.st='idle';S.stT=(.7+Math.random()*.8)/sp}}
-   else if(S.st==='stag'){pose='loom';dTarget=1.8;if(S.host&&S.stT<=0){S.st='idle';S.stT=.5/sp}}
-   else if(S.st==='roar'){pose='scare';dTarget=3;if(S.host&&S.stT<=0){S.st='idle';S.stT=.6}}
-   // the blow itself, judged by the one it is aimed at: block or parry the claws as the swing starts, the hit lands .16 s later
+   S.stT-=dt;if(S.host)ai(dt,sp);
+   let pose=S.spd>.35?'crawl':'walk';
+   if(S.st==='wind'){pose=ATK[S.atk].pose;if(S.host&&S.stT<=0){S.st='strike';S.stT=S.atk==='lunge'?.3:.24;S.hit=false}}
+   else if(S.st==='strike'){pose=ATK[S.atk].pose;if(S.host&&S.stT<=0){S.st='recover';S.stT=ATK[S.atk].r/Math.sqrt(sp)}}
+   else if(S.st==='recover'){pose='loom';if(S.host&&S.stT<=0)S.enterIdle((.7+Math.random()*.8)/sp)}
+   else if(S.st==='stag'){pose='loom';if(S.host&&S.stT<=0)S.enterIdle(.5/sp)}
+   else if(S.st==='roar'){pose='scare';if(S.host&&S.stT<=0)S.enterIdle(.6)}
+   // the blow itself, judged by each player for themselves against its shape on the floor: block or parry the claws as the swing starts, the hit lands .16 s later
+   const live=!S.spec&&!S.dead;
    if((S.st==='wind'||S.st==='strike')&&S.rA!==S.aid){S.rA=S.aid;S.rW=null;S.rH=false;S.blkd=false}
-   if(S.rA===S.aid&&S.rW===null&&((S.st==='wind'&&S.stT<=0)||S.st==='strike'||S.st==='stag')){S.rW=S.T;S.lane=tLat();cue('');sfx(3000,1,.25,.25,'highpass');
-    if(mine()&&S.atk==='swipe'&&IN.blk){S.blkd=true;
+   if(S.rA===S.aid&&S.rW===null&&((S.st==='wind'&&S.stT<=0)||S.st==='strike'||S.st==='stag')){S.rW=S.T;cue('');sfx(3000,1,.25,.25,'highpass');
+    const fdx=S.bx-S.p.x,fdz=S.bz-S.p.z,fd=Math.hypot(fdx,fdz)||1,facing=(-fdx*Math.sin(yaw)-fdz*Math.cos(yaw))/fd>.35;
+    if(live&&S.atk==='swipe'&&IN.blk&&facing&&inGeo(S,'swipe',S.p.x,S.p.z)){S.blkd=true;
      if(S.T-IN.blkT<DD.pw+.12){cue('Parried! Strike now','ok',1.2);sfx(5200,10,.3,.4,'bandpass');if(S.host){if(S.st==='strike'||S.st==='wind'){S.st='stag';S.stT=1.6}}else safe(()=>__mp.send({t:'bhit',aid:S.aid,r:'parry'}),'parry')}
      else{cue('Blocked','ok',.7);sfx(2400,10,.25,.25,'bandpass')}}}
    if(S.rA===S.aid&&S.rW!==null&&!S.rH&&S.T-S.rW>=.16){S.rH=true;
-    if(mine()){if(S.atk==='sweep'){if(S.dodgeT>-.06)cue('Dodged','ok',.7);else{hurt();if(IN.blk)cue("You can't block the tail",'bad',1)}}
-     else if(S.atk==='lunge'){if(Math.abs(S.lane0+S.px-S.lane)>.45)cue('Dodged','ok',.7);else{hurt();if(IN.blk)cue("You can't block a lunge",'bad',1)}}
-     else if(!S.blkd)hurt()}}
-   if(S.st!=='strike'||S.atk!=='lunge')S.hx+=(tLat()-S.hx)*Math.min(1,dt*(S.st==='wind'?1.2:2.5));
-   S.dist+=(dTarget-S.dist)*Math.min(1,dt*(S.st==='strike'?14:4));
+    if(live){if(inGeo(S,S.atk,S.p.x,S.p.z)){
+      if(S.dodgeT>.03)cue('Dodged','ok',.7);
+      else if(S.atk==='sweep'&&S.py>.28)cue('Jumped it','ok',.7);
+      else if(!(S.atk==='swipe'&&S.blkd)){hurt();if(IN.blk&&S.atk!=='swipe')cue(S.atk==='sweep'?"You can't block the tail":"You can't block a lunge",'bad',1)}}
+     else if(Math.hypot(S.p.x-S.ax,S.p.z-S.az)<5)cue('Missed you','ok',.5)}}
    XT.demon.force=pose;
-   const p=pos(),g=S.g,tp=PF.clone().addScaledVector(rt,tLat());g.position.copy(PF).addScaledVector(fwd,S.dist+(S.flinch>0?.15:0)).addScaledVector(rt,S.hx);g.position.y=stopP.y;
-   if(S.st==='wind'&&S.atk==='lunge')g.position.addScaledVector(fwd,.1*Math.sin(S.T*40));
-   g.lookAt(tp.x,g.position.y,tp.z);if(S.st==='wind'&&S.atk==='sweep')g.rotateY(-.5*(1-S.stT/S.wT));if(S.st==='strike'&&S.atk==='sweep')g.rotateY(1.2);
-   const dodgeDip=S.dodgeT>0?-.12*Math.sin(Math.PI*(1-S.dodgeT/.32)):0,sh=S.shake*.12;
-   cam.position.set(p.x+(Math.random()-.5)*sh,p.y+dodgeDip+(Math.random()-.5)*sh,p.z);
-   const tg=new THREE.Vector3(g.position.x,1.35,g.position.z);if(!S.lk)S.lk=tg.clone();S.lk.lerp(tg,Math.min(1,dt*6));look(S.lk.x,S.lk.y,S.lk.z);
+   // her body follows the host's copy (smoothed on the other players' screens)
+   const k=S.host?1:Math.min(1,dt*10);g.position.x+=(S.bx-g.position.x)*k;g.position.z+=(S.bz-g.position.z)*k;g.position.y=FLR;
+   S.spd=S.spd*.8+.2*Math.hypot(g.position.x-S.lpx,g.position.z-S.lpz)/Math.max(dt,1e-3);S.lpx=g.position.x;S.lpz=g.position.z;
+   {let dr=S.br-g.rotation.y;dr=Math.atan2(Math.sin(dr),Math.cos(dr));g.rotation.set(0,g.rotation.y+dr*k,0)}
+   if(S.flinch>0){g.position.x-=Math.sin(g.rotation.y)*.15;g.position.z-=Math.cos(g.rotation.y)*.15}
+   if(S.st==='wind'&&S.atk==='lunge'){g.position.x+=Math.sin(g.rotation.y)*.08*Math.sin(S.T*40);g.position.z+=Math.cos(g.rotation.y)*.08*Math.sin(S.T*40)}
+   if(S.st==='wind'&&S.atk==='sweep')g.rotation.y-=.5*(1-S.stT/S.wT);if(S.st==='strike'&&S.atk==='sweep')g.rotation.y+=1.2;
+   // the red shape on the floor where the blow lands
+   {const Tl=tel(),show=(S.st==='wind'||S.st==='strike')&&S.atk;Tl.g.visible=!!show;if(show){const nf=!!window.__noFlash,pr=S.st==='strike'?1:Math.max(0,1-S.stT/S.wT);
+     Tl.g.position.set(S.ax,FLR+.03,S.az);Tl.g.rotation.set(0,S.ad,0);['sweep','swipe','lunge'].forEach(n=>{const m=Tl[n];m.visible=n===S.atk;m.material.opacity=(.12+.38*pr)*(nf||S.st==='strike'?1:.85+.15*Math.sin(S.T*18))});
+     if(S.atk==='lunge'){Tl.lunge.scale.set(1,S.al+.6,1);Tl.lunge.position.set(0,0,(S.al+.6)/2-.3)}}}
+   // the camera: yours, steered by the mouse or the right thumb
+   if(live){const dodgeDip=S.dodgeT>0?-.25*Math.sin(Math.PI*(1-S.dodgeT/.36)):0,sh=S.shake*.12;
+    cam.position.set(S.p.x+(Math.random()-.5)*sh,EYE+S.py+dodgeDip+(Math.random()-.5)*sh,S.p.z);cam.rotation.set(pitch,yaw,0)}
+   else{const p=SPEC;cam.position.copy(p);const tg=new THREE.Vector3(g.position.x,1.1+FLR,g.position.z);if(!S.lk)S.lk=tg.clone();S.lk.lerp(tg,Math.min(1,dt*4));look(S.lk.x,S.lk.y,S.lk.z)}
+   window.__fightMv=live&&!S.over;
    if(S.php<=0)S.over=true;drawHud(S);if(S.spec||S.dead){hpEl.parentNode.hidden=true;bfQ('.help').hidden=true;tB.hidden=true}}
   function sword(){if(S.spec||S.dead){vm.visible=false;return}vm.position.copy(cam.position);vm.quaternion.copy(cam.quaternion);vm.translateX(.26);vm.translateY(-.3);vm.translateZ(-.5);
    const s=S.T-S.swing,a=s<.12?sm(s/.12):s<.5?1-sm((s-.12)/.38):0;
@@ -2894,12 +2953,12 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
     if(S.MP&&S.st!=='finish'&&window.__mp&&__mp.pendingEnd)return true;
     // the instructions stay up until dismissed; in multiplayer the host starts the fight when every fighter is ready, or after 30 s
     if(S.st==='ready'){S.rdyT+=dt;safe(()=>{XT.demon.force='walk';const tg=new THREE.Vector3(S.g.position.x,1.35,S.g.position.z);look(tg.x,tg.y,tg.z);S.lk=tg},'rdy');safe(sword,'sword');drawHud(S);
-     if(S.MP&&S.host){const F=safe(()=>__mp.fighters(),'f')||[];if(S.rdyT>30||F.every(id=>S.rdyIds.has(id))){S.st='idle';S.stT=1.2;S.T=0}}
+     if(S.MP&&S.host){const F=safe(()=>__mp.fighters(),'f')||[];if(S.rdyT>30||F.every(id=>S.rdyIds.has(id))){S.T=0;S.enterIdle(1.2)}}
      return false}
     if(!introEl.hidden){introEl.hidden=true;S.rdy=true}if(S.rdy&&cueEl.textContent==='Waiting for the others'){cue('')}
     if(paused&&!S.MP)return false;
-    if(S.st==='lost'){S.fT+=dt;XT.demon.force='scare';sword();return S.fT>.9}
-    if(S.st==='finish'){S.fT+=dt;const f=S.fT;S.T+=dt;bf.hidden=true;cueEl.hidden=true;
+    if(S.st==='lost'){window.__fightMv=false;if(TEL)TEL.g.visible=false;S.fT+=dt;XT.demon.force='scare';sword();return S.fT>.9}
+    if(S.st==='finish'){S.fT+=dt;const f=S.fT;S.T+=dt;bf.hidden=true;cueEl.hidden=true;window.__fightMv=false;if(TEL)TEL.g.visible=false;
      if(!st.fin){st.fin=1;subtitle('(She rears up to her full height, grinning. One clean cut, across the neck.)',3000);safe(()=>XT.demonSfx.crack(g.position.x,g.position.z,1.4),'crack')}
      XT.demon.force='scare';if(!st.dead)g.scale.setScalar(1+.25*sm(f/.8));
      if(f>1.3&&!st.dead){st.dead=f;S.swing=S.T;slash();sfx(4200,2,.18,.25,'bandpass');sfx(140,1,.3,.3,'lowpass');safe(()=>XT.demonSfx.hiss(g.position.x,g.position.z,1.4),'hiss');
@@ -2910,7 +2969,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
      sword();if(f>4.6&&!st.f1){st.f1=1;const fd=document.getElementById('xfade');if(fd){fd.hidden=false;fd.textContent='Dawn.';requestAnimationFrame(()=>fd.classList.add('on'))}}
      return f>6}
     safe(()=>fight(dt),'fight');safe(sword,'sword');return false},
-   end(){const won=S.st==='finish';FS=null;introEl.hidden=true;bf.hidden=true;cueEl.hidden=true;IN.blk=false;vm.visible=false;scene.remove(vm);ash.forEach(m=>scene.remove(m));XT.demon.force=null;g.scale.setScalar(1);if(GL)GL.intensity=0;
+   end(){const won=S.st==='finish';FS=null;window.__fightMv=false;if(TEL)TEL.g.visible=false;IN.l=IN.r=IN.f=IN.b=IN.run=0;introEl.hidden=true;bf.hidden=true;cueEl.hidden=true;IN.blk=false;vm.visible=false;scene.remove(vm);ash.forEach(m=>scene.remove(m));XT.demon.force=null;g.scale.setScalar(1);if(GL)GL.intensity=0;
     hpEl.parentNode.hidden=false;bfQ('.help').hidden=false;
     if(won){g.visible=false;XT.ending('secret')}else{XT.ending('death',{h:'Taken.',p:'The sword was not enough. She was faster than you.'})}}};
   XT.cutUI(true);document.getElementById('cutSkip').hidden=true;XT.playCut(c)}
@@ -3132,6 +3191,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  MP.runNoise=()=>{let n=0;P.forEach(p=>{if(p.rep&&!p.rep.gh&&p.sp>2.6)n+=.012});return n};
  MP.fighters=()=>{const L=[];roster.forEach(p=>{const gh=p.id===MP.id?MP.ghost:!!(MP.host?(P.get(p.id)&&P.get(p.id).rep&&P.get(p.id).rep.gh):p.gh);if(!gh)L.push(p)});return L.sort((a,b)=>a.slot-b.slot).map(p=>p.id)};
  MP.laneOf=id=>{const a=AV.get(id);return a&&a.last?a.last.lat||0:0};
+ MP.posOf=id=>{const a=AV.get(id);return a&&a.last&&a.last.ar!=='r'?{x:mX(a.last.x),z:mZ(a.last.z)}:null};
 
  // ---------- host: the night's events, the demon, hunts and prowls are aimed at living players ----------
  const pickAlive=(filter)=>{const L=alive().filter(a=>a.r.ar!=='r'&&!(filter&&!filter(a)));return L.length?L[Math.floor(Math.random()*L.length)].id:null};
@@ -3307,7 +3367,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   if(m.pl)m.pl.forEach(p=>{if(p.id!==MP.id)pushRep(p.id,p.r)});
   if(m.held){XT.mpHeld=Object.keys(m.held).filter(k=>m.held[k]!==MP.id);safe(()=>XT.shelfDbg.sync(),'held')}
   drawVote(m.v?Object.assign({},m.v,{me:m.v.ids&&m.v.ids.includes(MP.id)}):null);
-  if(m.boss){const S=XT.bladeFight&&XT.bladeFight.S;if(S&&S.st!=='intro'&&S.st!=='finish'&&!(S.st==='ready'&&m.boss.st==='ready')){const b=m.boss;if(b.st!==S.st||Math.abs(b.stT-S.stT)>.2)S.stT=b.stT;S.st=b.st;S.atk=b.atk;S.aid=b.aid;S.tg=b.tg;S.wT=b.wT;S.bhp=b.bhp;S.ph=b.ph}}}
+  if(m.boss){const S=XT.bladeFight&&XT.bladeFight.S;if(S&&S.st!=='intro'&&S.st!=='finish'&&!(S.st==='ready'&&m.boss.st==='ready')){const b=m.boss;if(b.st!==S.st||Math.abs(b.stT-S.stT)>.2)S.stT=b.stT;S.st=b.st;S.atk=b.atk;S.aid=b.aid;S.tg=b.tg;S.wT=b.wT;S.bhp=b.bhp;S.ph=b.ph;if(typeof b.bx==='number'){S.bx=b.bx;S.bz=b.bz;S.br=b.br;S.ax=b.ax;S.az=b.az;S.ad=b.ad;S.al=b.al}}}}
  function hostHandle(pid,m){const p=P.get(pid);switch(m.t){
   case 'p':if(!p)break;{const now=performance.now();if(p.rep&&p.last){const dt=(now-p.last)/1000;if(dt>.03&&m.r.ar===p.rep.ar)p.sp=Math.hypot(m.r.x-p.rep.x,m.r.z-p.rep.z)/dt}
    const wasGh=p.rep&&p.rep.gh;p.rep=m.r;p.last=now;pushRep(pid,m.r);if(m.r.ent&&!entered)entered=true;if(m.r.gh&&!wasGh)checkAllDead();
@@ -3357,7 +3417,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const E=CD.EV,B=XT.bladeFight&&XT.bladeFight.S;
   const m={t:'s',f:readAll(),ev:E.cur?{id:E.cur.e.id,t:+E.cur.t.toFixed(1),dur:+E.cur.dur.toFixed(1)}:null,evn:+E.next.toFixed(1),pl,held,
    v:vote?{n:vote.yes.size,of:roster.length,left:Math.max(0,Math.ceil(15-(now-vote.t0)/1000)),ids:[...vote.yes]}:null,
-   boss:B&&B.st!=='intro'?{st:B.st,atk:B.atk,aid:B.aid,tg:B.tg,stT:+B.stT.toFixed(2),wT:B.wT,bhp:B.bhp,ph:B.ph}:null};
+   boss:B&&B.st!=='intro'?{st:B.st,atk:B.atk,aid:B.aid,tg:B.tg,stT:+B.stT.toFixed(2),wT:B.wT,bhp:B.bhp,ph:B.ph,bx:B.bx===null?null:+B.bx.toFixed(2),bz:+B.bz.toFixed(2),br:+B.br.toFixed(3),ax:+B.ax.toFixed(2),az:+B.az.toFixed(2),ad:+B.ad.toFixed(3),al:+B.al.toFixed(2)}:null};
   bcast(m);MP.sOut=(MP.sOut||0)+1;drawVote(m.v?Object.assign({},m.v,{me:vote&&vote.yes.has(MP.id)}):null);
   if(tickN%10===0)bcastRoster(true)}
  setInterval(()=>safe(tick,'tick'),TICK);
