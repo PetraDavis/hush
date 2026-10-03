@@ -1570,7 +1570,20 @@ document.addEventListener('mousemove',e=>{if(document.pointerLockElement!==rende
 addEventListener('keydown',e=>{if(paused)return;keys[e.code]=true;if(e.code==='Escape'&&noteOpen)openNote(false);if(e.code==='KeyE'&&!e.repeat)interact();if(e.code==='Space'){e.preventDefault();if(!seated&&grounded&&!CARE.busy()&&!(window.__mp&&__mp.ghost)){vy=4.3;grounded=false;CARE.jump()}}});addEventListener('keyup',e=>keys[e.code]=false);addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 renderer.domElement.addEventListener('mousedown',()=>{if(document.pointerLockElement)interact()});
 const ray=new THREE.Raycaster();addInter(sw,'Light switch',()=>setLight(!lightOn));
-function target(){ray.setFromCamera({x:0,y:0},cam);ray.far=1.9;const h=ray.intersectObjects(inter,false)[0];return h?h.object.userData.i:null}
+function target(){const T=!!window.__touchMode;ray.setFromCamera({x:0,y:0},cam);ray.far=T?2.6:1.9;const h=ray.intersectObjects(inter,false)[0];if(h||!T)return h?h.object.userData.i:null;return coneTarget()}
+// touch: aim tolerance. The nearest thing within about 20 degrees of the centre of the view, in reach, with nothing solid in between.
+const _cv=new THREE.Vector3(),_cf=new THREE.Vector3(),_cb=new THREE.Box3();
+function visTree(o){while(o){if(!o.visible)return false;o=o.parent}return true}
+function coneTarget(){cam.getWorldDirection(_cf);let best=null,bs=1e9;const cp=cam.position,C=Math.cos(.35);
+ for(const o of inter){if(!o.userData.i||!visTree(o))continue;_cb.setFromObject(o);if(_cb.isEmpty())continue;_cb.getCenter(_cv);const dx=_cv.x-cp.x,dy=_cv.y-cp.y,dz=_cv.z-cp.z,d=Math.hypot(dx,dy,dz);
+  if(d>2.6||d<.05)continue;const c=(dx*_cf.x+dy*_cf.y+dz*_cf.z)/d;if(c<C)continue;if(!(window.__rlm&&__rlm.on)&&!(()=>{const h=Math.hypot(dx,dz),k=h>.25?(h-.22)/h:0;return losClear(cp.x,cp.z,cp.x+dx*k,cp.z+dz*k,fy)})())continue;
+  let lb='';try{lb=o.userData.i.label}catch(e){}if(lb==='')continue;const sc=d*(1.6-c);if(sc<bs){bs=sc;best=o}}
+ return best?best.userData.i:null}
+// touch: a quick tap on something in the world uses it
+window.__tapAct=(x,y)=>{if(window.__mp&&(__mp.ghost||__mp.demon))return false;if(noteOpen||CARE.busy()||seated||paused)return false;
+ ray.setFromCamera({x:x/innerWidth*2-1,y:-(y/innerHeight)*2+1},cam);ray.far=2.6;const h=ray.intersectObjects(inter,false).find(q=>q.object.userData.i&&visTree(q.object));if(!h)return false;
+ let lb='';try{lb=h.object.userData.i.label}catch(e){}if(lb==='')return false;h.object.userData.i.act();return true};
+window.__target=()=>target();
 let noteOpen=false,entered=false,noteSeen=false;const noteEl=document.getElementById('note'),subEl=document.getElementById('sub');
 function openNote(v,html){noteOpen=v;noteEl.hidden=!v;const pp=noteEl.querySelector('.paper');if(pp._o===undefined)pp._o=pp.innerHTML;pp.innerHTML=v&&html?html:pp._o;if(v&&!html)noteSeen=true}
 function subtitle(txt,ms){subEl.textContent=txt;subEl.hidden=false;clearTimeout(subEl._t);subEl._t=setTimeout(()=>subEl.hidden=true,ms)}
@@ -1610,7 +1623,7 @@ if(!entered&&!(window.__mp&&__mp.demon)&&RP.z<9.3&&RP.z>6.6&&RP.x>2.8&&RP.x<6.8&
 if(seated){if(f||s)stand();else cam.position.set(seated.x,seated.y,seated.z)}
 if(!seated){if(keys.KeyC||keys.ControlLeft||keys.ControlRight)crouch=true;else if(crouch&&!solids.some(q=>ov(q,cam.position.x,cam.position.z,R)&&q.y1>fy+.36&&q.y0<fy+1.7))crouch=false;
 eyeH+=((crouch?.6:1.6)-eyeH)*Math.min(1,dt*10);
-if(f||s){const l=Math.hypot(f,s),sp=(crouch?.9:keys.ShiftLeft||keys.ShiftRight?3.4*(window.__runK||1):1.8)*(window.__dmSp||1)*dt/l*(jm>.12?Math.min(1,l):1);let dx=(-Math.sin(yaw)*f+Math.cos(yaw)*s)*sp,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*s)*sp;
+if(f||s){const l=Math.hypot(f,s),sp=(crouch?.9:keys.ShiftLeft||keys.ShiftRight?3.4*(window.__runK||1):1.8)*(window.__dmSp||1)*(window.__touchMode?(window.__mp&&__mp.hm?Math.min(1.1,window.__touchK||1):(window.__touchK||1)):1)*dt/l*(jm>.12?Math.min(1,l):1);let dx=(-Math.sin(yaw)*f+Math.cos(yaw)*s)*sp,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*s)*sp;
 if(!blocked(cam.position.x+dx,cam.position.z))cam.position.x+=dx;if(!blocked(cam.position.x,cam.position.z+dz))cam.position.z+=dz;if(grounded)bob=Math.sin(t*(keys.ShiftLeft||keys.ShiftRight?13:9))*.02}
 const S=support(cam.position.x,cam.position.z);
 if(grounded&&vy<=0&&fy-S<=.45){fy=S;vy=0}else{vy-=9.8*dt;fy+=vy*dt;grounded=false;if(fy<=S){fy=S;vy=0;grounded=true}}
@@ -2616,14 +2629,16 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 #tc .stick.idle{opacity:.45}
 #tcB{position:absolute;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;grid-template-columns:repeat(3,58px);gap:10px;pointer-events:none}
 #tc button{pointer-events:auto;touch-action:none;width:58px;height:58px;border-radius:50%;border:1.5px solid rgba(232,226,214,.3);background:rgba(14,14,18,.5);color:#e8e2d6;font:600 .6rem/1.1 var(--ui,system-ui,sans-serif);letter-spacing:.06em;text-transform:uppercase;padding:0;-webkit-tap-highlight-color:transparent}
-#tc button.on{background:rgba(200,164,92,.45);border-color:#c9a45c}#tc button.big{grid-column:3;grid-row:1/3;width:58px;height:126px;border-radius:29px;background:rgba(60,20,20,.55)}
+#tc button.on{background:rgba(200,164,92,.45);border-color:#c9a45c}#tc button.big{grid-column:3;grid-row:1/3;width:76px;height:126px;border-radius:38px;background:rgba(60,20,20,.55);font-size:.72rem}#tc button.big.tg{background:rgba(120,60,30,.7);border-color:#e0b870}
+#tcLbl{position:absolute;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 150px);max-width:min(15rem,45vw);font:600 .72rem/1.3 var(--ui,system-ui,sans-serif);color:#f0e6d6;background:rgba(14,14,18,.72);border:1px solid rgba(224,184,112,.5);border-radius:6px;padding:.3rem .6rem;text-align:right;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.touch.tLbl #hint{display:none!important}
 #tcP{position:absolute;left:calc(env(safe-area-inset-left,0px) + 14px);top:calc(env(safe-area-inset-top,0px) + 14px);width:44px!important;height:44px!important;font-size:1rem!important}
 #tcRot{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 60px);transform:translateX(-50%);z-index:9;max-width:calc(100% - 32px);font-family:var(--ui,system-ui,sans-serif);font-size:.72rem;letter-spacing:.04em;color:#e8e2d6;background:rgba(14,14,18,.88);border:1px solid #3a332c;border-radius:8px;padding:.5rem .8rem;text-align:center;pointer-events:auto}
-@media (orientation:portrait){#tcB{grid-template-columns:repeat(3,52px);gap:8px}#tc button{width:52px;height:52px}#tc button.big{width:52px;height:112px}#tcL{height:55%;width:50%}#tcR{width:50%;top:12%}#tc .stick{width:100px;height:100px;margin:-50px 0 0 -50px}}
+@media (orientation:portrait){#tcB{grid-template-columns:52px 52px 68px;gap:8px}#tc button{width:52px;height:52px}#tc button.big{width:68px;height:112px;border-radius:34px}#tcLbl{bottom:calc(env(safe-area-inset-bottom,0px) + 132px)}#tcL{height:55%;width:50%}#tcR{width:50%;top:12%}#tc .stick{width:100px;height:100px;margin:-50px 0 0 -50px}}
 body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:68px;transform:scale(.85);transform-origin:top left}body.touch #hint{top:46%}body.touch #breath{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document.head.appendChild(css);
  const tc=document.createElement('div');tc.id='tc';tc.hidden=true;tc.innerHTML='<div class="zone" id="tcL"></div><div class="zone" id="tcR"></div><div class="stick idle"><i></i></div>'+
   '<div id="tcB"><button type="button" data-k="KeyL">Light</button><button type="button" data-k="Space">Jump</button><button type="button" class="big" data-k="KeyE">Use</button>'+
-  '<button type="button" data-t="KeyC">Crouch</button><button type="button" data-t="ShiftLeft">Sprint</button><button type="button" data-h="breath" style="grid-column:1/3;width:auto;border-radius:29px">Hide / hold breath</button></div><button type="button" id="tcP" aria-label="Pause">II</button>';
+  '<button type="button" data-t="KeyC">Crouch</button><button type="button" data-t="ShiftLeft">Sprint</button><button type="button" data-h="breath" style="grid-column:1/3;width:auto;border-radius:29px">Hide / hold breath</button></div><button type="button" id="tcP" aria-label="Pause">II</button><div id="tcLbl" hidden></div>';
  document.body.appendChild(tc);
  const L=tc.querySelector('#tcL'),Rz=tc.querySelector('#tcR'),stick=tc.querySelector('.stick'),knob=stick.querySelector('i');
  const rot=document.createElement('div');rot.id='tcRot';rot.hidden=true;rot.textContent='Tip: turn your phone sideways (landscape) for the best view. Tap to dismiss.';document.body.appendChild(rot);let rotOff=false;rot.addEventListener('click',e=>{e.stopPropagation();rotOff=true;rot.hidden=true});
@@ -2631,9 +2646,11 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function enable(){if(on)return;on=true;window.__touchMode=true;document.body.classList.add('touch');
   safe(()=>{const k=document.querySelector('#title .keys');if(k)k.textContent='Left thumb: move  -  drag on the right: look  -  buttons: use, jump, crouch, sprint, light, hide / hold breath, pause'},'keys');
   safe(()=>{const p=overlay.querySelector('p');if(p&&!started)p.textContent='Tap to begin'},'ov')}
- if(coarse()||(navigator.maxTouchPoints>0&&!(()=>{try{return matchMedia('(pointer: fine)').matches}catch(e){return false}})()))enable();
+ if(coarse()||(navigator.maxTouchPoints>1&&/Mac|iP/.test(navigator.platform||''))||(navigator.maxTouchPoints>0&&!(()=>{try{return matchMedia('(pointer: fine)').matches}catch(e){return false}})()))enable();
  addEventListener('touchstart',()=>enable(),{passive:true,capture:true});
  XT.touch={enable,get on(){return on}};
+ // touch players move a little faster (thumbs are slower than keys): +25% on a phone, +15% on a tablet; in Hunt at most +10%, for everyone alike
+ window.__touchK=Math.min(screen.width||999,screen.height||999)<600?1.25:1.15;
  // synthetic keys go to document so the game's capture listeners (hiding, cutscene skip) see them first
  const key=(code,down)=>document.dispatchEvent(new KeyboardEvent(down?'keydown':'keyup',{code,key:code,bubbles:true}));
  // --- left stick ---
@@ -2646,10 +2663,10 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  const jEnd=e=>{if(e.pointerId!==J.id)return;J.id=null;window.__joy={x:0,y:0};idle()};L.addEventListener('pointerup',jEnd);L.addEventListener('pointercancel',jEnd);
  // --- right side: drag to look (a quick tap there does nothing, so look and buttons never fight) ---
  const lookP=new Map();
- Rz.addEventListener('pointerdown',e=>{e.preventDefault();lookP.set(e.pointerId,{x:e.clientX,y:e.clientY});try{Rz.setPointerCapture(e.pointerId)}catch(err){}});
- Rz.addEventListener('pointermove',e=>{const p=lookP.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;if(paused||(window.__cut&&!window.__fightMv))return;
+ Rz.addEventListener('pointerdown',e=>{e.preventDefault();lookP.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t0:performance.now()});try{Rz.setPointerCapture(e.pointerId)}catch(err){}});
+ Rz.addEventListener('pointermove',e=>{const p=lookP.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;if(paused||(window.__cut&&!window.__fightMv&&!window.__dmFightTouch))return;
   const k=.0052*(typeof SENS==='number'?SENS:1);yaw-=dx*k;pitch=Math.max(-1.4,Math.min(1.4,pitch-dy*k*(window.__invY?-1:1)))});
- const lEnd=e=>lookP.delete(e.pointerId);Rz.addEventListener('pointerup',lEnd);Rz.addEventListener('pointercancel',lEnd);
+ const lEnd=e=>{const p=lookP.get(e.pointerId);lookP.delete(e.pointerId);if(e.type==='pointerup'&&p&&p.t0&&performance.now()-p.t0<450&&Math.hypot(p.x-p.sx,p.y-p.sy)<10)safe(()=>window.__tapAct&&__tapAct(p.sx,p.sy),'tap')};Rz.addEventListener('pointerup',lEnd);Rz.addEventListener('pointercancel',lEnd);
  // --- buttons ---
  tc.querySelectorAll('#tcB button').forEach(b=>{
   b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();try{b.setPointerCapture(e.pointerId)}catch(err){}
@@ -2662,13 +2679,16 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // when tapping the overlay to resume there is no pointer lock to wait for
  // --- show / hide with the game state, label the buttons ---
  const bE=tc.querySelector('[data-k="KeyE"]'),bC=tc.querySelector('[data-t="KeyC"]'),bS=tc.querySelector('[data-t="ShiftLeft"]'),bH=tc.querySelector('[data-h]'),bLt=tc.querySelector('[data-k="KeyL"]');
+ const lbl=tc.querySelector('#tcLbl');let lblT=0;
  let shown=false;addEventListener('resize',()=>{if(J.id===null)safe(idle,'idle')});
  function ui(){if(!on){tc.hidden=true;rot.hidden=true;return}
-  const fm=!!window.__fightMv&&!paused,play=fm||started&&!paused&&!TITLE.on&&!ended&&!window.__dead&&!window.__tbc&&!window.__cut&&!noteOpen&&!(XT.journal&&XT.journal.open_);
+  const fm=!!(window.__fightMv||window.__dmFightTouch)&&!paused,play=fm||started&&!paused&&!TITLE.on&&!ended&&!window.__dead&&!window.__tbc&&!window.__cut&&!noteOpen&&!(XT.journal&&XT.journal.open_);
   tc.hidden=!play;tc.querySelector('#tcB').hidden=fm;if(!play&&J.id!==null){J.id=null;window.__joy={x:0,y:0}}if(!play)window.__holdBreath=0;
   if(play&&!shown&&J.id===null)idle();shown=play;
   const hid=XT.hide&&XT.hide.hid;if(hid){window.__joy={x:0,y:0};if(keys.ShiftLeft&&!window.__holdBreath)keys.ShiftLeft=false}
   bH.textContent=hid?'Hold breath':'Hide';bE.textContent=hid?'Leave':'Use';
+  {const nw=performance.now();if(nw-lblT>120){lblT=nw;let t=null;if(play&&!fm&&!hid&&!seated&&!(window.__mp&&(__mp.ghost||__mp.demon)))t=safe(()=>target()||(CARE.free&&CARE.free()),'lbl');let lb='';try{lb=t?t.label:''}catch(e){}
+   if(lbl.textContent!==(lb||''))lbl.textContent=lb||'';lbl.hidden=!lb;bE.classList.toggle('tg',!!lb);document.body.classList.toggle('tLbl',!!lb)}}
   bC.classList.toggle('on',!!keys.KeyC);bS.classList.toggle('on',!!keys.ShiftLeft);bLt.classList.toggle('on',!!(XT.torch&&XT.torch.on));
   rot.hidden=rotOff||!(innerHeight>innerWidth)||!(started||TITLE.on)}
  (function tick(){safe(ui,'ui');requestAnimationFrame(tick)})();
@@ -4025,10 +4045,30 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   if(e.button===0)fightAtk('swipe');else if(e.button===2)fightAtk('lunge')});
  document.addEventListener('contextmenu',e=>{if(me())e.preventDefault()});
  function fightAtk(a){const B=XT.bladeFight&&XT.bladeFight.S;if(!B||B.st!=='idle')return;if(MP.host){XT.huntFightIn=Object.assign(XT.huntFightIn||{x:0,z:0,f:B.br},{a})}else send({t:'hb',a})}
- function fightIn(){const B=XT.bladeFight&&XT.bladeFight.S;if(!me()||!B)return;const f=(KS.KeyW||KS.ArrowUp?1:0)-(KS.KeyS||KS.ArrowDown?1:0),s=(KS.KeyD||KS.ArrowRight?1:0)-(KS.KeyA||KS.ArrowLeft?1:0);
+ function fightIn(){const B=XT.bladeFight&&XT.bladeFight.S;if(!me()||!B)return;let f=(KS.KeyW||KS.ArrowUp?1:0)-(KS.KeyS||KS.ArrowDown?1:0),s=(KS.KeyD||KS.ArrowRight?1:0)-(KS.KeyA||KS.ArrowLeft?1:0);const j=window.__joy;if(j&&Math.hypot(j.x,j.y)>.12){f=-Math.max(-1,Math.min(1,j.y));s=Math.max(-1,Math.min(1,j.x))}
   const x=-Math.sin(yaw)*f+Math.cos(yaw)*s,z=-Math.cos(yaw)*f-Math.sin(yaw)*s,fc=Math.atan2(-Math.sin(yaw),-Math.cos(yaw)),m={x:+x.toFixed(2),z:+z.toFixed(2),f:+fc.toFixed(3)};
   if(MP.host){const I=XT.huntFightIn||{};XT.huntFightIn=Object.assign(I,m)}else send(Object.assign({t:'hb'},m))}
  setInterval(()=>safe(fightIn,'fightIn'),100);
+ // ---------- touch: the demon's own buttons, in the same corner and style as the babysitter's ----------
+ {const c=document.createElement('style');c.textContent=`body.hDemon #tcB{display:none!important}
+#hTB{position:fixed;z-index:4;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;grid-template-columns:repeat(3,58px);gap:10px;pointer-events:none}
+#hTB button{pointer-events:auto;touch-action:none;width:58px;height:58px;border-radius:50%;border:1.5px solid rgba(232,226,214,.3);background:rgba(14,14,18,.5);color:#e8e2d6;font:600 .56rem/1.1 var(--ui,system-ui,sans-serif);letter-spacing:.05em;text-transform:uppercase;padding:0;-webkit-tap-highlight-color:transparent}
+#hTB button.big{grid-column:3;grid-row:1/3;height:126px;border-radius:29px;background:rgba(90,24,20,.6);border-color:rgba(220,120,100,.5)}#hTB button.on{background:rgba(200,164,92,.45);border-color:#c9a45c}#hTB button.cd,#hTB button.no{opacity:.45}
+#hTB button small{display:block;font-size:.5rem;opacity:.8;margin-top:2px}
+@media (orientation:portrait){#hTB{grid-template-columns:repeat(3,52px);gap:8px}#hTB button{width:52px;height:52px}#hTB button.big{height:112px}}`;document.head.appendChild(c)}
+ const tb=document.createElement('div');tb.id='hTB';tb.hidden=true;document.body.appendChild(tb);let tbMode='';
+ const HB=[['claw','Claws','big'],['ceil','Ceiling'],['flick','Flicker'],['hiss','Hiss'],['show','Show'],['use','Open']],FB=[['swipe','Claws','big'],['lunge','Lunge'],['sweep','Sweep']];
+ function tbBuild(m){tbMode=m;tb.innerHTML=(m==='f'?FB:HB).map(([k,t,c])=>'<button type="button" data-k="'+k+'" class="'+(c||'')+'">'+t+'<small></small></button>').join('')}
+ tb.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();e.stopPropagation();const k=b.dataset.k;
+  if(tbMode==='f')fightAtk(k);else if(k==='claw')claw();else if(k==='use')useE();else act(k);b.classList.add('on');setTimeout(()=>b.classList.remove('on'),160)});
+ tb.addEventListener('contextmenu',e=>e.preventDefault());['click','mousedown'].forEach(k=>tb.addEventListener(k,e=>e.stopPropagation()));
+ function tbTick(){const B=XT.bladeFight&&XT.bladeFight.S,fight=!!(B&&B.st!=='intro'&&me());window.__dmFightTouch=fight&&!!window.__touchMode&&!MP.ended;
+  const tcEl=document.getElementById('tc'),show=!!window.__touchMode&&me()&&!MP.ended&&skEl.hidden&&(fight||(tcEl&&!tcEl.hidden));tb.hidden=!show;if(!show)return;
+  const m=fight?'f':'h';if(m!==tbMode)tbBuild(m);
+  tb.querySelectorAll('button').forEach(b=>{const k=b.dataset.k,sm=b.querySelector('small');let t='',no=false;
+   if(m==='f')no=B.st!=='idle';else{const l=left(k);if(l)t=l+'s';if(k==='claw'&&XT.hour()<24){no=true;t='12 AM'}if(k==='ceil')b.classList.toggle('on',!!ST.ceil);if(ST.stun>0&&k!=='ceil')no=true}
+   if(sm.textContent!==t)sm.textContent=t;b.classList.toggle('no',no);b.classList.toggle('cd',!!t&&!no)})}
+ setInterval(()=>safe(tbTick,'touchbar'),150);
 
  // ---------- the demon's mic: unmuted, her real voice; muted, a hiss whenever she speaks ----------
  let vad=null,hissN=null,vLast=0;
