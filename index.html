@@ -1,5 +1,28 @@
 <title>Hush</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style id="ldCss">
+#ld{position:fixed;inset:0;z-index:20;background:#060508;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;padding:16px;color:#cfc4b4;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;transition:opacity .8s}
+#ld.out{opacity:0;pointer-events:none}
+#ld .cd{position:relative;width:46px;height:120px}
+#ld .cd .wx{position:absolute;left:8px;bottom:0;width:30px;height:70px;border-radius:4px 4px 2px 2px;background:linear-gradient(90deg,#b8ac94,#e8dfcc 45%,#a89c84)}
+#ld .cd .wk{position:absolute;left:22px;bottom:70px;width:2px;height:9px;background:#2a2420}
+#ld .cd .fl{position:absolute;left:14px;bottom:76px;width:18px;height:34px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(ellipse at 50% 75%,#fff6d0 0,#ffc04a 35%,rgba(255,110,20,.55) 65%,transparent 72%);transform-origin:50% 90%;animation:ldF 1.7s ease-in-out infinite alternate;will-change:transform}
+#ld .cd .gl{position:absolute;left:-60px;bottom:30px;width:166px;height:166px;border-radius:50%;background:radial-gradient(rgba(255,170,60,.16),transparent 65%);animation:ldG 2.3s ease-in-out infinite alternate;will-change:opacity}
+@keyframes ldF{0%{transform:scale(1,1) rotate(-2deg)}35%{transform:scale(.92,1.08) rotate(2deg)}70%{transform:scale(1.05,.94) rotate(-1deg)}100%{transform:scale(.96,1.04) rotate(1.5deg)}}
+@keyframes ldG{from{opacity:.65}to{opacity:1}}
+#ld .bar{width:min(16rem,70vw);height:3px;background:#1e1a20;border-radius:2px;overflow:hidden}#ld .bar i{display:block;height:100%;width:6%;background:#8a2020;transition:width .4s}
+#ld .ln{position:relative;width:min(28rem,100%);height:3.6em;text-align:center;font-size:.85rem;line-height:1.4}
+#ld .ln p{position:absolute;inset:0;margin:0;opacity:0;animation:ldL 45.0s linear infinite}
+#ld .ln p b{display:block;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#8a7a68;font-weight:600;margin-bottom:.2rem}
+#ld .ln p.cr{font-family:'Caveat','Segoe Print',cursive;font-size:1.35rem;color:#b8a0a0}
+@keyframes ldL{0%{opacity:0}2%{opacity:1}9.11%{opacity:1}10.0%{opacity:0}100%{opacity:0}}
+#ld .t{font-family:'Caveat','Segoe Print',cursive;font-size:2.2rem;letter-spacing:.12em;color:#8a2020}
+@media (prefers-reduced-motion:reduce){#ld .cd .fl,#ld .cd .gl{animation:none}#ld .ln p{animation:none}#ld .ln p:first-child{opacity:1}}
+</style><div id="ld" role="status" aria-label="Loading"><div class="t">Hush</div><div class="cd" aria-hidden="true"><div class="gl"></div><div class="wx"></div><div class="wk"></div><div class="fl"></div></div><div class="bar"><i id="ldB"></i></div><div class="ln"><p class="" style="animation-delay:0.0s"><b>Tip</b>Pick her up when she fusses. Held close, she cries more quietly.</p><p class="cr" style="animation-delay:4.5s">She stopped crying at 9:14. Nobody was holding her.</p><p class="" style="animation-delay:9.0s"><b>Tip</b>Noise carries. The quieter the house, the safer you are.</p><p class="cr" style="animation-delay:13.5s">Don&#x27;t answer if it calls you by name.</p><p class="" style="animation-delay:18.0s"><b>Tip</b>Closets, beds and the pantry are good places to hide. Hold Shift to hold your breath.</p><p class="cr" style="animation-delay:22.5s">The house is older than the street it stands on.</p><p class="" style="animation-delay:27.0s"><b>Tip</b>Batteries don&#x27;t last forever. Use the flashlight when you need it.</p><p class="cr" style="animation-delay:31.5s">Something below the floor is listening.</p><p class="" style="animation-delay:36.0s"><b>Tip</b>Read what people left behind. The parents didn&#x27;t tell you everything.</p><p class="cr" style="animation-delay:40.5s">Every sitter thought they would be the one who stayed.</p></div></div>
+<!-- v72: fonts never block the first paint -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" media="print" onload="this.media='all'">
+
 <style>
 :root{--bg:#07080b;--fg:#d8d2c4;--dim:#8a8577;--panel:rgba(10,10,14,.78);--accent:#c9a45c;color-scheme:dark;
 --display:Georgia,"Times New Roman",serif;--ui:ui-monospace,Menlo,Consolas,monospace}
@@ -22,7 +45,8 @@ canvas{display:block}
 #sub{position:fixed;left:50%;bottom:8%;transform:translateX(-50%);max-width:calc(100% - 32px);font-family:var(--display);font-size:1.15rem;color:var(--fg);background:var(--panel);padding:.4rem 1rem;pointer-events:none;text-align:center}
 #note{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(4,4,7,.6);padding:16px}
 #note .paper{background:#f4ecd8;color:#2a2420;max-width:34rem;width:100%;max-height:90vh;overflow:auto;padding:1.4rem 1.6rem;box-shadow:0 10px 40px rgba(0,0,0,.6);font-family:'Caveat','Segoe Print','Bradley Hand',cursive;font-size:1.35rem;line-height:1.3;transform:rotate(-1deg)}
-#note ul{margin:.2rem 0 .8rem;padding-left:1.2rem}#note .hd{margin:.2rem 0;font-weight:700}#note .sig{text-align:right;margin:.6rem 0 0}#note .close{font-family:var(--ui);font-size:.75rem;color:#7a6a5a;text-align:center;margin:.8rem 0 0}
+#note ul{margin:.2rem 0 .8rem;padding-left:1.2rem}#note .hd{margin:.2rem 0;font-weight:700}#note .sig{text-align:right;margin:.6rem 0 0}#noteX{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);min-width:9rem;min-height:48px;font:600 1rem var(--ui);letter-spacing:.06em;color:#f4ecdc;background:#3a1e1a;border:1px solid #6a3a30;border-radius:8px;padding:.6rem 1.6rem;cursor:pointer;z-index:1}
+#note .close{font-family:var(--ui);font-size:.75rem;color:#7a6a5a;text-align:center;margin:.8rem 0 0}
 #cross{position:fixed;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:var(--dim);opacity:.6;pointer-events:none}
 #need{z-index:2;position:fixed;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:.45rem;align-items:center;max-width:calc(100% - 32px);background:var(--panel);padding:.3rem .8rem;border-radius:999px;font-family:var(--ui);font-size:.78rem;color:var(--fg);pointer-events:none;white-space:nowrap}
 #need svg{width:18px;height:18px;flex:none;stroke:var(--accent);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}#need.bad svg{stroke:#e0604a}
@@ -46,25 +70,7 @@ body:has(#title:not([hidden])) #cross{display:none}
 #skipB{position:fixed;z-index:3;top:calc(env(safe-area-inset-top,0px) + 34px);right:16px;font-family:var(--ui);font-size:.7rem;letter-spacing:.06em;color:var(--dim);background:var(--panel);border:1px solid #2c2d33;border-radius:6px;padding:.3rem .6rem;cursor:pointer}#skipB:hover{color:var(--fg)}#tfade.on{opacity:1}
 .brand{font-family:'Caveat','Segoe Print',cursive!important;font-size:2.4rem!important;letter-spacing:.12em;color:#8a2020!important;margin:0 0 .4rem!important}
 </style>
-<style id="ldCss">
-#ld{position:fixed;inset:0;z-index:20;background:#060508;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;padding:16px;color:#cfc4b4;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;transition:opacity .8s}
-#ld.out{opacity:0;pointer-events:none}
-#ld .cd{position:relative;width:46px;height:120px}
-#ld .cd .wx{position:absolute;left:8px;bottom:0;width:30px;height:70px;border-radius:4px 4px 2px 2px;background:linear-gradient(90deg,#b8ac94,#e8dfcc 45%,#a89c84)}
-#ld .cd .wk{position:absolute;left:22px;bottom:70px;width:2px;height:9px;background:#2a2420}
-#ld .cd .fl{position:absolute;left:14px;bottom:76px;width:18px;height:34px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(ellipse at 50% 75%,#fff6d0 0,#ffc04a 35%,rgba(255,110,20,.55) 65%,transparent 72%);transform-origin:50% 90%;animation:ldF 1.7s ease-in-out infinite alternate;will-change:transform}
-#ld .cd .gl{position:absolute;left:-60px;bottom:30px;width:166px;height:166px;border-radius:50%;background:radial-gradient(rgba(255,170,60,.16),transparent 65%);animation:ldG 2.3s ease-in-out infinite alternate;will-change:opacity}
-@keyframes ldF{0%{transform:scale(1,1) rotate(-2deg)}35%{transform:scale(.92,1.08) rotate(2deg)}70%{transform:scale(1.05,.94) rotate(-1deg)}100%{transform:scale(.96,1.04) rotate(1.5deg)}}
-@keyframes ldG{from{opacity:.65}to{opacity:1}}
-#ld .bar{width:min(16rem,70vw);height:3px;background:#1e1a20;border-radius:2px;overflow:hidden}#ld .bar i{display:block;height:100%;width:6%;background:#8a2020;transition:width .4s}
-#ld .ln{position:relative;width:min(28rem,100%);height:3.6em;text-align:center;font-size:.85rem;line-height:1.4}
-#ld .ln p{position:absolute;inset:0;margin:0;opacity:0;animation:ldL 45.0s linear infinite}
-#ld .ln p b{display:block;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#8a7a68;font-weight:600;margin-bottom:.2rem}
-#ld .ln p.cr{font-family:'Caveat','Segoe Print',cursive;font-size:1.35rem;color:#b8a0a0}
-@keyframes ldL{0%{opacity:0}2%{opacity:1}9.11%{opacity:1}10.0%{opacity:0}100%{opacity:0}}
-#ld .t{font-family:'Caveat','Segoe Print',cursive;font-size:2.2rem;letter-spacing:.12em;color:#8a2020}
-@media (prefers-reduced-motion:reduce){#ld .cd .fl,#ld .cd .gl{animation:none}#ld .ln p{animation:none}#ld .ln p:first-child{opacity:1}}
-</style><div id="ld" role="status" aria-label="Loading"><div class="t">Hush</div><div class="cd" aria-hidden="true"><div class="gl"></div><div class="wx"></div><div class="wk"></div><div class="fl"></div></div><div class="bar"><i id="ldB"></i></div><div class="ln"><p class="" style="animation-delay:0.0s"><b>Tip</b>Pick her up when she fusses. Held close, she cries more quietly.</p><p class="cr" style="animation-delay:4.5s">She stopped crying at 9:14. Nobody was holding her.</p><p class="" style="animation-delay:9.0s"><b>Tip</b>Noise carries. The quieter the house, the safer you are.</p><p class="cr" style="animation-delay:13.5s">Don&#x27;t answer if it calls you by name.</p><p class="" style="animation-delay:18.0s"><b>Tip</b>Closets, beds and the pantry are good places to hide. Hold Shift to hold your breath.</p><p class="cr" style="animation-delay:22.5s">The house is older than the street it stands on.</p><p class="" style="animation-delay:27.0s"><b>Tip</b>Batteries don&#x27;t last forever. Use the flashlight when you need it.</p><p class="cr" style="animation-delay:31.5s">Something below the floor is listening.</p><p class="" style="animation-delay:36.0s"><b>Tip</b>Read what people left behind. The parents didn&#x27;t tell you everything.</p><p class="cr" style="animation-delay:40.5s">Every sitter thought they would be the one who stayed.</p></div></div>
+
 <div id="overlay" hidden><div class="box"><h1>Hush</h1><p>Click to start - WASD to move, Shift to sprint, Space to jump, mouse to look, C or Ctrl to crouch, E to open doors, use things, sit and pick her up or hide (closets, under beds, the pantry; hold Shift to hold your breath), L flashlight, M to mute</p><p id="flashOpt">F: reduce flashing (off)</p><button id="ovSet" type="button">Settings</button> <button id="ovBug" type="button">Report a bug</button><p id="bugMsg" hidden>Copied! Paste it to Claude.</p></div></div>
 <div id="title"><div class="keys">WASD move - Shift sprint - Space jump - C crouch - E use / hide - L flashlight - T skip an hour - M mute - F reduce flashing</div>
 </div><div id="tfade" hidden></div><div id="tset" hidden><h2>Settings</h2><label>Master volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Voice chat <input id="sVoice" type="range" min="0" max="1.5" step="0.05"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><label>Invert Y <input id="sInvY" type="checkbox"></label><label>Graphics <select id="sQ"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><button id="tsetClose" type="button">Done</button></div>
@@ -95,13 +101,21 @@ function show(m,quiet){if(quiet&&!dbg)return;try{n++;if(!el){el=document.createE
  el.hidden=false;el.lastChild.textContent='Hush error ('+n+'): '+String(m).slice(0,240)+' - screenshot this or use Report a bug'}catch(e){}}
 window.__showErr=show;window.__logErr=add;
 // v70 watchdog: a frame gap over 1s (page visible) is logged; over 3s it is shown on the error line
-{let lt=0;const tick=t=>{if(lt&&!document.hidden){const g=t-lt;if(g>1000){const m='long pause '+Math.round(g)+'ms ('+(window.__phase||'?')+')';add(m);if(g>3000)show(m)}}lt=document.hidden?0:t;requestAnimationFrame(tick)};requestAnimationFrame(tick);
+addEventListener('click',e=>{try{const x=e.target,k=x.id||(x.textContent||'').trim().slice(0,24)||x.tagName;window.__lastClick={k,t:performance.now()}}catch(_){}},true);
+{let lt=0;const tick=t=>{if(lt&&!document.hidden){const g=t-lt;if(g>1000){const lc=window.__lastClick,m='long pause '+Math.round(g)+'ms ('+(window.__phase||'?')+')'+(lc&&t-lc.t<4000+g?' after click: '+lc.k:'');add(m);if(g>3000)show(m)}}lt=document.hidden?0:t;requestAnimationFrame(tick)};requestAnimationFrame(tick);
  try{new PerformanceObserver(l=>l.getEntries().forEach(e=>{if(e.duration>1000)add('long task '+Math.round(e.duration)+'ms ('+(window.__phase||'?')+')')})).observe({entryTypes:['longtask']})}catch(e){}}
 if(dbg)addEventListener('DOMContentLoaded',()=>show('debug on',false))})()</script>
 <script>try{document.getElementById("ldB").style.width="12%"}catch(e){}</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>try{document.getElementById("ldB").style.width="30%"}catch(e){}</script>
-<script>
+<script>/* v72: three.js loads without blocking the parser; the game scripts below are held as text/x-hush and run in order, one per task, once both three.js and the page are here */
+(function(){let three=false,dom=document.readyState!=='loading',go=false;const bar=w=>{try{document.getElementById("ldB").style.width=w+"%"}catch(e){}};
+ function run(){if(go||!three||!dom)return;go=true;const L=[].slice.call(document.querySelectorAll('script[type="text/x-hush"]'));let i=0;
+  const step=()=>{if(i>=L.length)return;const o=L[i++],n=document.createElement('script');n.textContent=o.textContent;o.parentNode.replaceChild(n,o);setTimeout(step,0)};step()}
+ function load(src,tries){const sc=document.createElement('script');sc.src=src;sc.onload=()=>{three=true;bar(30);run()};
+  sc.onerror=()=>{if(tries>0)setTimeout(()=>load(src+(src.includes('?')?'':'?r=1'),tries-1),800);else try{window.__showErr&&__showErr('could not load three.js - check your connection and reload')}catch(e){}};document.head.appendChild(sc)}
+ load("https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",1);
+ if(!dom)document.addEventListener('DOMContentLoaded',()=>{dom=true;run()})})();</script>
+<script type="text/x-hush">try{document.getElementById("ldB").style.width="30%"}catch(e){}</script>
+<script type="text/x-hush">
 const W=8,D=7,H=2.8;const MPK=k=>window.__mp&&__mp.active?__mp.k(k):1;
 const renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
@@ -788,7 +802,7 @@ function chime(n){const t0=AC.currentTime+.2;for(let i=0;i<n;i++){[1,2.4,3.9].fo
 const LULL=[[67,.5],[67,.5],[70,1],[67,.5],[67,.5],[70,1],[67,.5],[70,.5],[75,1],[74,.75],[72,.5],[72,1],[65,.5],[67,.5],[68,1],[65,.5],[65,.5],[67,1.5]];
 function playLullaby(done){initAudio();let t=AC?AC.currentTime+.1:0,T=0;if(AC)LULL.forEach(([m,d])=>{const f=440*Math.pow(2,(m-69)/12);tone(t+T,f*2,.09,1.2,'triangle',musG);tone(t+T,f*4,.02,.6,'sine',musG);T+=d*.55});else T=8;setTimeout(done,(T+.6)*1000)}
 function musicNote(){const f=440*Math.pow(2,([67,70,74,75][Math.floor(Math.random()*4)]-69)/12)*2;const d=Math.hypot(cam.position.x,cam.position.y-1,cam.position.z+.6);tone(AC.currentTime,f,.05/(1+d*.3),1.4,'triangle',musG)}
-addEventListener('keydown',e=>{if(!window.__typing)return;const i=document.getElementById('chatIn');if(!i||e.target===i)return;e.stopImmediatePropagation();e.preventDefault();if(e.key==='Enter'||e.key==='Escape'){i.dispatchEvent(new KeyboardEvent('keydown',{key:e.key,bubbles:true}));return}if(e.key==='Backspace'){i.value=i.value.slice(0,-1);return}if(e.key.length===1&&i.value.length<120)i.value+=e.key;try{i.focus()}catch(x){}},true);// chat: keys never reach the game while typing
+addEventListener('keydown',e=>{if(!window.__typing)return;const i=document.getElementById('chatIn');if(!i||i.hidden||!i.isConnected){window.__typing=false;return}if(e.target===i)return;e.stopImmediatePropagation();e.preventDefault();if(e.key==='Enter'||e.key==='Escape'){i.dispatchEvent(new KeyboardEvent('keydown',{key:e.key,bubbles:true}));return}if(e.key==='Backspace'){i.value=i.value.slice(0,-1);return}if(e.key.length===1&&i.value.length<120)i.value+=e.key;try{i.focus()}catch(x){}},true);// chat: keys never reach the game while typing
 addEventListener('keydown',e=>{if(e.code==='KeyM'&&!(window.__mp&&__mp.active)){muted=!muted;if(outG)outG.gain.value=muted?0:.8*VOL;subtitle(muted?'Sound off':'Sound on',1200)}
 if(e.code==='KeyT'&&!e.repeat&&!paused)skipHour()});
 document.getElementById('overlay').addEventListener('click',()=>{initAudio();if(AC&&AC.state==='suspended')AC.resume()});
@@ -1575,7 +1589,12 @@ let started=false,paused=true,resumeClamp=0;const ovH=overlay.querySelector('h1'
 function setPaused(v){if(v===paused)return;paused=v;if(v){if(started){ovH.textContent='Paused';ovP.textContent='Click to resume'}if(AC&&AC.state==='running'&&!ended)AC.suspend()}else{resumeClamp=3;if(AC&&AC.state==='suspended'&&!ended)AC.resume()}}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){overlay.hidden=false;setPaused(true);if(document.pointerLockElement)document.exitPointerLock()}});
 window.__pause={get paused(){return paused},set:v=>{if(!v)started=true;overlay.hidden=!v;setPaused(v)}};
-overlay.onclick=()=>{started=true;setPaused(false);try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}overlay.hidden=true};
+// v71: Safari refuses a re-lock shortly after losing it; if the lock fails, keep the 'Click to resume' overlay instead of leaving an unlocked, stuck view
+const clearKeys=()=>{for(const k in keys)keys[k]=false};window.__clearKeys=clearKeys;
+const relockFail=()=>{if(started&&!document.pointerLockElement&&!window.__touchMode&&!ended&&!window.__dead&&!window.__tbc){clearKeys();overlay.hidden=false;setPaused(true);ovH.textContent='Paused';ovP.textContent='Click to resume'}};
+overlay.onclick=()=>{started=true;clearKeys();if(window.__typing){const ci=document.getElementById('chatIn');if(!ci||ci.hidden)window.__typing=false}setPaused(false);overlay.hidden=true;let p=null;try{p=renderer.domElement.requestPointerLock()}catch(e){}if(p&&p.catch)p.catch(()=>setTimeout(relockFail,50));else setTimeout(()=>{if(!document.pointerLockElement)relockFail()},700)};
+document.addEventListener('pointerlockerror',()=>setTimeout(relockFail,50));
+document.addEventListener('visibilitychange',clearKeys);document.addEventListener('pointerlockchange',clearKeys);
 document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement&&!ended&&!window.__dead&&!window.__tbc){overlay.hidden=false;setPaused(true);if(noteOpen)openNote(false)}});
 document.addEventListener('mousemove',e=>{if(document.pointerLockElement!==renderer.domElement)return;yaw-=e.movementX*.0022*SENS;pitch=Math.max(-1.4,Math.min(1.4,pitch-e.movementY*.0022*SENS*(window.__invY?-1:1)))});
 addEventListener('keydown',e=>{if(paused)return;keys[e.code]=true;if(e.code==='Escape'&&noteOpen)openNote(false);if(e.code==='KeyE'&&!e.repeat)interact();if(e.code==='Space'){e.preventDefault();if(!seated&&grounded&&!CARE.busy()&&!(window.__mp&&__mp.ghost)){vy=4.3;grounded=false;CARE.jump()}}});addEventListener('keyup',e=>keys[e.code]=false);addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
@@ -1596,6 +1615,10 @@ window.__tapAct=(x,y)=>{if(window.__mp&&(__mp.ghost||__mp.demon))return false;if
  let lb='';try{lb=h.object.userData.i.label}catch(e){}if(lb==='')return false;h.object.userData.i.act();return true};
 window.__target=()=>target();
 let noteOpen=false,entered=false,noteSeen=false;const noteEl=document.getElementById('note'),subEl=document.getElementById('sub');
+// v72: a visible Close button and tap-outside close (phones have no E or Esc)
+(function(){try{const b=document.createElement('button');b.type='button';b.id='noteX';b.textContent='Close';noteEl.appendChild(b);
+ const shut=e=>{e.stopPropagation();e.preventDefault&&e.preventDefault();if(noteOpen)openNote(false)};
+ b.addEventListener('click',shut);noteEl.addEventListener('click',e=>{if(e.target===noteEl)shut(e);else e.stopPropagation()})}catch(e){console.error(e)}})();
 function openNote(v,html){noteOpen=v;noteEl.hidden=!v;const pp=noteEl.querySelector('.paper');if(pp._o===undefined)pp._o=pp.innerHTML;pp.innerHTML=v&&html?html:pp._o;if(v&&!html)noteSeen=true}
 function subtitle(txt,ms){subEl.textContent=txt;subEl.hidden=false;clearTimeout(subEl._t);subEl._t=setTimeout(()=>subEl.hidden=true,ms)}
 function interact(){if((window.__mp&&(__mp.ghost||__mp.demon)))return;if(noteOpen){openNote(false);return}if(CARE.busy())return;if(seated){stand();return}const o=target()||CARE.free();if(o)o.act()}
@@ -1702,10 +1725,10 @@ const TITLE=(function(){const el=document.getElementById('title'),setEl=document
  function whisper(){if(!AC||muted)return;const t0=AC.currentTime;burst(t0,2400+Math.random()*800,3,.035,.5,'bandpass');burst(t0+.12,4200+Math.random()*900,4,.02,.35,'bandpass')}
  el.addEventListener('mousemove',e=>{if(!on)return;const k=pick(e);if(k!==hov){hov=k;dirty=true;el.style.cursor=k?'pointer':'default';if(k)whisper()}});
  el.addEventListener('pointerdown',()=>{initAudio();if(AC&&AC.state==='suspended')AC.resume()});
- el.addEventListener('click',e=>{if(!on||!setEl.hidden)return;const k=pick(e);if(k==='start'||k==='cont')begin(k==='cont');else if(k==='set')openSet(true);else if(k==='diff'){try{__xt.cycleDiff()}catch(err){}dirty=true}else if(k==='night'){try{__xt.cycleNight()}catch(err){console.error(err)}dirty=true}else if(k==='mp'){try{__mp.openLobby()}catch(err){console.error(err)}}else if(k==='hunt'){try{__xt.huntSP.start()}catch(err){console.error(err)}}});
+ el.addEventListener('click',e=>{if(!on||!setEl.hidden)return;const k=pick(e);if(k)window.__lastClick={k:'title '+k,t:performance.now()};if(k==='start'||k==='cont')begin(k==='cont');else if(k==='set')openSet(true);else if(k==='diff'){try{__xt.cycleDiff()}catch(err){}dirty=true}else if(k==='night'){try{__xt.cycleNight()}catch(err){console.error(err)}dirty=true}else if(k==='mp'){try{__mp.openLobby()}catch(err){console.error(err)}}else if(k==='hunt'){try{__xt.huntSP.start()}catch(err){console.error(err)}}});
  function openSet(v){setEl.hidden=!v}
  document.getElementById('tsetClose').onclick=()=>openSet(false);
- function begin(cont){on=false;el.style.pointerEvents='none';try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}
+ function begin(cont){if(window.__warmGate&&__warmGate(()=>begin(cont)))return;on=false;window.__phase='play';el.style.pointerEvents='none';try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}
   if(cont){try{const s=JSON.parse(localStorage.getItem('hushSave'));if(s&&s.clockT>0)clockT=s.clockT;if(s&&window.__xt)__xt.restore(s)}catch(e){console.error('[Hush] restore failed',e)}}
   const f=document.getElementById('tfade');f.hidden=false;requestAnimationFrame(()=>f.classList.add('on'));
   setTimeout(()=>{el.hidden=true;started=true;overlay.hidden=true;setPaused(false);resumeClamp=3;if(!cont&&window.__xt)try{__xt.intro()}catch(err){console.error('[Hush] intro failed',err);window.__cut=null}setTimeout(()=>{f.classList.remove('on');setTimeout(()=>f.hidden=true,1600)},200)},1300)}
@@ -1785,8 +1808,8 @@ const STR=(function(){const C=CARE.dbg;
  return{apply,remap,unstick,stats:{recs:recs.length,clusters:clusters.length,spans:recs.filter(r=>r.sp.x||r.sp.z).length,solids:srecs.length}}})();
 window.__str=STR;window.__MAP=MAP;window.__RP=RP;
 </script>
-<script>try{document.getElementById("ldB").style.width="62%"}catch(e){}</script>
-<script>
+<script type="text/x-hush">try{document.getElementById("ldB").style.width="62%"}catch(e){}</script>
+<script type="text/x-hush">
 // ===== Hush extensions: full save, difficulty, phone, lore, intro and endings =====
 // Everything lives in this IIFE so no top-level names collide with the main script.
 // The main loop calls __xt.update(dt) (gameplay frames) and __xt.cut(dt) (while window.__cut is set), each inside try/catch.
@@ -1950,7 +1973,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 #jrnl ul{list-style:none;margin:0;padding:1rem .6rem 1rem 1rem;border-right:2px solid rgba(90,60,40,.25);overflow:auto;font-size:1.25rem}#jrnl h2{margin:0 0 .4rem;font-size:1.9rem}
 #jrnl li button{all:unset;cursor:pointer;display:block;padding:.15rem .2rem;line-height:1.15}#jrnl li button:hover,#jrnl li button:focus-visible,#jrnl li button.on{color:#7a1010;text-decoration:underline}
 #jrnl li.lock{color:rgba(60,50,40,.4)}#jrnl .pg{padding:1rem 1.4rem;overflow:auto;font-size:1.3rem;line-height:1.3;min-width:0}#jrnl .pg .hd{font-weight:700;margin:.1rem 0 .5rem}
-#jrnl .x{font-family:var(--ui);font-size:.75rem;color:#5a4a3a;background:none;border:1px solid rgba(90,60,40,.4);border-radius:5px;padding:.3rem .7rem;cursor:pointer;margin-top:.8rem}
+#jrnl .x{font-family:var(--ui);font-size:.95rem;font-weight:600;color:#f4ecdc;background:#3a1e1a;border:1px solid #6a3a30;border-radius:8px;padding:.6rem 1.4rem;min-height:44px;cursor:pointer;margin-top:.8rem}
 @media (max-width:560px){#jrnl .bk{grid-template-columns:1fr}#jrnl ul{border-right:0;border-bottom:2px solid rgba(90,60,40,.25);max-height:30vh}}`;document.head.appendChild(css);
  const box_=overlay.querySelector('.box'),btn=document.createElement('button');btn.id='jBtn';btn.type='button';box_.appendChild(btn);
  const J=document.createElement('div');J.id='jrnl';J.hidden=true;J.innerHTML='<div class="bk" role="dialog" aria-label="Journal"><ul></ul><div class="pg"></div></div>';document.body.appendChild(J);
@@ -1960,7 +1983,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   const n=N.find(x=>x.id===sel);pg.innerHTML=(n?html(n):'<p class="hd">'+(found.length?'Pick a page to read it again.':'Nothing yet.')+'</p><p>'+(found.length?'':'Papers, letters and diary pages turn up around the house if you look.')+'</p>')+'<button class="x" type="button">Close journal</button>'}
  XT.journal={open(){sel=sel||found[found.length-1]||null;sync();J.hidden=false},close(){J.hidden=true},get open_(){return !J.hidden}};
  btn.addEventListener('click',e=>{e.stopPropagation();XT.journal.open()});
- J.addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('button');if(!b)return;if(b.classList.contains('x')){XT.journal.close();return}sel=b.dataset.id;sync()});
+ J.addEventListener('click',e=>{e.stopPropagation();if(e.target===J){XT.journal.close();return}const b=e.target.closest('button');if(!b)return;if(b.classList.contains('x')){XT.journal.close();return}sel=b.dataset.id;sync()});
  addEventListener('keydown',e=>{if(e.code==='Escape'&&!J.hidden){J.hidden=true}});
  new MutationObserver(sync).observe(overlay,{attributes:true,attributeFilter:['hidden']});sync();
 })();
@@ -2668,16 +2691,21 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  const J={id:null,x:0,y:0,cx:0,cy:0};window.__joy={x:0,y:0};const R0=48;
  const place=(x,y)=>{stick.style.left=x+'px';stick.style.top=y+'px'};
  function idle(){const r=L.getBoundingClientRect();place(r.left+Math.min(110,r.width*.35),r.bottom-Math.min(120,r.height*.3));knob.style.transform='';stick.classList.add('idle')}
- L.addEventListener('pointerdown',e=>{if(J.id!==null)return;e.preventDefault();J.id=e.pointerId;J.cx=e.clientX;J.cy=e.clientY;place(J.cx,J.cy);stick.classList.remove('idle');try{L.setPointerCapture(e.pointerId)}catch(err){}});
- L.addEventListener('pointermove',e=>{if(e.pointerId!==J.id)return;let dx=e.clientX-J.cx,dy=e.clientY-J.cy;const d=Math.hypot(dx,dy);if(d>R0){dx*=R0/d;dy*=R0/d}knob.style.transform='translate('+dx+'px,'+dy+'px)';
+ L.addEventListener('pointerdown',e=>{if(J.id!==null&&J.id!==e.pointerId&&performance.now()-(J.t||0)<600)return;e.preventDefault();J.id=e.pointerId;J.t=performance.now();J.cx=e.clientX;J.cy=e.clientY;place(J.cx,J.cy);stick.classList.remove('idle');try{L.setPointerCapture(e.pointerId)}catch(err){}});
+ L.addEventListener('pointermove',e=>{if(e.pointerId!==J.id)return;J.t=performance.now();let dx=e.clientX-J.cx,dy=e.clientY-J.cy;const d=Math.hypot(dx,dy);if(d>R0){dx*=R0/d;dy*=R0/d}knob.style.transform='translate('+dx+'px,'+dy+'px)';
   window.__joy=XT.hide&&XT.hide.hid?{x:0,y:0}:{x:dx/R0,y:dy/R0}});
- const jEnd=e=>{if(e.pointerId!==J.id)return;J.id=null;window.__joy={x:0,y:0};idle()};L.addEventListener('pointerup',jEnd);L.addEventListener('pointercancel',jEnd);
+ const jEnd=e=>{if(e.pointerId!==J.id)return;J.id=null;window.__joy={x:0,y:0};idle()};L.addEventListener('pointerup',jEnd);L.addEventListener('pointercancel',jEnd);L.addEventListener('lostpointercapture',jEnd);
  // --- right side: drag to look (a quick tap there does nothing, so look and buttons never fight) ---
  const lookP=new Map();
  Rz.addEventListener('pointerdown',e=>{e.preventDefault();lookP.set(e.pointerId,{x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t0:performance.now()});try{Rz.setPointerCapture(e.pointerId)}catch(err){}});
  Rz.addEventListener('pointermove',e=>{const p=lookP.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;if(paused||(window.__cut&&!window.__fightMv&&!window.__dmFightTouch))return;
   const k=.0052*(typeof SENS==='number'?SENS:1);yaw-=dx*k;pitch=Math.max(-1.4,Math.min(1.4,pitch-dy*k*(window.__invY?-1:1)))});
- const lEnd=e=>{const p=lookP.get(e.pointerId);lookP.delete(e.pointerId);if(e.type==='pointerup'&&p&&p.t0&&performance.now()-p.t0<450&&Math.hypot(p.x-p.sx,p.y-p.sy)<10)safe(()=>window.__tapAct&&__tapAct(p.sx,p.sy),'tap')};Rz.addEventListener('pointerup',lEnd);Rz.addEventListener('pointercancel',lEnd);
+ const lEnd=e=>{const p=lookP.get(e.pointerId);lookP.delete(e.pointerId);if(e.type==='pointerup'&&p&&p.t0&&performance.now()-p.t0<450&&Math.hypot(p.x-p.sx,p.y-p.sy)<10)safe(()=>window.__tapAct&&__tapAct(p.sx,p.sy),'tap')};Rz.addEventListener('pointerup',lEnd);Rz.addEventListener('pointercancel',lEnd);Rz.addEventListener('lostpointercapture',lEnd);
+ // v71: a missed touchend (iOS/iPadOS after a long stall, app switch or system gesture) used to leave the stick owned by a dead touch, so movement stopped; reset everything
+ const tReset=()=>{J.id=null;window.__joy={x:0,y:0};lookP.clear();safe(idle,'idle');tc.querySelectorAll('#tcB button.on').forEach(b=>{if(b.dataset.k)key(b.dataset.k,false);if(b.dataset.h)window.__holdBreath=0;b.classList.remove('on')})};XT.touchReset=tReset;
+ addEventListener('blur',tReset);addEventListener('pagehide',tReset);document.addEventListener('visibilitychange',tReset);
+ // after a long stall a new finger may take the stick over (see the 600 ms rule in pointerdown); a held finger keeps working
+ document.addEventListener('pointerup',e=>{if(e.pointerType==='touch'&&e.pointerId===J.id)jEnd(e)},true);
  // --- buttons ---
  tc.querySelectorAll('#tcB button').forEach(b=>{
   b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();try{b.setPointerCapture(e.pointerId)}catch(err){}
@@ -3154,8 +3182,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  b.addEventListener('click',e=>{e.stopPropagation();XT.help.open()});
 })();
 </script>
-<script>try{document.getElementById("ldB").style.width="78%"}catch(e){}</script>
-<script>
+<script type="text/x-hush">try{document.getElementById("ldB").style.width="78%"}catch(e){}</script>
+<script type="text/x-hush">
 // ===== 16. Play together: online multiplayer (up to 4) over WebRTC with PeerJS and its free public broker =====
 // The host runs the night (clock, the baby, noise, events, the demon, the house) and sends absolute state 10x a second.
 // Everyone else sends their own position and what they changed (intents); the host applies or refuses them.
@@ -3823,8 +3851,8 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
 })();
 
 </script>
-<script>try{document.getElementById("ldB").style.width="88%"}catch(e){}</script>
-<script>
+<script type="text/x-hush">try{document.getElementById("ldB").style.width="88%"}catch(e){}</script>
+<script type="text/x-hush">
 // ===== 17. Settings: voice volume, invert Y, graphics quality (Low / Medium / High). Saved in localStorage. =====
 (function(){'use strict';const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush set] '+(t||''),e)}};
  const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
@@ -3832,13 +3860,16 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  const small=Math.min(screen.width||999,screen.height||999)<700;
  const QS={low:{pr:.8,prMax:1,sh:false,far:45,fog:.055,pts:5},medium:{pr:1.25,prMax:1.25,sh:true,soft:false,map:512,far:90,fog:0,pts:8},high:{pr:1.5,prMax:1.5,sh:true,soft:true,map:0,far:160,fog:0,pts:14}};
  let q=ls.get('hushQ');const qSaved=!!QS[q];if(!qSaved)q=touch?(small?'low':'medium'):(/Firefox\//.test(navigator.userAgent)?'medium':'high');
+ // v72: guess the GPU before anything compiles, so a later slow-frame step-down never changes shader-baked state (shadow type) and never re-warms
+ if(!qSaved&&q==='high')try{const ua=navigator.userAgent,gl=renderer.getContext(),x=gl.getExtension('WEBGL_debug_renderer_info'),g=String(x?gl.getParameter(x.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER));
+  if(/Safari\//.test(ua)&&!/Chrome|Chromium|Edg\//.test(ua)||/Intel|SwiftShader|llvmpipe|Software|Mali|Adreno|PowerVR/i.test(g))q='medium'}catch(e){}
  const v=parseFloat(ls.get('hushVoice'));window.__voiceVol=v>=0?v:1;window.__invY=ls.get('hushInvY')==='1';
  const SET={get q(){return q},QS,touch,qSaved};window.__set=SET;
  const mapSz=new Map();
  function matsDirty(sc){sc.traverse(o=>{const m=o.material;if(!m)return;(Array.isArray(m)?m:[m]).forEach(x=>x.needsUpdate=true)})}
- function apply(nq){if(QS[nq])q=nq;const c=QS[q],dpr=window.devicePixelRatio||1;
+ function apply(nq,lite){if(QS[nq])q=nq;const c=QS[q],dpr=window.devicePixelRatio||1;
   safe(()=>{renderer.setPixelRatio(q==='low'?Math.min(dpr,c.prMax)*c.pr:Math.min(dpr,c.prMax));renderer.setSize(innerWidth,innerHeight)},'pr');
-  safe(()=>{const want=c.sh,typ=c.soft?THREE.PCFSoftShadowMap:THREE.PCFShadowMap,ch=renderer.shadowMap.enabled!==want||renderer.shadowMap.type!==typ;
+  safe(()=>{const want=lite?renderer.shadowMap.enabled:c.sh,typ=lite?renderer.shadowMap.type:c.soft?THREE.PCFSoftShadowMap:THREE.PCFShadowMap,ch=renderer.shadowMap.enabled!==want||renderer.shadowMap.type!==typ;
    renderer.shadowMap.enabled=want;renderer.shadowMap.type=typ;
    scene.traverse(o=>{if(o.isLight&&o.shadow&&o.castShadow){if(!mapSz.has(o))mapSz.set(o,o.shadow.mapSize.x);const sz=c.map?Math.min(c.map,mapSz.get(o)):mapSz.get(o);
     if(o.shadow.mapSize.x!==sz){o.shadow.mapSize.set(sz,sz);if(o.shadow.map){o.shadow.map.dispose();o.shadow.map=null}}}});
@@ -3848,10 +3879,21 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  SET.apply=apply;
  // fog floor on Low hides the shorter draw distance; applied only while rendering so the game's own fog logic is untouched
  const R0=renderer.render.bind(renderer);
- renderer.render=function(sc,c){const f=QS[q].fog;if(f&&sc===scene&&sc.fog&&sc.fog.density!==undefined){const d=sc.fog.density;sc.fog.density=Math.max(d,f);try{R0(sc,c)}finally{sc.fog.density=d}}else R0(sc,c)};
+ // v71 light padding: three.js bakes the number of visible lights of each kind (and how many cast shadows) into every shader,
+ // so a prop, car or demon appearing with its light, or the light budget swapping lights, recompiled the whole house mid-game
+ // (8 s on Safari). Each scene keeps a high-water count per kind and tops it up with dark, shadowless-in-practice dummies, so counts never change.
+ const PADK={PointLight:1,SpotLight:1,DirectionalLight:1,HemisphereLight:1},padT=new Map();let padGrow=0;
+ function mkPad(t,sh){const L=t==='PointLight'?new THREE.PointLight(0,0,.001):t==='SpotLight'?new THREE.SpotLight(0,0,.001):t==='DirectionalLight'?new THREE.DirectionalLight(0,0):new THREE.HemisphereLight(0,0,0);
+  L.position.set(0,-900,0);L.userData.__pad=1;if(sh){L.castShadow=true;L.shadow.mapSize.set(1,1);const c=L.shadow.camera;if(c.isOrthographicCamera){c.left=c.bottom=-.001;c.right=c.top=.001}c.near=.001;c.far=.002;c.updateProjectionMatrix()}if(L.target)L.target.position.set(0,-901,0);return L}
+ function pad(sc){let P=padT.get(sc);if(!P){P={T:{},pool:{},g:new THREE.Group()};P.g.name='__lightPad';P.g.userData.__pad=1;sc.add(P.g);padT.set(sc,P)}
+  const n={};sc.traverseVisible(o=>{if(o.isLight&&!o.userData.__pad&&PADK[o.type]){const k=o.type+(o.castShadow?'S':'');n[k]=(n[k]||0)+1}});
+  for(const k in n)if(n[k]>(P.T[k]||0)){if(P.T[k]!==undefined&&window.__phase==='play'&&padGrow++<5)try{window.__logErr&&__logErr('lights grew '+k+' '+P.T[k]+'->'+n[k])}catch(e){}P.T[k]=n[k]}
+  for(const k in P.T){const want=P.T[k]-(n[k]||0),pl=P.pool[k]||(P.pool[k]=[]);while(pl.length<want){const sh=k.endsWith('S'),L=mkPad(sh?k.slice(0,-1):k,sh);pl.push(L);P.g.add(L);if(L.target)P.g.add(L.target)}pl.forEach((L,i)=>L.visible=i<want)}}
+ SET.pad=pad;
+ renderer.render=function(sc,c){try{if(sc&&sc.isScene)pad(sc)}catch(e){}const f=QS[q].fog;if(f&&sc===scene&&sc.fog&&sc.fog.density!==undefined){const d=sc.fog.density;sc.fog.density=Math.max(d,f);try{R0(sc,c)}finally{sc.fog.density=d}}else R0(sc,c)};
  // light budget: only the nearest N point lights in the house are live. The count never changes, so no shaders recompile.
  let pts=[],lastPick=0,lastCol=0;const wp=new THREE.Vector3();
- function collect(){pts=[];scene.traverse(o=>{if(o.isPointLight){let p=o.parent,onCam=false;while(p){if(p===cam)onCam=true;p=p.parent}if(!onCam)pts.push(o)}})}
+ function collect(){pts=[];scene.traverse(o=>{if(o.isPointLight&&!o.userData.__pad){let p=o.parent,onCam=false;while(p){if(p===cam)onCam=true;p=p.parent}if(!onCam)pts.push(o)}})}
  function budget(){const now=performance.now();if(now-lastCol>4000){lastCol=now;collect()}if(now-lastPick<250)return;lastPick=now;
   const K=Math.min(QS[q].pts,pts.length);if(K>=pts.length){pts.forEach(l=>{if(l.userData.__cull){l.visible=true;l.userData.__cull=0}});return}
   const cp=cam.position,sc=pts.map(l=>{l.getWorldPosition(wp);const d=wp.distanceTo(cp);return{l,s:(l.intensity>0.01?0:100)+d}}).sort((a,b)=>a.s-b.s);
@@ -3872,8 +3914,8 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
 })();
 
 </script>
-<script>try{document.getElementById("ldB").style.width="94%"}catch(e){}</script>
-<script>
+<script type="text/x-hush">try{document.getElementById("ldB").style.width="94%"}catch(e){}</script>
+<script type="text/x-hush">
 // ===== 18. Achievements: saved in localStorage, a toast when one unlocks, a list on the title screen. Hidden ones stay "???" =====
 (function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush ach] '+(t||''),e)}};
  const A=[
@@ -3940,8 +3982,8 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
 })();
 </script>
 
-<script>(function(){const btn=document.getElementById('ovBug'),msg=document.getElementById('bugMsg');if(!btn)return;
-function report(){const L=['Hush bug report','Version: v70','Time: '+new Date().toISOString()];
+<script type="text/x-hush">(function(){const btn=document.getElementById('ovBug'),msg=document.getElementById('bugMsg');if(!btn)return;
+function report(){const L=['Hush bug report','Version: v72','Time: '+new Date().toISOString()];
  try{const p=cam.getWorldPosition(new THREE.Vector3());L.push('Position: '+[p.x,p.y,p.z].map(v=>v.toFixed(2)).join(', '))}catch(e){L.push('Position: ?')}
  const m=window.__mp;let mode='Single-player',n=1;try{if(m&&m.active){mode=m.mode==='hunt'?'Hunt':'Co-op';n=m.roster().length;if(m.demon)mode+=' (demon)';else if(m.ghost)mode+=' (ghost)'}}catch(e){}
  L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
@@ -3956,7 +3998,7 @@ btn.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();const t=
  b.addEventListener('click',e=>{e.stopPropagation();const t=report();window.__lastReport=t;const fb=()=>{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(x){}a.remove();ok()};try{navigator.clipboard.writeText(t).then(ok,fb)}catch(x){fb()}});
  b.addEventListener('mousemove',e=>e.stopPropagation());tl.appendChild(b);tl.appendChild(tm)}}
 btn.addEventListener('mousedown',e=>e.stopPropagation());btn.addEventListener('pointerdown',e=>e.stopPropagation())})()</script>
-<script>
+<script type="text/x-hush">
 // ===== 19. Hunt: a multiplayer mode where one player is the snake demon and the rest are babysitters =====
 // The host picks the mode in the lobby (locked until the host has found the snake-scale mask, or ?hunt=1). A random player is the demon.
 // The AI demon is off (no sightings, hunts, prowls or traps). The demon player stalks, flickers lights, hisses and climbs the ceiling,
@@ -4389,23 +4431,40 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  XT.hunt={ST,get av(){return av},get skill(){return skI},pickSkill,act,claw,useE,hits,setHiss,huntUnlocked:()=>huntUnlocked()};
 })();
 </script>
-<script>(function(){const el=document.getElementById("ld");if(!el)return;const b=document.getElementById("ldB"),bar=w=>{if(b)b.style.width=w+"%"};const lg=m=>{try{window.__logErr&&__logErr(m)}catch(e){}};
- // v70: heavy work happens here, behind the loading screen, so the title never stalls on a click
+<script type="text/x-hush">(function(){const el=document.getElementById("ld");if(!el)return;const b=document.getElementById("ldB"),bar=w=>{if(b)b.style.width=w+"%"};const lg=m=>{try{window.__logErr&&__logErr(m)}catch(e){}};
+ // v72: only the title is built behind the loader; the house warms in small slices while the title is up, and Start waits only if that has not finished
  const fade=()=>{window.__phase="title";bar(100);requestAnimationFrame(()=>requestAnimationFrame(()=>{el.classList.add("out");setTimeout(()=>{el.remove();const c=document.getElementById("ldCss");if(c)c.remove()},900)}))};
- const steps=[
+ const T=()=>window.__title,LT=window.__loadT={};const t0=performance.now();
+ const redrawTitle=()=>{const t=T();if(t){const p=renderer.getRenderTarget();try{renderer.setRenderTarget(null);renderer.render(t.dbg.sc,t.dbg.tc)}finally{renderer.setRenderTarget(p)}}};
+ const pre=[
   ()=>{window.__phase="lights";window.__set&&__set.cull&&__set.cull()},
-  ()=>{window.__phase="compile title";const T=window.__title;if(T)renderer.compile(T.dbg.sc,T.dbg.tc)},
-  ()=>{window.__phase="compile house";renderer.compile(scene,cam)},
-  ()=>{window.__phase="warm house";warmHouse()},
-  ()=>{window.__phase="warm up";const T=window.__title;if(T)renderer.render(T.dbg.sc,T.dbg.tc)}];
- // one real render of the house into a tiny target, so every program (lights, shadows, fog, camera-held items) is built now, not on Start
- function warmHouse(){const rt=new THREE.WebGLRenderTarget(64,64),prev=renderer.getRenderTarget(),hid=[],fc=[];
-  // hidden props (lights stay as they are, so the light count matches play) are shown for this one frame
-  scene.traverse(o=>{if(!o.visible&&!o.isLight){hid.push(o);o.visible=true}if(o.isMesh&&o.frustumCulled){fc.push(o);o.frustumCulled=false}});
-  try{renderer.setRenderTarget(rt);renderer.render(scene,cam);hid.forEach(o=>o.visible=false);renderer.render(scene,cam)}finally{hid.forEach(o=>o.visible=false);fc.forEach(o=>o.frustumCulled=true);renderer.setRenderTarget(prev);rt.dispose()}}
- let i=0;const t0=performance.now();
- const next=()=>{if(i>=steps.length){lg("startup "+Math.round(performance.now()-t0)+"ms");probe();return}const s=performance.now();try{steps[i]()}catch(e){console.error("[Hush] loading step "+i,e)}const d=performance.now()-s;if(d>800)lg("loading step "+i+" took "+Math.round(d)+"ms");i++;bar(88+i*3);setTimeout(next,30)};
- // measure a second of title frames; if they are slow and the player never picked a quality, step quality down
- const probe=()=>{window.__phase="probe";const S=window.__set;let n=0,st=0,lt=0;const f=t=>{if(lt)st+=t-lt;lt=t;n++;if(n<40)requestAnimationFrame(f);else{const avg=st/(n-1);
-   try{if(S&&!S.qSaved&&avg>28&&S.q!=="low"){const nq=S.q==="high"?"medium":"low";S.apply(nq);const sq=document.getElementById("sQ");if(sq)sq.value=nq;lg("slow frames ("+Math.round(avg)+"ms), quality -> "+nq);S.cull&&S.cull();window.__phase="warm house";warmHouse()}}catch(e){console.error(e)}fade()}};requestAnimationFrame(f)};
- bar(88);setTimeout(next,30)})();</script>
+  ()=>{window.__phase="compile title";const t=T();if(t)renderer.compile(t.dbg.sc,t.dbg.tc)},
+  ()=>{window.__phase="warm title";redrawTitle()}];
+ // the house: hidden props are shown (lights stay as they are, so the light count matches play) and drawn a few objects per slice
+ let H=null;const rt=new THREE.WebGLRenderTarget(64,64);
+ function houseBegin(){const st=[],R=[];scene.traverse(o=>{if(o.isLight)return;st.push([o,o.visible,o.frustumCulled]);o.visible=true;o.frustumCulled=false;if(o.isMesh||o.isPoints||o.isLine||o.isSprite)R.push(o)});return{st,R}}
+ function houseEnd(h){h.st.forEach(([o,v,f])=>{o.visible=v;o.frustumCulled=f})}
+ function draw(){const p=renderer.getRenderTarget();try{for(const t of [null,rt]){renderer.setRenderTarget(t);renderer.render(scene,cam)}}finally{renderer.setRenderTarget(p)}}
+ // one slice: draw only objects [a,b) (canvas and offscreen: Safari builds a pipeline per target), then restore everything and redraw the title over the canvas
+ function slice(a,n){const h=houseBegin();let end=a;try{h.R.forEach(o=>o.visible=false);const seen=new Set();for(;end<h.R.length&&seen.size<n;end++){const o=h.R[end],m=o.material;(Array.isArray(m)?m:[m]).forEach(x=>x&&seen.add(x.type+(x.onBeforeCompile&&x.onBeforeCompile.toString!==Function.prototype.toString?x.uuid:'')+'|'+!!x.map+!!x.envMap+!!x.emissiveMap+!!x.normalMap+o.receiveShadow+(x.vertexColors?1:0)+(o.isSkinnedMesh?1:0)));o.visible=true}draw()}finally{houseEnd(h)}redrawTitle();return{end,total:h.R.length}}
+ function full(){const h=houseBegin();try{draw();h.st.forEach(([o,v])=>{if(!o.isLight)o.visible=v});draw()}finally{houseEnd(h)}redrawTitle()}
+ const bg=[];let bi=0,pos=0,done=false,waiters=[],busy=false;
+ bg.push(()=>{window.__phase=window.__phase==="title"?"title":window.__phase;const r=slice(pos,3);pos=r.end;LT.sliceN=(LT.sliceN||0)+1;return pos<r.total}); // repeats until every object has been drawn
+ bg.push(()=>{full();return false});
+ bg.push(()=>{const R=window.__rlm;if(R&&R.scene){const p=renderer.getRenderTarget();try{renderer.setRenderTarget(null);renderer.render(R.scene,cam)}finally{renderer.setRenderTarget(p)}redrawTitle()}try{renderer.compile(pScene,pCam)}catch(e){}return false});
+ const idle=f=>window.requestIdleCallback?requestIdleCallback(f,{timeout:120}):setTimeout(f,16);
+ let wStart=0;
+ function bgStep(){if(done)return;if(!wStart)wStart=performance.now();busy=true;const s=performance.now();let again=false;try{again=bg[bi]()}catch(e){console.error("[Hush] warm step "+bi,e);again=false}busy=false;const d=performance.now()-s;if(d>800)lg("warm slice "+bi+" took "+Math.round(d)+"ms");
+  if(!again)bi++;prog();if(bi>=bg.length){done=true;rt.dispose();LT.warm=Math.round(performance.now()-wStart);LT.ready=Math.round(performance.now()-t0);lg("house warm "+LT.warm+"ms, ready at "+LT.ready+"ms, programs "+renderer.info.programs.length);setTimeout(probe,300);const w=waiters;waiters=[];w.forEach(f=>{try{f()}catch(e){console.error(e)}});return}
+  if(waiters.length)setTimeout(bgStep,0);else idle(bgStep)}
+ // Start while the house is still warming: a short bar, then the game starts by itself
+ let gate=null;function prog(){if(gate){const R=scene?0:0;gate.firstChild.nextSibling.firstChild.style.width=Math.min(100,Math.round((bi+ (bi===0?0:0))*30+10))+"%"}}
+ window.__warmGate=cb=>{if(done)return false;waiters.push(()=>{if(gate){gate.remove();gate=null}cb()});if(!gate){gate=document.createElement("div");gate.setAttribute("role","status");gate.style.cssText="position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;gap:1rem;align-items:center;justify-content:center;background:rgba(6,5,8,.86);color:#cfc4b4;font:.9rem system-ui,-apple-system,sans-serif;padding:16px";
+  gate.innerHTML='<div>Preparing the house...</div><div style="width:min(16rem,70vw);height:3px;background:#1e1a20;border-radius:2px;overflow:hidden"><i style="display:block;height:100%;width:10%;background:#8a2020;transition:width .3s"></i></div>';document.body.appendChild(gate);prog()}window.__phase="preparing";if(!busy)setTimeout(bgStep,0);return true};
+ let i=0;
+ const next=()=>{if(i>=pre.length){LT.title=Math.round(performance.now()-t0);lg("title at "+LT.title+"ms");fade();setTimeout(()=>idle(bgStep),400);return}const s=performance.now();try{pre[i]()}catch(e){console.error("[Hush] loading step "+i,e)}const d=performance.now()-s;if(d>800)lg("loading step "+i+" took "+Math.round(d)+"ms");i++;bar(88+i*4);setTimeout(next,16)};
+ // measure title frames; if slow and the player never picked a quality, step down resolution and shadow-map size only (nothing recompiles)
+ const probe=()=>{const S=window.__set;let n=0,st=0,lt=0;const f=t=>{if(lt)st+=t-lt;lt=t;n++;if(n<40)requestAnimationFrame(f);else{const avg=st/(n-1);
+   try{if(S&&!S.qSaved&&avg>28&&S.q!=="low"){const nq=S.q==="high"?"medium":"low";S.apply(nq,true);const sq=document.getElementById("sQ");if(sq)sq.value=nq;lg("slow frames ("+Math.round(avg)+"ms), quality -> "+nq+" (resolution/shadow size only)");S.cull&&S.cull()}}catch(e){console.error(e)}}};requestAnimationFrame(f)};
+ bar(88);setTimeout(next,16)})();
+</script>
