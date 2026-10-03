@@ -929,7 +929,19 @@ const milk=cyl(.026,.026,.1,M(0xf8f4ec),0,-.015,0,8,heldB);
 // ---- first-person care animations (hands, props, poses); they run inside timed actions, so pause freezes them ----
 const V3=(x,y,z)=>new THREE.Vector3(x,y,z),sm3=k=>{k=Math.max(0,Math.min(1,k));return k*k*(3-2*k)},seg=(k,a,b)=>Math.max(0,Math.min(1,(k-a)/(b-a)));
 const HND=new THREE.Group();cam.add(HND);HND.visible=false;const skinH=M(0xe8c0a0),sleeveM=M(0x4a5a78);
-const mkHand=sd=>{const h=new THREE.Group();box(.075,.028,.1,skinH,0,0,0,h);box(.068,.024,.06,skinH,0,-.004,-.075,h);box(.024,.022,.05,skinH,sd*.045,0,-.02,h).rotation.y=sd*.5;box(.065,.06,.14,sleeveM,0,-.01,.13,h);HND.add(h);return h};
+// a jointed hand: palm, four two-part fingers, a thumb, the wrist and a sleeve with a cuff. Fingers point -z, the palm faces down.
+// grip(c,th): c = finger curl (0 open .. 1 fist), th = thumb across. Grips: open, cradle (her weight on your palm), hold (a bottle, a rattle, the bear), pat.
+const knuckM=M(0xdcae90),cuffM=M(0x3a4862);
+const mkHand=sd=>{const h=new THREE.Group(),F=[];
+ box(.074,.026,.078,skinH,0,0,-.006,h);box(.07,.024,.03,knuckM,0,.001,-.046,h);box(.058,.03,.05,skinH,0,-.002,.045,h);// palm, knuckles, wrist
+ [[-.026,.034,.9],[-.009,.038,1],[.009,.036,.97],[.026,.03,.85]].forEach(([x,l,k])=>{const f=new THREE.Group();f.position.set(x*sd,0,-.058);h.add(f);
+  box(.016,.017,l,skinH,0,0,-l/2,f);const d=new THREE.Group();d.position.z=-l;f.add(d);box(.0145,.015,l*.75,skinH,0,-.001,-l*.37,d);box(.011,.004,.01,M(0xf0d0c0),0,.008,-l*.62,d);F.push({f,d,k})});
+ const th=new THREE.Group();th.position.set(sd*.038,-.004,-.012);th.rotation.y=sd*.55;h.add(th);box(.019,.019,.034,skinH,0,0,-.017,th);const td=new THREE.Group();td.position.z=-.034;th.add(td);box(.017,.017,.026,skinH,0,0,-.013,td);
+ box(.072,.066,.13,sleeveM,0,-.006,.135,h);box(.078,.072,.026,cuffM,0,-.006,.072,h);
+ h.userData.c=.2;h.userData.t=.2;h.userData.grip=(c,t)=>{const u=h.userData;u.c+=(c-u.c)*.35;u.t+=(t-u.t)*.35;
+  F.forEach(({f,d,k})=>{f.rotation.x=-u.c*1.25*k;d.rotation.x=-u.c*1.35*k});th.rotation.x=-u.t*.5;th.rotation.z=-sd*u.t*.6;td.rotation.x=-u.t*.7};
+ h.userData.grip(.2,.2);HND.add(h);return h};
+const GRIP={open:[.12,.15],cradle:[.38,.25],hold:[1,.85],pat:[.05,.1]};
 const hL=mkHand(1),hR=mkHand(-1);
 const PROPS=new THREE.Group();cam.add(PROPS);
 const rattle=new THREE.Group();cyl(.008,.008,.12,M(0xf0d080),0,-.06,0,6,rattle);sph(.035,M(0xf0a0b8),0,.02,0,1,1,1,rattle);sph(.012,M(0xa8d8f0),0,.062,0,1,1,1,rattle);PROPS.add(rattle);
@@ -951,7 +963,13 @@ function toWorld(){if(bb.parent!==scene){cam.updateMatrixWorld();bb.updateMatrix
 function setPose(a,b,k){const e=sm3(k);bb.position.lerpVectors(a.p,b.p,e);bb.quaternion.copy(a.q).slerp(b.q,e);bb.scale.setScalar(a.s+(b.s-a.s)*e)}
 function atBB(x,y,z){cam.updateMatrixWorld();bb.updateMatrixWorld(true);const v=cam.worldToLocal(bb.localToWorld(V3(x,y,z)));if(v.length()>.95)v.setLength(.95);return v}
 function lookTo(p,r){const dx=p.x-cam.position.x,dy=p.y-cam.position.y,dz=p.z-cam.position.z;const ty=Math.atan2(-dx,-dz),tp=Math.atan2(dy,Math.hypot(dx,dz));let d=ty-yaw;d=Math.atan2(Math.sin(d),Math.cos(d));yaw+=d*r;pitch+=(tp-pitch)*r}
-function hands(l,r){HND.visible=true;hL.visible=!!l;hR.visible=!!r;if(l)hL.position.copy(l);if(r)hR.position.copy(r);hL.rotation.set(0,0,0);hR.rotation.set(0,0,0)}
+function hands(l,r,gl,gr){HND.visible=true;hL.visible=!!l;hR.visible=!!r;if(l)hL.position.copy(l);if(r)hR.position.copy(r);hL.rotation.set(0,0,0);hR.rotation.set(0,0,0);
+ // what each hand is doing: closed round the bottle or a toy, cupped under her, open otherwise
+ const near=(p,o)=>o.visible&&p&&p.distanceTo(o.position)<.16;
+ const pick=p=>near(p,heldB)||near(p,rattle)||near(p,plush)?'hold':p&&bb.parent===cam&&p.distanceTo(bb.position)<.45?'cradle':'open';
+ const L=GRIP[gl||pick(l)]||GRIP.open,R=GRIP[gr||pick(r)]||GRIP.open;hL.userData.grip(L[0],L[1]);hR.userData.grip(R[0],R[1]);
+ // a slight natural turn of the wrists toward the middle
+ hL.rotation.z=-.12;hR.rotation.z=.12}window.__hands=hands;
 function resetAnim(){HND.visible=false;rattle.visible=plush.visible=false;flapG.visible=oldD.visible=wipeB.visible=false;bArms.forEach(a=>a.rotation.set(0,0,0));
  heldB.position.set(-.3,-.36,-.55);heldB.rotation.set(0,0,.25);milk.scale.y=1;milk.position.y=-.015}
 function giggle(){if(!AC)return;const dst=spat(babyPos()),t0=AC.currentTime;if(window.__bv){try{__bv.giggle(dst);return}catch(e){console.error(e)}}for(let i=0;i<4;i++){const o=AC.createOscillator();o.type='sine';const f0=720+i*50+Math.random()*90;o.frequency.setValueAtTime(f0,t0+i*.11);o.frequency.linearRampToValueAtTime(f0*1.4,t0+i*.11+.07);env(o,.05,t0+i*.11,.01,.08,dst);o.start(t0+i*.11);o.stop(t0+i*.11+.14)}}
@@ -980,7 +998,7 @@ function seatFeedAnim(done){const home=V3(-.3,-.36,-.55),q0=new THREE.Quaternion
   hands(null,heldB.position.clone().add(V3(.02,-.02,.03)));if(AC&&tilt>.9&&lvl>0&&(sk+=dt)>.55){sk=0;burst(AC.currentTime,520,5,.018,.07,'bandpass')}})}
 function burpAnim(done){const P1=V3(.24,-.2,-.46),Q1=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,-Math.PI/2,-Math.PI/2,'YXZ'));let burped=false;
  start('Burping her',3.2,()=>{inArms();done()},(k,t,dt)=>{const e=sm3(k*3.5)*(1-sm3(seg(k,.88,1)));bb.position.lerpVectors(ARM_P,P1,e);bb.quaternion.copy(ARM_Q).slerp(Q1,e);
-  const patting=k>.3&&k<.8,ph=patting?Math.max(0,Math.sin(t*10)):0;hands(atBB(.1,-.08,.1),atBB(.02,-.13-.05*ph,0));
+  const patting=k>.3&&k<.8,ph=patting?Math.max(0,Math.sin(t*10)):0;hands(atBB(.1,-.08,.1),atBB(.02,-.13-.05*ph,0),null,'pat');
   if(patting&&AC&&tick(t,dt,Math.PI*2/10))burst(AC.currentTime,160,1.5,.06,.06,'lowpass');
   if(!burped&&k>.82){burped=true;if(AC){burst(AC.currentTime,300,2,.07,.14,'bandpass');burst(AC.currentTime+.02,180,3,.05,.1,'bandpass')}subtitle('*urp*',1200)}})}
 function playAnim(done){const v=stats.plays%3;let gT=0,g1=false,g2=false;
