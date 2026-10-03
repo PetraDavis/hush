@@ -57,7 +57,7 @@ canvas{display:block}
 #prog{position:fixed;left:50%;top:58%;transform:translateX(-50%);width:180px;text-align:center;pointer-events:none;font-family:var(--ui);font-size:.72rem;color:var(--accent)}
 #prog div{height:4px;background:rgba(255,255,255,.14);border-radius:2px;overflow:hidden;margin-bottom:.35rem}#prog b{display:block;height:100%;width:0;background:var(--accent)}
 #hint{position:fixed;left:50%;top:55%;transform:translateX(-50%);font-family:var(--ui);font-size:.75rem;color:var(--accent);pointer-events:none}
-#title{position:fixed;inset:0;z-index:7;background:transparent;font-family:'Caveat','Segoe Print',cursive}#title .keys{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-family:var(--ui);font-size:.72rem;color:#6a6258;padding:0 16px;pointer-events:none}
+#title{position:fixed;inset:0;z-index:7;background:transparent;font-family:'Caveat','Segoe Print',cursive}@media (max-height:1000px){#title .keys{display:none}}#title .keys{position:absolute;left:0;right:0;bottom:14px;text-align:center;font-family:var(--ui);font-size:.72rem;color:#6a6258;padding:0 16px;pointer-events:none}
 #tset{position:fixed;z-index:9;max-height:calc(100% - 24px);overflow:auto;box-sizing:border-box;font-family:'Caveat','Segoe Print',cursive;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-1.2deg);width:min(24rem,calc(100% - 32px));background:#efe4cb;color:#1e1a2a;padding:1.2rem 1.5rem;box-shadow:0 10px 40px rgba(0,0,0,.7);font-size:1.6rem;display:flex;flex-direction:column;gap:.7rem}
 #tset h2{margin:0;font-size:2.2rem;font-weight:700}#tset label{display:flex;align-items:center;justify-content:space-between;gap:1rem}#tset input[type=range]{width:55%;accent-color:#3a2a2a}#tset input[type=checkbox]{width:1.2rem;height:1.2rem;accent-color:#3a2a2a}
 #tset select{font:inherit;font-size:1.3rem;background:#f6eedb;color:#1e1a2a;border:1px solid #8a7a6a;border-radius:4px}
@@ -109,7 +109,9 @@ if(dbg)addEventListener('DOMContentLoaded',()=>show('debug on',false))})()</scri
 <script>/* v72: three.js loads without blocking the parser; the game scripts below are held as text/x-hush and run in order, one per task, once both three.js and the page are here */
 (function(){let three=false,dom=document.readyState!=='loading',go=false;const bar=w=>{try{document.getElementById("ldB").style.width=w+"%"}catch(e){}};
  function run(){if(go||!three||!dom)return;go=true;const L=[].slice.call(document.querySelectorAll('script[type="text/x-hush"]'));let i=0;
-  const step=()=>{if(i>=L.length)return;const o=L[i++],n=document.createElement('script');n.textContent=o.textContent;o.parentNode.replaceChild(n,o);setTimeout(step,0)};step()}
+  const step=()=>{if(i>=L.length)return;const k=i,o=L[i++];try{const n=document.createElement('script');n.textContent=o.textContent;o.parentNode.replaceChild(n,o)}catch(e){try{__showErr('boot script '+k+': '+(e&&e.message||e))}catch(_){}}setTimeout(step,0)};step()}
+ /* errors inside a held script go to the window error line and do not stop the chain; a source-level try{} would break the shared top-level const/let, so it is not used */
+ setTimeout(()=>{const ld=document.getElementById('ld');if(!ld||ld.classList.contains('out'))return;try{__showErr('still loading after 20 s'+(three?'':' (three.js not loaded)'));const d=document.createElement('div');d.style.cssText='position:fixed;left:0;right:0;bottom:64px;z-index:2147483647;text-align:center;font:14px system-ui,sans-serif';d.innerHTML='<button type="button" style="font:inherit;padding:.5rem 1.2rem;margin:0 .6rem">Reload</button><a href="?reset=1" style="color:#cfc4b4">Reset saved data</a>';d.firstChild.onclick=()=>location.reload();document.body.appendChild(d)}catch(e){}},20000)
  function load(src,tries){const sc=document.createElement('script');sc.src=src;sc.onload=()=>{three=true;bar(30);run()};
   sc.onerror=()=>{if(tries>0)setTimeout(()=>load(src+(src.includes('?')?'':'?r=1'),tries-1),800);else try{window.__showErr&&__showErr('could not load three.js - check your connection and reload')}catch(e){}};document.head.appendChild(sc)}
  load("https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",1);
@@ -1731,7 +1733,7 @@ const TITLE=(function(){const el=document.getElementById('title'),setEl=document
  function begin(cont){if(window.__warmGate&&__warmGate(()=>begin(cont)))return;on=false;window.__phase='play';el.style.pointerEvents='none';try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}
   if(cont){try{const s=JSON.parse(localStorage.getItem('hushSave'));if(s&&s.clockT>0)clockT=s.clockT;if(s&&window.__xt)__xt.restore(s)}catch(e){console.error('[Hush] restore failed',e)}}
   const f=document.getElementById('tfade');f.hidden=false;requestAnimationFrame(()=>f.classList.add('on'));
-  setTimeout(()=>{el.hidden=true;started=true;overlay.hidden=true;setPaused(false);resumeClamp=3;if(!cont&&window.__xt)try{__xt.intro()}catch(err){console.error('[Hush] intro failed',err);window.__cut=null}setTimeout(()=>{f.classList.remove('on');setTimeout(()=>f.hidden=true,1600)},200)},1300)}
+  setTimeout(()=>{el.hidden=true;started=true;overlay.hidden=true;setPaused(false);resumeClamp=3;setTimeout(()=>{try{if(!document.pointerLockElement)relockFail()}catch(e){}},900);if(!cont&&window.__xt)try{__xt.intro()}catch(err){console.error('[Hush] intro failed',err);window.__cut=null}setTimeout(()=>{f.classList.remove('on');setTimeout(()=>f.hidden=true,1600)},200)},1300)}
  function frame(dt){T+=dt;if(!el.hidden&&setEl.hidden&&on)idle+=dt;
   if(ph===0&&idle>idleAt){ph=1;pt=0}else if(ph>0){pt+=dt;if(ph===1&&pt>2.6){ph=2;pt=0}else if(ph===2&&pt>5.5){ph=3;pt=0;mkDrips()}}
   // flickering candle (gentle and smooth with Reduce flashing)
@@ -3983,7 +3985,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
 </script>
 
 <script type="text/x-hush">(function(){const btn=document.getElementById('ovBug'),msg=document.getElementById('bugMsg');if(!btn)return;
-function report(){const L=['Hush bug report','Version: v72','Time: '+new Date().toISOString()];
+function report(){const L=['Hush bug report','Version: v73','Time: '+new Date().toISOString()];
  try{const p=cam.getWorldPosition(new THREE.Vector3());L.push('Position: '+[p.x,p.y,p.z].map(v=>v.toFixed(2)).join(', '))}catch(e){L.push('Position: ?')}
  const m=window.__mp;let mode='Single-player',n=1;try{if(m&&m.active){mode=m.mode==='hunt'?'Hunt':'Co-op';n=m.roster().length;if(m.demon)mode+=' (demon)';else if(m.ghost)mode+=' (ghost)'}}catch(e){}
  L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
@@ -4446,21 +4448,25 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  function houseEnd(h){h.st.forEach(([o,v,f])=>{o.visible=v;o.frustumCulled=f})}
  function draw(){const p=renderer.getRenderTarget();try{for(const t of [null,rt]){renderer.setRenderTarget(t);renderer.render(scene,cam)}}finally{renderer.setRenderTarget(p)}}
  // one slice: draw only objects [a,b) (canvas and offscreen: Safari builds a pipeline per target), then restore everything and redraw the title over the canvas
- function slice(a,n){const h=houseBegin();let end=a;try{h.R.forEach(o=>o.visible=false);const seen=new Set();for(;end<h.R.length&&seen.size<n;end++){const o=h.R[end],m=o.material;(Array.isArray(m)?m:[m]).forEach(x=>x&&seen.add(x.type+(x.onBeforeCompile&&x.onBeforeCompile.toString!==Function.prototype.toString?x.uuid:'')+'|'+!!x.map+!!x.envMap+!!x.emissiveMap+!!x.normalMap+o.receiveShadow+(x.vertexColors?1:0)+(o.isSkinnedMesh?1:0)));o.visible=true}draw()}finally{houseEnd(h)}redrawTitle();return{end,total:h.R.length}}
+ // v73: one object at a time; a slice ends as soon as one new shader program was built (or 12 ms passed), so no slice holds the page for long
+ function slice(a,budget){const h=houseBegin();let end=a;const p0=renderer.info.programs.length,t=performance.now();try{h.R.forEach(o=>o.visible=false);while(end<h.R.length){const o=h.R[end++];o.visible=true;draw();o.visible=false;if(renderer.info.programs.length>p0||performance.now()-t>budget)break}}finally{houseEnd(h)}redrawTitle();return{end,total:h.R.length}}
  function full(){const h=houseBegin();try{draw();h.st.forEach(([o,v])=>{if(!o.isLight)o.visible=v});draw()}finally{houseEnd(h)}redrawTitle()}
+ let WT=0,lastIn=-1e9;['pointerdown','pointermove','keydown','wheel','touchstart'].forEach(t=>addEventListener(t,()=>{lastIn=performance.now()},{capture:true,passive:true}));
  const bg=[];let bi=0,pos=0,done=false,waiters=[],busy=false;
- bg.push(()=>{window.__phase=window.__phase==="title"?"title":window.__phase;const r=slice(pos,3);pos=r.end;LT.sliceN=(LT.sliceN||0)+1;return pos<r.total}); // repeats until every object has been drawn
+ bg.push(()=>{window.__phase=window.__phase==="title"?"title":window.__phase;const r=slice(pos,12);WT=r.total;pos=r.end;LT.sliceN=(LT.sliceN||0)+1;return pos<r.total}); // repeats until every object has been drawn
  bg.push(()=>{full();return false});
  bg.push(()=>{const R=window.__rlm;if(R&&R.scene){const p=renderer.getRenderTarget();try{renderer.setRenderTarget(null);renderer.render(R.scene,cam)}finally{renderer.setRenderTarget(p)}redrawTitle()}try{renderer.compile(pScene,pCam)}catch(e){}return false});
- const idle=f=>window.requestIdleCallback?requestIdleCallback(f,{timeout:120}):setTimeout(f,16);
+ const idle=f=>{const g=()=>{if(waiters.length||performance.now()-lastIn>800)f();else setTimeout(()=>idle(f),250)};try{if(window.requestIdleCallback){requestIdleCallback(g,{timeout:1000});return}}catch(e){}setTimeout(g,50)};
+ const yieldFrame=f=>{let ran=false;const go=()=>{if(!ran){ran=true;setTimeout(f,0)}};requestAnimationFrame(go);setTimeout(go,100)};
  let wStart=0;
- function bgStep(){if(done)return;if(!wStart)wStart=performance.now();busy=true;const s=performance.now();let again=false;try{again=bg[bi]()}catch(e){console.error("[Hush] warm step "+bi,e);again=false}busy=false;const d=performance.now()-s;if(d>800)lg("warm slice "+bi+" took "+Math.round(d)+"ms");
-  if(!again)bi++;prog();if(bi>=bg.length){done=true;rt.dispose();LT.warm=Math.round(performance.now()-wStart);LT.ready=Math.round(performance.now()-t0);lg("house warm "+LT.warm+"ms, ready at "+LT.ready+"ms, programs "+renderer.info.programs.length);setTimeout(probe,300);const w=waiters;waiters=[];w.forEach(f=>{try{f()}catch(e){console.error(e)}});return}
-  if(waiters.length)setTimeout(bgStep,0);else idle(bgStep)}
+ function bgStep(){if(done)return;const s0=performance.now();do{if(one())return}while(bi===0&&performance.now()-s0<(waiters.length?40:10));
+  if(waiters.length)yieldFrame(bgStep);else yieldFrame(()=>idle(bgStep))}
+ function one(){if(!wStart)wStart=performance.now();busy=true;const s=performance.now();let again=false;try{again=bg[bi]()}catch(e){console.error("[Hush] warm step "+bi,e);again=false}busy=false;const d=performance.now()-s;if(d>800)lg("warm slice "+bi+" took "+Math.round(d)+"ms");
+  if(!again)bi++;prog();if(bi>=bg.length){done=true;rt.dispose();LT.warm=Math.round(performance.now()-wStart);LT.ready=Math.round(performance.now()-t0);lg("house warm "+LT.warm+"ms, ready at "+LT.ready+"ms, programs "+renderer.info.programs.length);setTimeout(probe,300);const w=waiters;waiters=[];w.forEach(f=>{try{f()}catch(e){console.error(e)}});return true}return false}
  // Start while the house is still warming: a short bar, then the game starts by itself
- let gate=null;function prog(){if(gate){const R=scene?0:0;gate.firstChild.nextSibling.firstChild.style.width=Math.min(100,Math.round((bi+ (bi===0?0:0))*30+10))+"%"}}
+ let gate=null;function prog(){if(gate){try{gate.firstChild.nextSibling.firstChild.style.width=Math.min(100,Math.round(bi===0?10+75*(WT?pos/WT:0):85+bi*5))+"%"}catch(e){}}}
  window.__warmGate=cb=>{if(done)return false;waiters.push(()=>{if(gate){gate.remove();gate=null}cb()});if(!gate){gate=document.createElement("div");gate.setAttribute("role","status");gate.style.cssText="position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;gap:1rem;align-items:center;justify-content:center;background:rgba(6,5,8,.86);color:#cfc4b4;font:.9rem system-ui,-apple-system,sans-serif;padding:16px";
-  gate.innerHTML='<div>Preparing the house...</div><div style="width:min(16rem,70vw);height:3px;background:#1e1a20;border-radius:2px;overflow:hidden"><i style="display:block;height:100%;width:10%;background:#8a2020;transition:width .3s"></i></div>';document.body.appendChild(gate);prog()}window.__phase="preparing";if(!busy)setTimeout(bgStep,0);return true};
+  gate.innerHTML='<div>Preparing the house...</div><div style="width:min(16rem,70vw);height:3px;background:#1e1a20;border-radius:2px;overflow:hidden"><i style="display:block;height:100%;width:10%;background:#8a2020;transition:width .3s"></i></div>';document.body.appendChild(gate);prog()}window.__phase="preparing";if(!busy)yieldFrame(bgStep);return true};
  let i=0;
  const next=()=>{if(i>=pre.length){LT.title=Math.round(performance.now()-t0);lg("title at "+LT.title+"ms");fade();setTimeout(()=>idle(bgStep),400);return}const s=performance.now();try{pre[i]()}catch(e){console.error("[Hush] loading step "+i,e)}const d=performance.now()-s;if(d>800)lg("loading step "+i+" took "+Math.round(d)+"ms");i++;bar(88+i*4);setTimeout(next,16)};
  // measure title frames; if slow and the player never picked a quality, step down resolution and shadow-map size only (nothing recompiles)
