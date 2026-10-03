@@ -3254,10 +3254,11 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  let prowlT=260+Math.random()*200;
  function myReport(){const RL=!!(window.__rlm&&__rlm.on),c=cam.position,B=XT.bladeFight&&XT.bladeFight.S;
   return{x:+(RL?c.x:iX(c.x)).toFixed(2),z:+(RL?c.z:iZ(c.z)).toFixed(2),y:+fy.toFixed(2),cy:+c.y.toFixed(2),yaw:+yaw.toFixed(3),pi:+pitch.toFixed(3),cr:crouch?1:0,
-   hid:XT.hide&&XT.hide.hid?1:0,gh:MP.ghost?1:0,tor:XT.torch&&XT.torch.on?1:0,ar:RL?'r':'h',gl:CD.mp.carrying&&CD.mp.inGlider()?1:0,nu:CD.mp.inNursery()?1:0,
+   hid:XT.hide&&XT.hide.hid?1:0,gh:gone()?1:0,tor:XT.torch&&XT.torch.on?1:0,ar:RL?'r':'h',gl:CD.mp.carrying&&CD.mp.inGlider()?1:0,nu:CD.mp.inNursery()?1:0,
    inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],dm:MP.demon?1:0,hs:XT.hide&&XT.hide.hid||'',cl:window.__dmCeil?1:0,busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,ent:entered?1:0}}
  const isDm=id=>!!(MP.hm&&MP.hm.demon===id);
- const alive=()=>{const L=[];if(MP.host){if(!MP.ghost&&!MP.demon)L.push({id:MP.id,r:myReport()});P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))L.push({id,r:p.rep})})}return L};
+ const gone=()=>MP.ghost||!!(XT.bladeFight&&XT.bladeFight.S&&XT.bladeFight.S.dead);
+ const alive=()=>{const L=[];if(MP.host){if(!gone()&&!MP.demon)L.push({id:MP.id,r:myReport()});P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))L.push({id,r:p.rep})})}return L};
  MP.anyCarry=()=>CD.mp.carrying||!!MP.remoteHolder;
  MP.holderGlider=()=>CD.mp.carrying?CD.mp.inGlider():!!(MP.remoteHolder&&P.get(MP.remoteHolder)&&P.get(MP.remoteHolder).rep&&P.get(MP.remoteHolder).rep.gl);
  MP.anyNursery=()=>alive().some(a=>a.id===MP.id?CD.mp.inNursery():a.r.nu&&a.r.ar!=='r');
@@ -3265,7 +3266,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  MP.anyNear=(x,z,r,fl)=>alive().some(a=>a.r.ar!=='r'&&(fl<0?a.r.y<-1:a.r.y>-1)&&Math.hypot(a.r.x-x,a.r.z-z)<r);
  MP.anyBusy=()=>{let b=false;P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id)&&p.rep.busy)b=true});return b};
  MP.runNoise=()=>{let n=0;P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id)&&p.sp>2.6)n+=.012});return n};
- MP.fighters=()=>{const L=[];roster.forEach(p=>{const gh=p.id===MP.id?MP.ghost:!!(MP.host?(P.get(p.id)&&P.get(p.id).rep&&P.get(p.id).rep.gh):p.gh);if(!gh&&!isDm(p.id))L.push(p)});return L.sort((a,b)=>a.slot-b.slot).map(p=>p.id)};
+ MP.fighters=()=>{const L=[];roster.forEach(p=>{const gh=p.id===MP.id?gone():!!(MP.host?(P.get(p.id)&&P.get(p.id).rep&&P.get(p.id).rep.gh):p.gh);if(!gh&&!isDm(p.id))L.push(p)});return L.sort((a,b)=>a.slot-b.slot).map(p=>p.id)};
  MP.laneOf=id=>{const a=AV.get(id);return a&&a.last?a.last.lat||0:0};
  MP.posOf=id=>{const a=AV.get(id);return a&&a.last&&a.last.ar!=='r'?{x:mX(a.last.x),z:mZ(a.last.z)}:null};
 
@@ -3343,7 +3344,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function runPending(){if(!MP.pendingEnd||MP.ended)return true;if(window.__cut&&window.__cut.noSkip)return true;
   if(window.__cut&&!window.__cut.noSkip){/* replace any other cut scene */}return XT.ending(MP.pendingEnd.id,MP.pendingEnd.extra)}
  MP.decideEnd=decideEnd;
- function checkAllDead(){if(!MP.host||MP.decided||!MP.started)return;let any=!MP.ghost&&!MP.demon;for(const k in AWAY)if(!AWAY[k].gh&&!AWAY[k].dm)any=true;P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))any=true});
+ function checkAllDead(){if(!MP.host||MP.decided||!MP.started)return;let any=!gone()&&!MP.demon;for(const k in AWAY)if(!AWAY[k].gh&&!AWAY[k].dm)any=true;P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))any=true});
   if(!any){const B=XT.bladeFight&&XT.bladeFight.S;decideEnd('death',B?{h:'Taken.',p:'The swords were not enough. She was faster than all of you.'}:{h:'Taken.',p:'One by one, it found all of you.'});runPending()}}
 
  // ---------- skip hour: a vote ----------
@@ -3359,7 +3360,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // ---------- the boss ----------
  MP.solve=()=>send({t:'solve'});
  function hostSolve(){const D=XT.shelfDbg,ok=XT.shelf.ORDER.every((k,i)=>D.slots[i]===k);if(!ok||MP.boss)return;MP.boss=true;bcast({t:'boss'});setTimeout(()=>safe(()=>XT.bladeFight.start(),'boss'),900);subtitle('Something inside the shelf goes click.',2500)}
- MP.bossDead=()=>{send({t:'bdead'})};
+ MP.bossDead=()=>{send({t:'bdead'});if(MP.host)checkAllDead()};
 
  // ---------- avatars ----------
  const AV=new Map();
@@ -3520,7 +3521,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   for(const k in AWAY)if(now-AWAY[k].t>HOLD){const a=AWAY[k];delete AWAY[k];bcast({t:'note',txt:'('+a.name+' did not come back.)',ms:3000});subtitle('('+a.name+' did not come back.)',3000);if(a.dm&&MP.hm)safe(()=>MP.onDemonGone&&MP.onDemonGone(),'dmgone');checkAllDead()}
   // players who went quiet are gone
   P.forEach((p,id)=>{const t=Math.max(p.last||0,p.seen||0),c=conns.get(id);if(t&&now-t>lim(c&&c.open,12000,25000))dropPlayer(id)});
-  roster.forEach(r=>{if(r.id===MP.id)r.gh=MP.ghost?1:0;else{const p=P.get(r.id);r.gh=p&&p.rep&&p.rep.gh?1:0}});
+  roster.forEach(r=>{if(r.id===MP.id)r.gh=gone()?1:0;else{const p=P.get(r.id);r.gh=p&&p.rep&&p.rep.gh?1:0}});
   // the holder must exist
   if(MP.remoteHolder&&!P.has(MP.remoteHolder))holderSet('');
   // shelf items held
