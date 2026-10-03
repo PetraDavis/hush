@@ -1659,7 +1659,7 @@ const TITLE=(function(){const el=document.getElementById('title'),setEl=document
  renderer.shadowMap.enabled=true;
  // --- the note ---
  const RULES=['If someone knocks on the door, do not answer it.','If you hear footsteps in our bedroom, do not check it out.','If you hear whispering, don\'t answer. It stops.','If something scratches at the basement door, leave it be.','Keep her quiet. Whatever happens, keep her quiet.'];
- const OPT=[{k:'start',t:'Start',y:1020},{k:'cont',t:'Continue',y:1090},{k:'set',t:'Settings',y:1160},{k:'diff',get t(){return 'Difficulty: '+(window.__xt?__xt.diffName():'Normal')},y:1230},{k:'night',get t(){return 'Night: '+(window.__xt&&__xt.night||1)},get hide(){return !(window.__xt&&__xt.nightsUnlocked&&__xt.nightsUnlocked()>1)},y:1020,x:560},{k:'mp',t:'Play together',get hide(){return !(window.__mp&&__mp.available)},y:1300}];
+ const OPT=[{k:'start',t:'Start',y:1020},{k:'cont',t:'Continue',y:1090},{k:'set',t:'Settings',y:1160},{k:'diff',get t(){return 'Difficulty: '+(window.__xt?__xt.diffName():'Normal')},y:1230},{k:'night',get t(){return 'Night: '+(window.__xt&&__xt.night||1)},get hide(){return !(window.__xt&&__xt.nightsUnlocked&&__xt.nightsUnlocked()>1)},y:1020,x:560},{k:'mp',t:'Play together',get hide(){return !(window.__mp&&__mp.available)},y:1300},{k:'hunt',t:'Hunt',get hide(){return !(window.huntUnlocked&&huntUnlocked())},y:1090,x:640}];
  const hasSave=()=>{try{return !!localStorage.getItem('hushSave')}catch(e){return false}};
  let hov=null,idle=0,idleAt=10+Math.random()*10,ph=0,pt=0,drips=[],on=true,T=0,lastDraw=0,dirty=true;
  const HAND="'Caveat','Segoe Print','Bradley Hand',cursive";
@@ -1691,7 +1691,7 @@ const TITLE=(function(){const el=document.getElementById('title'),setEl=document
  function whisper(){if(!AC||muted)return;const t0=AC.currentTime;burst(t0,2400+Math.random()*800,3,.035,.5,'bandpass');burst(t0+.12,4200+Math.random()*900,4,.02,.35,'bandpass')}
  el.addEventListener('mousemove',e=>{if(!on)return;const k=pick(e);if(k!==hov){hov=k;dirty=true;el.style.cursor=k?'pointer':'default';if(k)whisper()}});
  el.addEventListener('pointerdown',()=>{initAudio();if(AC&&AC.state==='suspended')AC.resume()});
- el.addEventListener('click',e=>{if(!on||!setEl.hidden)return;const k=pick(e);if(k==='start'||k==='cont')begin(k==='cont');else if(k==='set')openSet(true);else if(k==='diff'){try{__xt.cycleDiff()}catch(err){}dirty=true}else if(k==='night'){try{__xt.cycleNight()}catch(err){console.error(err)}dirty=true}else if(k==='mp'){try{__mp.openLobby()}catch(err){console.error(err)}}});
+ el.addEventListener('click',e=>{if(!on||!setEl.hidden)return;const k=pick(e);if(k==='start'||k==='cont')begin(k==='cont');else if(k==='set')openSet(true);else if(k==='diff'){try{__xt.cycleDiff()}catch(err){}dirty=true}else if(k==='night'){try{__xt.cycleNight()}catch(err){console.error(err)}dirty=true}else if(k==='mp'){try{__mp.openLobby()}catch(err){console.error(err)}}else if(k==='hunt'){try{__xt.huntSP.start()}catch(err){console.error(err)}}});
  function openSet(v){setEl.hidden=!v}
  document.getElementById('tsetClose').onclick=()=>openSet(false);
  function begin(cont){on=false;el.style.pointerEvents='none';try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}
@@ -3778,7 +3778,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
   setInterval(()=>{if(!MP.active||!MP.started)return;lb(document.querySelector('#xend:not([hidden]) #xBack'));lb(document.querySelector('#hEnd:not([hidden]) button'));const nx=document.querySelector('#xend #xNext');if(nx)nx.remove()},300)}
  if(!lobbyReturn())autoRejoin();
  hashJoin();addEventListener('hashchange',()=>{if(TITLE.on)hashJoin()});
- MP.bcast=bcast;MP.sendTo=sendTo;MP.playScare=m=>playScare(m);MP.toAll=m=>{bcast(m);clientHandle(m)};MP.repOf=id=>id===MP.id?myReport():(P.get(id)&&P.get(id).rep)||null;MP.lobbyDraw=()=>lobbyDraw();
+ MP.mkAvatar=mkAvatar;MP.bcast=bcast;MP.sendTo=sendTo;MP.playScare=m=>playScare(m);MP.toAll=m=>{bcast(m);clientHandle(m)};MP.repOf=id=>id===MP.id?myReport():(P.get(id)&&P.get(id).rep)||null;MP.lobbyDraw=()=>lobbyDraw();
 
  // ---------- text chat: Enter to type. Lines show bottom-left for a few seconds; the whole log shows while typing ----------
  // A muted demon's words come out as a hiss for the babysitters.
@@ -3943,7 +3943,7 @@ btn.addEventListener('mousedown',e=>e.stopPropagation());btn.addEventListener('p
 // and after midnight her claws count: the first hit staggers, the second kills (the dead become ghosts). Messages go through the host.
 (function(){'use strict';const XT=window.__xt,MP=window.__mp;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush hunt] '+(t||''),e)}};
  if(!XT||!MP)return;
- const on=()=>!!(MP.active&&MP.hm),me=()=>on()&&!!MP.demon,DID=()=>MP.hm&&MP.hm.demon,now=()=>performance.now()/1000;
+ const on=()=>!!(MP.hm&&(MP.active||MP.sp)),me=()=>on()&&!!MP.demon,DID=()=>MP.hm&&MP.hm.demon,now=()=>performance.now()/1000;
  const CD={claw:1.2,flick:18,hiss:3,show:12,spot:1.5,skill:.5};
  // the demon's skill (secret: babysitters only feel it). Lower skill: a stronger demon and weaker babysitters. Average still leaves them a bit stronger than in co-op.
  const SKN=['New to games','Beginner','Average','Good','Expert'];
@@ -3961,7 +3961,7 @@ btn.addEventListener('mousedown',e=>e.stopPropagation());btn.addEventListener('p
   g.position.set(7.2,BF+.012,-13.4);g.rotation.y=.6;BSM.G.add(g);
   const hb=new THREE.Mesh(BG(.32,.22,.34),hitM);hb.position.set(7.2,BF+.1,-13.4);BSM.G.add(hb);
   hb.userData.i={label:'Something under the plank',act(){try{localStorage.setItem('hushHuntUnlocked','1')}catch(e){}g.visible=false;const i=inter.indexOf(hb);if(i>=0)inter.splice(i,1);
-   subtitle('Your hand finds something under the plank: a mask of pale yellow snake scales, still warm. (You keep it.)',5500);safe(()=>MP.lobbyDraw&&MP.lobbyDraw(),'lobby')}};inter.push(hb);
+   subtitle('Your hand finds something under the plank: a mask of pale yellow snake scales, still warm. (Hunt unlocked: pick Hunt on the title page to play the demon.)',5500);safe(()=>MP.lobbyDraw&&MP.lobbyDraw(),'lobby')}};inter.push(hb);
   // the gap's hiding spot sits in front of it, so it is found by squeezing in between the crates
   let feel=0;XT.onUpdate(dt=>{if(!g.visible||!XT.hide||XT.hide.hid!=='crates'){feel=0;return}feel+=dt;if(feel>1.5){feel=-1e9;hb.userData.i.act()}});
   XT.huntMask={g,hb}},'mask');
@@ -3987,7 +3987,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const left=k=>Math.max(0,Math.ceil((ST.cd[k]||0)-now()));
  function drawHud(){if(!on()||MP.ended){hud.hidden=true;return}hud.hidden=false;const V=MP.dbg.V,B=XT.bladeFight&&XT.bladeFight.S;
   if(MP.demon){const mic=V.denied?'Hiss (no mic)':V.muted?'Hiss':'Voice',late=XT.hour()>=24,cdT=k=>left(k)?' <span class="k">'+left(k)+'s</span>':'';
-   hud.innerHTML='<b>DEMON</b> &middot; Mic: '+mic+' <span class="k">[M]</span>'+(ST.stun>0?'<br><span class="w">STUNNED</span>':'')+(ST.xray>0?'<br><span class="ok">She is crying: you can feel them</span>':'')+
+   hud.innerHTML='<b>DEMON</b>'+(MP.sp?'':' &middot; Mic: '+mic+' <span class="k">[M]</span>')+(MP.sp?safe(()=>SPH.hud(),'sphud')||'':'')+(ST.stun>0?'<br><span class="w">STUNNED</span>':'')+(ST.xray>0?'<br><span class="ok">She is crying: you can feel them</span>':'')+
     (B?'<br>WASD move &middot; mouse aim<br>[Click / 1] claws &middot; [Right-click / 2] lunge &middot; [Space / 3] tail sweep':
     '<br><span class="k">[Q]</span> ceiling '+(ST.ceil?'(on)':'')+' &middot; <span class="k">[R]</span> flicker'+cdT('flick')+' &middot; <span class="k">[H]</span> hiss'+cdT('hiss')+'<br><span class="k">[X]</span> show yourself'+cdT('show')+' &middot; <span class="k">[E]</span> open a hiding spot / door<br>'+
     (late?'<span class="k">[Click / J]</span> claws'+cdT('claw'):'<span class="k">Claws after midnight. Until then: stalk and scare.</span>'))}
@@ -3996,9 +3996,9 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
 
  // ---------- start ----------
  MP.onHunt=()=>{document.body.classList.add('hunt');ST.placed=false;if(!MP.demon)window.__runK=SKP[2].run;
-  if(MP.demon){document.body.classList.add('hDemon');window.__dmSp=SK().sp;safe(pickSkill,'skill');fxEl.className='dm';safe(()=>{const L=new THREE.PointLight(0xffb090,.6,9,2);cam.add(L)},'sight');safe(vadInit,'vad')}
-  drawHud();setTimeout(()=>subtitle(MP.demon?'You are the demon. Stalk them, scare them. After midnight, hunt them.':'Hunt: one of you is the demon. Survive until 6 AM, or find the katana.',6000),1500)};
- const send=m=>safe(()=>MP.send(m),'send');
+  if(MP.demon){document.body.classList.add('hDemon');window.__dmSp=SK().sp;if(!MP.sp)safe(pickSkill,'skill');fxEl.className='dm';safe(()=>{const L=new THREE.PointLight(0xffb090,.6,9,2);cam.add(L)},'sight');if(!MP.sp)safe(vadInit,'vad')}
+  drawHud();if(!MP.sp)setTimeout(()=>subtitle(MP.demon?'You are the demon. Stalk them, scare them. After midnight, hunt them.':'Hunt: one of you is the demon. Survive until 6 AM, or find the katana.',6000),1500)};
+ const send=m=>safe(()=>MP.sp?SPH.req(m):MP.send(m),'send');
  const repOf=id=>MP.repOf(id);
 
  // ---------- the skill picker (the demon only, instead of the intro) ----------
@@ -4131,7 +4131,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // ---------- outlines through the walls (the demon, while the baby cries) ----------
  const xr=new Map(),xm=new THREE.MeshBasicMaterial({color:0xff3a2a,transparent:true,opacity:.5,depthTest:false,depthWrite:false,fog:false});
  function xray(dt){const show=me()&&ST.xray>0;const seen=new Set();
-  if(show)MP.dbg.AV.forEach((a,id)=>{const r=a.cur;if(isDm(id)||!r||r.gh||r.ar==='r')return;seen.add(id);let g=xr.get(id);
+  if(show)(MP.sp?SPH.reps():[...MP.dbg.AV].map(([id,a])=>[id,a.cur])).forEach(([id,r])=>{if(isDm(id)||!r||r.gh||r.ar==='r')return;seen.add(id);let g=xr.get(id);
    if(!g){g=new THREE.Group();const b=new THREE.Mesh(new THREE.CylinderGeometry(.2,.17,1.25,10),xm);b.position.y=.8;const h=new THREE.Mesh(new THREE.SphereGeometry(.15,10,8),xm);h.position.y=1.6;g.add(b,h);g.renderOrder=20;b.renderOrder=h.renderOrder=20;g.userData.noMap=1;scene.add(g);xr.set(id,g)}
    g.visible=true;g.position.set(mX(r.x),r.y,mZ(r.z));g.scale.y=r.cr||r.hid?.6:1});
   xm.opacity=.55*Math.min(1,ST.xray/1.2);xr.forEach((g,id)=>{if(!seen.has(id))g.visible=false})}
@@ -4151,7 +4151,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    if(!window.__cut&&!paused){const s=nearSpot(),d=s?null:nearDoor();if(s||d){hint.hidden=false;hint.textContent='[E] '+(s?'Open: '+s.lbl.replace(/^(Hide|Squeeze) /,'').replace(/^(in|under|behind|between) the /,''):d.open?'Close the door':'Open the door')}}
    safe(()=>xray(dt),'xray')}
   // the baby's crying lights them up for the demon (the host notices)
-  if(MP.host){const c=!!window.__crying;if(c&&!cryPrev&&now()>cryCd){cryCd=now()+10;MP.toAll({t:'hcry'})}cryPrev=c}});
+  if(MP.host||MP.sp){const c=!!window.__crying;if(c&&!cryPrev&&now()>cryCd){cryCd=now()+10;if(MP.sp)MP.onC({t:'hcry'});else MP.toAll({t:'hcry'})}cryPrev=c}});
  // during cut scenes nothing above runs; the cut counter starts again
  {const oc=XT.cut;XT.cut=function(dt){if(on()&&MP.demon&&!ST.placed)ST.noCut=0;return oc.call(XT,dt)}}
 
@@ -4161,16 +4161,194 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   demon:{d:['You fed.','Every one of them, before the sun came up. The baby stops crying the moment the last one goes quiet.'],s:['Taken.','She found every one of you before dawn. In the morning the house is very tidy, and the baby is smiling.']},
   dawn:{d:['Dawn.','They lasted the night. The light comes up grey through the windows, and you pour yourself back under the floor to wait for the next sitter.'],s:['You made it.','Six o\'clock. The car pulls into the drive. Somewhere inside the walls, something hisses once and goes still.']},
   slain:{d:['Cut down.','An old blade, in a sitter\'s hands. You come apart like burnt paper. Below the floor, something patient starts counting again.'],s:['The Blade.','You found the katana and cut her down. At dawn you walk out together, the baby asleep, the house finally quiet.']}};
- MP.huntEnd=function(id,extra){const k=id==='death'?'demon':id==='secret'?'slain':'dawn',t=TXT[k][MP.demon?'d':'s'],win=MP.demon?k==='demon':k!=='demon';
+ const TXT1={demon:['You fed.','The sitter never saw the morning. The baby stops crying the moment the house goes quiet.'],dawn:['Dawn.','She lasted the night. Grey light comes up through the windows, and you pour yourself back under the floor to wait for the next sitter.'],slain:TXT.slain.d};
+ MP.huntEnd=function(id,extra){const k=id==='death'?'demon':id==='secret'?'slain':'dawn',t=MP.sp?TXT1[k]:TXT[k][MP.demon?'d':'s'],win=MP.demon?k==='demon':k!=='demon';
   ended=true;window.__noMove=false;window.__camLift=0;setHiss(false);hud.hidden=true;fxEl.className='';['need','mon','skipB','hint','sub','bf','mpGhost','gScare','mpVote'].forEach(q=>{const e=document.getElementById(q);if(e)e.hidden=true});
   safe(()=>{if(window.__cut)window.__cut=null},'cut');if(document.pointerLockElement)document.exitPointerLock();
-  endEl.innerHTML='<div class="in"><p class="brand">HUSH</p><p class="tag">Hunt &middot; '+(win?'You win':'You lose')+' &middot; '+(k==='demon'?'The demon wins':k==='dawn'?'The babysitters survive':'The demon is slain')+'</p><h1>'+t[0]+'</h1><p class="txt">'+t[1]+'</p><p class="tag sk">'+(skRev!==null?'The demon played on: '+SKN[skRev]:'')+'</p><button type="button">Back to the title</button></div>';
+  endEl.innerHTML='<div class="in"><p class="brand">HUSH</p><p class="tag">Hunt &middot; '+(win?'You win':'You lose')+' &middot; '+(k==='demon'?'The demon wins':k==='dawn'?(MP.sp?'The sitter survives':'The babysitters survive'):'The demon is slain')+'</p><h1>'+t[0]+'</h1><p class="txt">'+t[1]+'</p><p class="tag sk">'+(skRev!==null?'The demon played on: '+SKN[skRev]:'')+'</p><button type="button">Back to the title</button></div>';
   if(MP.host)MP.toAll({t:'hskr',v:skI});
   endEl.hidden=false;endEl.querySelector('button').onclick=()=>{location.href=location.pathname+location.search};setTimeout(()=>safe(()=>endEl.querySelector('button').focus()),50);return true};
  // a player who dropped and came back keeps their wounds; a returning demon keeps the skill level already picked
  MP.onRejoin=(old,nw,aw)=>{if(!on())return;if(hits[old]!=null){hits[nw]=hits[old];delete hits[old]}if(invU[old]!=null){invU[nw]=invU[old];delete invU[old]}
   if(aw.dm)setTimeout(()=>MP.sendTo(nw,{t:'hsk',v:skI,re:1}),2500);else if(hits[nw])setTimeout(()=>MP.sendTo(nw,{t:'hwr',n:hits[nw],left:SK().htd-hits[nw]}),2500)};
  MP.onDemonGone=()=>{const t='(The demon did not come back. Survive until dawn.)';MP.bcast({t:'note',txt:t,ms:4000});subtitle(t,4000)};
+
+ // ===== 20. Single-player Hunt (unlocked by the snake-scale mask): you are the demon, the babysitter is a computer-controlled sitter =====
+ // She feeds, burps, changes, plays with and settles the baby; she hears your hiss and the flicker, runs and hides; late in the night
+ // she collects the six things for the nursery shelf and takes the katana to fight back. Her skill follows the difficulty (Nightmare: sharpest).
+ // Same rules as Hunt: claws only after midnight, line of sight for every blow; you win if she dies before 6 AM.
+ const SPH=(function(){
+ // ---------- single-player Hunt: grid A* through the house (all three floors and both stairs; doors count as open) ----------
+  const NAV=(function(){const G=.3,cache=new Map();let cK=-1,cT=0;
+  const withFy=(h,f)=>{const s=fy;fy=h;try{return f()}finally{fy=s}};
+  let dS=null;const isDoor=s=>{if(!dS)dS=new Set(doors.map(d=>d.solid));return dS.has(s)};
+  const blk=(x,z,h)=>withFy(h,()=>groundAt(x,z)>h+.45||solids.some(s=>!isDoor(s)&&ov(s,x,z,.24)&&s.y1>h+.36&&s.y0<h+1.7));
+  const sup=(x,z,h)=>withFy(h,()=>{let g=groundAt(x,z);for(const s of solids)if(!isDoor(s)&&ov(s,x,z,.12)&&s.y1<=h+.37&&s.y1>g)g=s.y1;return g});
+  // one cell: can you stand at (ix,iz) arriving at height h, and how high is the floor there
+  function cell(ix,iz,h){const now=performance.now();if(MAP.k!==cK||now-cT>8000){cache.clear();cK=MAP.k;cT=now}
+   const k=ix+','+iz+','+Math.round(h*5);let c=cache.get(k);if(c!==undefined)return c;const x=ix*G,z=iz*G;
+   c=blk(x,z,h)?null:sup(x,z,h);if(c!==null&&c-h>.45)c=null;cache.set(k,c);return c}
+  function path(sx,sz,sh,gx,gz,gh,tol,max){tol=tol||.7;max=max||30000;const ix0=Math.round(sx/G),iz0=Math.round(sz/G);
+   const key=(i,j,h)=>i+','+j+','+Math.round(h*5),open=[],seen=new Map();const H=(x,z,h)=>Math.hypot(x-gx,z-gz)+Math.abs(h-gh)*1.2;
+   const st={i:ix0,j:iz0,h:sh,g:0,p:null};st.f=H(sx,sz,sh);open.push(st);seen.set(key(ix0,iz0,sh),0);let n=0,best=st,bh=st.f;
+   const D=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+   while(open.length&&n<max){let bi=0;for(let q=1;q<open.length;q++)if(open[q].f<open[bi].f)bi=q;const c=open[bi];open[bi]=open[open.length-1];open.pop();n++;
+    const cx=c.i*G,cz=c.j*G;const hv=H(cx,cz,c.h);if(hv<bh){bh=hv;best=c}
+    if(Math.hypot(cx-gx,cz-gz)<tol&&Math.abs(c.h-gh)<1)return trace(c);
+    for(const [di,dj] of D){const i=c.i+di,j=c.j+dj;if(di&&dj&&(cell(c.i+di,c.j,c.h)===null||cell(c.i,c.j+dj,c.h)===null))continue;const nh=cell(i,j,c.h);if(nh===null)continue;
+     const g=c.g+(di&&dj?1.414:1)*G,k=key(i,j,nh);const o=seen.get(k);if(o!==undefined&&o<=g)continue;seen.set(k,g);open.push({i,j,h:nh,g,f:g+H(i*G,j*G,nh),p:c})}}
+   return null}
+  function trace(c){const P=[];while(c){P.push({x:c.i*G,z:c.j*G,h:c.h});c=c.p}P.reverse();
+   // drop the in-between points of straight runs
+   const out=[P[0]];for(let k=1;k<P.length-1;k++){const a=out[out.length-1],b=P[k+1];if(Math.abs(P[k].h-a.h)>.05||!straight(a,b))out.push(P[k])}if(P.length>1)out.push(P[P.length-1]);return out}
+  function straight(a,b){if(Math.abs(a.h-b.h)>.05)return false;const L=Math.hypot(b.x-a.x,b.z-a.z),n=Math.ceil(L/.15);for(let k=1;k<n;k++){const t=k/n;if(blk(a.x+(b.x-a.x)*t,a.z+(b.z-a.z)*t,a.h))return false}return true}
+  return{path,blk,sup,cell,G}})();
+  const PD={easy:{wk:1.6,run:2.7,sight:5.5,hear:9,react:1,hide:[28,45],thr:.72,kh:27.5,scd:1.7,cuts:4,htd:2,peek:.35},
+   normal:{wk:1.75,run:3.1,sight:7.5,hear:12,react:.6,hide:[18,32],thr:.58,kh:26,scd:1.25,cuts:3,htd:2,peek:.6},
+   nightmare:{wk:1.85,run:3.5,sight:9.5,hear:15,react:.35,hide:[12,22],thr:.48,kh:25,scd:.95,cuts:2,htd:3,peek:.85}};
+  const P=()=>PD[XT.diffKey?XT.diffKey():'normal']||PD.normal;
+  const C=()=>CARE.dbg,rnd=(a,b)=>a+Math.random()*(b-a);
+  // rest coordinates (the house plan) to world, with the floor height
+  const RW=(x,z,fl,bsm)=>{if(bsm){const o=BO();return{x:x+o.x,z:z+o.z,h:fl}}return{x:mX(x),z:mZ(z),h:fl}};
+  const PL={crib:[0,-1.85,0],chg:[2.8,-2.45,0],fridge:[7.0,-3.05,F],warm:[5.85,5.6,F],shelf:[.6,2.75,0],door:[4.8,8.0,F]};
+  const at=k=>RW(PL[k][0],PL[k][1],PL[k][2]);
+  const N={on:false,x:0,z:0,h:F,yaw:0,av:null,mode:'idle',path:null,pi:0,goal:null,arrive:null,stuck:0,replan:0,task:null,act:null,alarm:null,hideS:null,hideT:0,
+   hits:0,inv:0,dead:false,deadT:0,armed:false,quest:null,questDone:false,cuts:0,slashCd:0,slashT:0,sense:0,stepT:0,fear:0,said:0,blade:null,lastSeen:null,idleT:0,ended:false};
+  // ---------- her body ----------
+  function body(){if(N.av)return;N.av=MP.mkAvatar({slot:1,name:'Sitter'});N.av.tag.visible=false;N.av.g.visible=true;
+   const bl=new THREE.Group(),st=new THREE.MeshPhongMaterial({color:0xd8dce4,specular:0xffffff,shininess:140});const b=new THREE.Mesh(new THREE.BoxGeometry(.012,.85,.03),st);b.position.y=-1.08;bl.add(b);
+   const hd=new THREE.Mesh(new THREE.BoxGeometry(.03,.24,.03),new THREE.MeshPhongMaterial({color:0x1c1830}));hd.position.y=-.6;bl.add(hd);bl.visible=false;N.av.arms[1].add(bl);N.blade=bl}
+  function pose(dt,mv){const a=N.av;if(!a)return;a.g.position.set(N.x,N.h,N.z);a.g.visible=!N.hideS;a.g.rotation.set(0,N.yaw,0);
+   if(N.dead){N.deadT+=dt;a.g.rotation.x=-Math.min(1,N.deadT*2.2)*Math.PI/2;a.g.position.y=N.h+.12;return}
+   N.ph=(N.ph||0)+dt*(mv>2.4?11:7.5)*(mv>.05?1:0);const sw=mv>.05?Math.sin(N.ph)*(mv>2.4?.7:.45):0;a.legs[0].rotation.x=sw;a.legs[1].rotation.x=-sw;
+   let l=-sw*.7,r=sw*.7;if(N.act)l=r=.9+Math.sin(performance.now()/300)*.12;if(N.armed){r=N.slashT>0?.3+2.1*N.slashT/.35:1.1}if(N.stag>0)l=r=2.6;a.arms[0].rotation.x=l;a.arms[1].rotation.x=r;
+   a.head.rotation.y=N.mode==='idle'&&!N.act?Math.sin(performance.now()/1300)*.6:0;if(N.blade)N.blade.visible=N.armed}
+  // ---------- getting around ----------
+  function goTo(p,tol,cb,keep){const q=NAV.path(N.x,N.z,N.h,p.x,p.z,p.h,tol||.8);N.path=q;N.pi=0;N.goal={p,tol:tol||.8};N.arrive=cb||null;N.stuck=0;if(!keep)N.replan=0;return !!q}
+  function stop(){N.path=null;N.goal=null;N.arrive=null}
+  function walk(dt,spd){if(!N.path)return 0;if(N.pi>=N.path.length){const cb=N.arrive;stop();if(cb)safe(cb,'arrive');return 0}
+   const w=N.path[N.pi],dx=w.x-N.x,dz=w.z-N.z,d=Math.hypot(dx,dz);if(d<.04){N.pi++;if(Math.abs(w.h-N.h)<.5)N.h=w.h;return 0}
+   const s=Math.min(d,spd*dt),ux=dx/d,uz=dz/d;let mv=0;const nx=N.x+ux*s,nz=N.z+uz*s;
+   if(!NAV.blk(nx,nz,N.h)){N.x=nx;N.z=nz;mv=s}else{if(!NAV.blk(nx,N.z,N.h)){N.x=nx;mv=s*.7}else if(!NAV.blk(N.x,nz,N.h)){N.z=nz;mv=s*.7}}
+   const sh=NAV.sup(N.x,N.z,N.h);if(sh-N.h<=.46)N.h=sh;
+   let ty=Math.atan2(-ux,-uz),dy=ty-N.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));N.yaw+=dy*Math.min(1,dt*10);
+   // doors swing open in front of her
+   doors.forEach(dr=>{if(dr.open)return;const p=dr.pv.getWorldPosition(new THREE.Vector3());if(Math.hypot(p.x-N.x,p.z-N.z)<1.25&&Math.abs(p.y-N.h)<1.8)dr.open=true});
+   if(mv<s*.3){N.stuck+=dt;if(N.stuck>1.2){N.stuck=0;N.replan++;if(N.replan>2){N.x=w.x;N.z=w.z;N.h=w.h;N.pi++}else if(N.goal){const g=N.goal,cb=N.arrive;if(!goTo(g.p,g.tol,cb,1)){N.x=w.x;N.z=w.z;N.h=w.h;N.pi++}}}}else N.stuck=Math.max(0,N.stuck-dt);
+   return mv/Math.max(dt,1e-3)}
+  // ---------- the demon, as she senses it ----------
+  const dm=()=>({x:cam.position.x,z:cam.position.z,h:fy});
+  const dDist=()=>{const d=dm();return Math.hypot(d.x-N.x,d.z-N.z)};
+  function sees(){if(N.hideS||N.dead)return false;const d=dm(),dist=Math.hypot(d.x-N.x,d.z-N.z),pp=P();if(Math.abs(d.h-N.h)>1.3)return false;
+   const rng=pp.sight*(ST.ceil?.45:1);if(dist>rng)return false;const fx=-Math.sin(N.yaw),fz=-Math.cos(N.yaw),dot=((d.x-N.x)*fx+(d.z-N.z)*fz)/Math.max(dist,1e-3);
+   if(dot<-.1&&dist>2.2)return false;return losClear(N.x,N.z,d.x,d.z,Math.min(d.h,N.h))}
+  function say(t,ms){if(dDist()<11&&performance.now()-N.said>2500){N.said=performance.now();subtitle(t,ms||2200)}}
+  // something frightening at p: she runs (after her reaction time), unless she is armed and it is close
+  function alarm(p,k){if(N.dead||N.ended)return;N.fear=Math.min(1,N.fear+k*.5);if(N.hideS){N.hideT+=6*k;return}
+   if(N.armed&&XT.hour()>=24&&k<1.2)return;if(N.mode==='flee'&&!N.alarm)return;if(!N.alarm||N.alarm.k<k)N.alarm={t:P().react*(N.mode==='flee'?.3:1),p,k}}
+  function flee(from){N.mode='flee';N.act=null;N.task=null;N.quest&&(N.quest.busy=0);const pp=P(),Sp=XT.hide.SPOTS;let best=null,bs=-1e9;
+   Sp.forEach(s=>{const e=RW(s.ex[0],s.ex[1],s.fl,s.bsm),dD=Math.hypot(e.x-from.x,e.z-from.z),dN=Math.hypot(e.x-N.x,e.z-N.z)+Math.abs(e.h-N.h)*2.5;
+    if(dD<3.5)return;const sc=dD-.75*dN+Math.random()*2*(1.2-pp.peek)+(N.hideLast===s.id?-4:0);if(sc>bs){bs=sc;best=s}});
+   if(!best){N.mode='idle';return}const e=RW(best.ex[0],best.ex[1],best.fl,best.bsm);
+   if(!goTo(e,.6,()=>hide(best))){N.mode='idle';return}N.fleeTo=best}
+  function hide(s){if(N.dead)return;const pp=P();if(dDist()<2.2&&sees()){flee(dm());return}N.mode='hide';N.hideS=s;N.hideLast=s.id;N.hideT=rnd(pp.hide[0],pp.hide[1])*(1+N.fear*.6);
+   safe(()=>{const c=s.cam,w=RW(c[0],c[2],s.fl,s.bsm);N.x=w.x;N.z=w.z},'hpos');safe(()=>XT.hinge(N.x,N.z,.5,true),'creak')}
+  function unhide(fast){const s=N.hideS;if(!s)return;N.hideS=null;const e=RW(s.ex[0],s.ex[1],s.fl,s.bsm);N.x=e.x;N.z=e.z;N.h=e.h;N.yaw=s.yaw+Math.PI;if(!fast)N.fear*=.5;N.mode='idle'}
+  // ---------- the baby ----------
+  function need(){const n=C().N;let k=null,v=0;for(const q in n)if(n[q]>v){v=n[q];k=q}return[k,v]}
+  function careTask(){const n=C().N,pp=P(),[k,v]=need();if(!k||v<pp.thr)return null;
+   if(k==='hunger')return[{at:'fridge',t:2,txt:'(Downstairs, the fridge door thumps shut.)'},{at:'warm',t:7},{at:'crib',t:8,fx(){n.hunger=0;n.burp=Math.max(n.burp,.3)}}];
+   if(k==='burp')return[{at:'crib',t:4,fx(){n.burp=0}}];if(k==='diaper')return[{at:'chg',t:6,fx(){n.diaper=0}}];if(k==='bored')return[{at:'crib',t:6,fx(){n.bored=0}}];
+   if(k==='sleepy'){if(Math.max(n.hunger,n.diaper,n.burp)>.8)return null;return[{at:'crib',t:11,fx(){n.sleepy=0;C().asleep=true;safe(()=>{C().mp.napT=(1.6+Math.random()*1.4)*HOUR_SEC},'nap')}}]}return null}
+  function runTask(dt){const T=N.task;if(!T)return;if(N.act){N.act.t+=dt;C().noise=Math.max(0,C().noise-dt*.05);const tg=N.act.p;
+    if(N.act.t>=N.act.s.t){const s=N.act.s;N.act=null;T.shift();if(s.fx)safe(s.fx,'care');if(!T.length){N.task=null;N.mode='idle'}}return}
+   if(!N.path&&T.length){const s=T[0],p=at(s.at);if(!goTo(p,1.0,()=>{N.act={s,t:0,p};if(s.txt&&Math.random()<.5)say(s.txt)})){N.task=null;N.mode='idle'}}}
+  // ---------- the katana: the six things for the nursery shelf ----------
+  function questNext(){const Q=N.quest,D=XT.shelfDbg;if(!D)return null;const held=XT.mpHeld||(XT.mpHeld=[]);
+   const left=D.ITEMS.filter(it=>!held.includes(it.k)&&!D.slots.includes(it.k)&&!D.inv.includes(it.k));
+   if(!left.length)return{k:'shelf',p:at('shelf')};let best=null,bd=1e9;left.forEach(it=>{const fl=it.bsm?BF:it.y<-.5?F:0,p=RW(it.x,it.z,fl,it.bsm),d=Math.hypot(p.x-N.x,p.z-N.z)+Math.abs(fl-N.h)*4;if(d<bd){bd=d;best={k:it.k,p,it}}});return best}
+  function runQuest(dt){const Q=N.quest;if(N.act){N.act.t+=dt;if(N.act.t>=N.act.s.t){const s=N.act.s;N.act=null;safe(s.fx,'quest')}return}
+   if(N.path)return;const nx=questNext();if(!nx){N.mode='idle';return}
+   if(!goTo(nx.p,nx.k==='shelf'?.9:1.1,()=>{N.act={t:0,p:nx.p,s:{t:nx.k==='shelf'?6:1.6,fx(){const D=XT.shelfDbg,held=XT.mpHeld||(XT.mpHeld=[]);
+     if(nx.k!=='shelf'){if(D.inv.includes(nx.k))return;held.push(nx.k);D.sync();if(dDist()<12)say('(Somewhere close, a drawer scrapes. She is collecting something.)');return}
+     D.slots=XT.shelf.ORDER.slice();XT.mpHeld=[];D.sync();N.armed=true;N.questDone=true;N.quest=null;N.mode='idle';
+     subtitle('(Far off, wood slides on wood and steel rings. The sitter has found the katana.)',4500);safe(()=>XT.demonSfx.hiss(cam.position.x,cam.position.z,.6),'h')}}}})){N.quest.fail=(N.quest.fail||0)+1;if(nx.k!=='shelf'){(XT.mpHeld||(XT.mpHeld=[])).push(nx.k);safe(()=>XT.shelfDbg.sync(),'sync')}else if(N.quest.fail>4){N.quest=null;N.questDone=true;N.mode='idle'}}}
+  // ---------- blows ----------
+  const hitEl=()=>document.getElementById('hHit');
+  function flash(){const e=hitEl();if(!e)return;e.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>e.classList.remove('on')))}
+  function clawHit(){const t=now();if(N.dead||N.hideS||N.inv>t)return false;N.hits++;N.inv=t+3;const need=P().htd;
+   if(AC)safe(()=>{const t0=AC.currentTime;burst(t0,700,2,.22,.25,'bandpass');burst(t0+.05,320,1.5,.2,.3,'lowpass')},'cry');
+   if(N.hits>=need){N.dead=true;N.mode='dead';stop();N.act=null;subtitle('(She goes down and does not get up.)',3000);setTimeout(()=>end('death'),2600);return true}
+   N.stag=.5;subtitle('(You cut the sitter. '+(need-N.hits>1?(need-N.hits)+' more.':'Once more.')+')',2400);setTimeout(()=>{if(!N.dead){N.alarm=null;flee(dm())}},350);return true}
+  function slash(){N.slashT=.35;N.slashCd=P().scd;if(AC)safe(()=>{const t0=AC.currentTime;burst(t0,4200,2,.18,.22,'bandpass')},'sw');
+   const d=dm(),dist=Math.hypot(d.x-N.x,d.z-N.z),fx=-Math.sin(N.yaw),fz=-Math.cos(N.yaw),dot=((d.x-N.x)*fx+(d.z-N.z)*fz)/Math.max(dist,1e-3);
+   if(dist>1.9||dot<.4||Math.abs(d.h-N.h)>1.2||!losClear(N.x,N.z,d.x,d.z,Math.min(d.h,N.h)))return;
+   N.cuts++;ST.stun=Math.max(ST.stun,.7);flash();safe(()=>XT.demonSfx.hiss(d.x,d.z,1.3),'h');
+   // the cut throws you back
+   let bx=d.x-N.x,bz=d.z-N.z;const L=Math.hypot(bx,bz)||1;bx/=L;bz/=L;for(let i=0;i<8;i++){const nx=cam.position.x+bx*.1,nz=cam.position.z+bz*.1;if(blocked(nx,nz))break;cam.position.x=nx;cam.position.z=nz}
+   const left=P().cuts-N.cuts;if(left<=0){subtitle('(The blade goes through you.)',2500);setTimeout(()=>end('secret'),900);return}
+   subtitle('The katana bites. '+(left>1?left+' more cuts and you are finished.':'One more cut and you are finished.'),2600)}
+  // ---------- per frame ----------
+  function update(dt){if(!N.on||N.ended)return;const pp=P();N.inv=N.inv;N.slashCd=Math.max(0,N.slashCd-dt);N.slashT=Math.max(0,N.slashT-dt);N.stag=Math.max(0,(N.stag||0)-dt);N.fear=Math.max(0,N.fear-dt*.01);
+   if(C().EV&&C().EV.next<60)C().EV.next=60;// the house's own events are for a human sitter
+   if(N.dead){pose(dt,0);return}
+   // senses (five times a second)
+   N.sense-=dt;if(N.sense<=0){N.sense=.2;const s=sees();if(s){N.lastSeen=dm();const close=dDist();
+     if(N.armed&&XT.hour()>=24){if(N.mode!=='fight'&&!N.hideS){N.mode='fight';stop();N.act=null;N.task=null;say('(The sitter raises the sword.)')}}
+     else if(N.mode!=='flee'&&N.mode!=='hide')alarm(N.lastSeen,close<3?1.4:1)}
+    else if(N.mode==='fight'&&N.lastSeen&&dDist()>9){N.mode='idle'}}
+   if(N.alarm){N.alarm.t-=dt;if(N.alarm.t<=0){const a=N.alarm;N.alarm=null;if(N.mode!=='hide'){if(N.mode!=='flee')say(['(The sitter gasps.)','"Who\'s there?"','(Quick footsteps. She is running.)'][Math.floor(Math.random()*3)]);flee(a.p)}}}
+   let mv=0;
+   if(N.mode==='hide'){N.hideT-=dt;const d=dDist();
+    // listening: she stays put while you are close
+    if(N.hideT<=0&&d>4.5)unhide();
+    else if(d<3&&AC&&!muted&&Math.random()<dt*.35*(1.1-pp.peek))safe(()=>burst(AC.currentTime,900,.8,.03,.5,'bandpass'),'breath')}
+   else if(N.mode==='flee'){mv=walk(dt,N.stag>0?0:pp.run);if(!N.path&&N.mode==='flee')N.mode='idle'}
+   else if(N.mode==='fight'){const d=dm(),dist=dDist();if(dist>1.35){if(sees()){const ux=(d.x-N.x)/dist,uz=(d.z-N.z)/dist,s=pp.run*.85*dt;N.path=null;
+      const nx=N.x+ux*s,nz=N.z+uz*s;if(!NAV.blk(nx,N.z,N.h))N.x=nx;if(!NAV.blk(N.x,nz,N.h))N.z=nz;N.h=Math.max(N.h-1,Math.min(N.h+.46,NAV.sup(N.x,N.z,N.h)));mv=s/dt}
+     else{if(!N.path||N.replanT<=0){N.replanT=1.5;goTo(d,1.2,()=>{})}N.replanT-=dt;mv=walk(dt,pp.run*.8)}}
+    const ty=Math.atan2(-(d.x-N.x),-(d.z-N.z));let dy=ty-N.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));N.yaw+=dy*Math.min(1,dt*8);
+    if(dist<1.8&&N.slashCd<=0&&Math.abs(dy)<.5)slash()}
+   else if(N.mode==='task'){if(N.act)runTask(dt);else{mv=walk(dt,pp.wk);if(!N.path)runTask(dt)}}
+   else if(N.mode==='quest'){if(N.act)runQuest(dt);else{mv=walk(dt,pp.wk*1.1);if(!N.path)runQuest(dt)}}
+   else{// idle: what next?
+    N.idleT-=dt;const [k,v]=need();
+    if(!N.questDone&&XT.hour()>=pp.kh&&v<.85){N.mode='quest';N.quest=N.quest||{};stop()}
+    else{const T=careTask();if(T){N.task=T;N.mode='task';stop()}
+     else if(N.idleT<=0){N.idleT=rnd(8,16);const c=at('crib');if(Math.hypot(c.x-N.x,c.z-N.z)>3||Math.abs(c.h-N.h)>1)goTo({x:c.x+rnd(-1,1),z:c.z+rnd(.5,2),h:0},1)}
+     mv=walk(dt,pp.wk)}}
+   // footsteps you can hear
+   if(mv>.3){N.stepT-=dt*(mv>2.4?1.6:1);if(N.stepT<=0){N.stepT=.5;const d=dDist();if(AC&&!muted&&d<16){const g=(mv>2.4?.5:.28)/(1+d*d*.08);safe(()=>burst(AC.currentTime,95,1.2,g,.14,'lowpass'),'step')}}}
+   pose(dt,mv)}
+  // ---------- what the demon does, judged here instead of by a host ----------
+  function req(m){if(!N.on||N.ended||m.t!=='hx')return;const k=m.k;if(k==='skill'||k==='vh')return;
+   const x=mX(+m.x||0),z=mZ(+m.z||0);
+   if(k==='flick'){safe(()=>MP.playScare({k:'lights',x:+m.x||0,z:+m.z||0,y:+m.y||0}),'fl');if(Math.hypot(x-N.x,z-N.z)<7&&Math.abs((+m.y||0)-N.h)<1.5)alarm({x,z,h:+m.y||0},.8);return}
+   if(k==='hiss'||k==='show'){MP.onC({t:'hfx',k,x:+m.x||0,z:+m.z||0});const d=Math.hypot(x-N.x,z-N.z);
+    if(k==='hiss'&&d<P().hear)alarm({x,z,h:fy},d<5?1.1:.7);
+    if(k==='show'&&d<10&&Math.abs(fy-N.h)<1.3&&!N.hideS&&losClear(x,z,N.x,N.z,Math.min(fy,N.h))){alarm({x,z,h:fy},1.5);CARE.dbg.noise=Math.min(1,CARE.dbg.noise+.08)}return}
+   if(k==='claw'){if(XT.hour()<24)return;const d=dm(),dist=Math.hypot(N.x-d.x,N.z-d.z),fx=-Math.sin(yaw),fz=-Math.cos(yaw),dot=((N.x-d.x)*fx+(N.z-d.z)*fz)/Math.max(dist,1e-3);
+    if(!N.dead&&!N.hideS&&dist<SK().reach+.35&&dot>.5&&Math.abs(N.h-d.h)<1.2&&losClear(d.x,d.z,N.x,N.z,Math.min(d.h,N.h)))clawHit();return}
+   if(k==='spot'){MP.onC({t:'hfx',k:'creak',s:m.s});if(N.hideS&&N.hideS.id===m.s){unhide(true);MP.onC({t:'hspot',r:'found',n:'the sitter'});N.alarm=null;
+     if(XT.hour()>=24)setTimeout(()=>{if(!clawHit())flee(dm())},250);else flee(dm())}else MP.onC({t:'hspot',r:'empty'})}}
+  // ---------- start and end ----------
+  function start(){MP.sp=true;MP.hm={demon:'me'};MP.demon=true;MP.ended=false;TITLE.begin(false)}
+  function begin(){entered=true;safe(()=>{if(!basementOpen){basementOpen=true;solids.forEach(q=>{if((q.r||q).x0===6.2&&(q.r||q).z0===-3.56)q.off=true})}},'bsm');
+   body();const p=at('door');N.x=p.x;N.z=p.z;N.h=p.h;N.yaw=Math.PI;N.on=true;N.idleT=0;safe(()=>MP.onHunt(),'onHunt');
+   setTimeout(()=>subtitle('The sitter has let herself in. Stalk her, scare her away from the baby. After midnight, hunt her. (No other babysitter is coming.)',6000),3000)}
+  function end(id){if(N.ended)return;N.ended=true;MP.ended=true;safe(()=>MP.huntEnd(id==='death'?'death':id==='secret'?'secret':'dawn'),'end')}
+  function hud(){if(!N.on)return'';const pp=P();let s=N.dead?'down':N.hideS?'hidden':N.mode==='flee'?'running':N.armed?'armed with the katana':N.mode==='quest'?'searching the house':N.act?'with the baby':'';
+   return '<br>Sitter'+(s?': '+s:'')+(N.hits&&!N.dead?' <span class="w">(wounded)</span>':'')+(N.armed?'<br><span class="w">Her blade: '+(pp.cuts-N.cuts)+' more cuts kill you</span>':'')}
+  const reps=()=>N.on&&!N.dead?[['npc',{x:iX(N.x),z:iZ(N.z),y:N.h,hid:N.hideS?1:0,cr:0}]]:[];
+  XT.onUpdate(dt=>{if(!MP.sp)return;safe(()=>update(dt),'npc')});
+  return{start,begin,req,hud,reps,end,N,NAV,P,PD}})();
+ XT.huntSP=SPH;
+
+ // single-player Hunt: no arrival scene, no saving, no endings of the normal game, no skipping after midnight
+ {const oi=XT.intro;XT.intro=function(){if(MP.sp){safe(()=>SPH.begin(),'sp begin');return}return oi.apply(this,arguments)}}
+ {const oe=XT.ending;XT.ending=function(id,extra){if(MP.sp){if(id==='parents'||id==='dawn')SPH.end('dawn');else if(id==='secret')SPH.end('secret');else if(id==='death')SPH.end('death');return true}return oe.apply(this,arguments)}}
+ {const sg=saveGame;saveGame=function(){if(MP.sp)return;return sg.apply(this,arguments)}}
+ {const sk=skipHour;skipHour=function(){if(MP.sp&&XT.hour()>=24){subtitle('No skipping after midnight in Hunt.',1800);return}return sk.apply(this,arguments)}}
  XT.hunt={ST,get av(){return av},get skill(){return skI},pickSkill,act,claw,useE,hits,setHiss,huntUnlocked:()=>huntUnlocked()};
 })();
 </script>
