@@ -792,7 +792,7 @@ const VFX=(function(){let nz=0,fogAdd=0,doorT=25,ratT=8,rat=[];const blurEl=docu
   q.strokeStyle='rgba(0,0,0,.9)';q.lineCap='round';for(let i=0;i<5;i++){q.lineWidth=5-i*.6;q.beginPath();q.moveTo(64,40);q.quadraticCurveTo(64+(i-2)*22,14,64+(i-2)*30,2);q.stroke()}return new THREE.CanvasTexture(c)})();
  const shadows=[];for(let i=0;i<5;i++){const m=new THREE.Mesh(new THREE.PlaneGeometry(1.1,1.6),new THREE.MeshBasicMaterial({map:shT,transparent:true,opacity:0,depthWrite:false,color:0x000000}));m.rotation.x=Math.PI/2;m.visible=false;scene.add(m);shadows.push({m,a:Math.random()*6.28,r:1.2+Math.random()*2.2,sp:(.05+Math.random()*.08)*(i%2?1:-1)})}
  const small=[];scene.children.forEach(o=>{if(o.isMesh&&o.geometry&&o.geometry.parameters){const g=o.geometry.parameters;const r=g.radiusTop!==undefined?Math.max(g.radiusTop,g.radiusBottom):g.width!==undefined?Math.max(g.width,g.depth):g.radius;const h=g.height!==undefined?g.height:r;if(r<.12&&h<.26&&(o.position.y>.45||(o.position.y>F+.45&&o.position.y<-.3)))small.push(o)}});
- function update(dt,t){const RL=window.__rlm&&__rlm.on,target=RL||!entered||ended?0:CARE.dbg.noise;nz+=(target-nz)*Math.min(1,dt*.6);const k=Math.max(0,(nz-.25)/.75);
+ function update(dt,t){const RL=window.__rlm&&__rlm.on,target=RL||!entered||ended||(window.__mp&&__mp.demon)?0:CARE.dbg.noise;nz+=(target-nz)*Math.min(1,dt*.6);const k=Math.max(0,(nz-.25)/.75);
   // fog and drifting dust around you
   const fa=.055*k;scene.fog.density+=fa-fogAdd;fogAdd=fa;dm.opacity=.55*k;dm.size=.014+.012*k;
   if(k>0){for(let i=0;i<dn;i++){const d=dseed[i];dpos[i*3]=cam.position.x+d[0]+Math.sin(t*.13+d[3])*.4;dpos[i*3+1]=fy+((d[1]+t*.05+Math.sin(t*.2+d[3])*.1)%2.4+2.4)%2.4;dpos[i*3+2]=cam.position.z+d[2]+Math.cos(t*.11+d[3])*.4}dg.attributes.position.needsUpdate=true}
@@ -1195,7 +1195,7 @@ function update(dt,t){
   else if(18+clockT/HOUR_SEC>=18.6&&!(window.__rlm&&__rlm.on)){EV.next-=dt*(.5+creep)*MPK('ev');if(EV.next<=0){const pool=EVENTS.filter(e=>e.id!==EV.last&&!(e.id==='scratch'&&basementOpen));startEvent(pool[Math.floor(Math.random()*pool.length)])}}
   if(dread>0)dread-=dt}
  // escalation: one smooth ramp - faint signs while she only fusses, building into bleeding, red light, demonic pictures and full stretch
- const sh=.08*creep+(dread>0?.1:0),nz=sat(noise+sh),ease=(a,b)=>a+(b-a)*Math.min(1,dt*1.2),ss=(a,b)=>{const x=sat((nz-a)/(b-a));return x*x*(3-2*x)};
+ const sh=.08*creep+(dread>0?.1:0),nz=window.__mp&&__mp.demon?0:sat(noise+sh),ease=(a,b)=>a+(b-a)*Math.min(1,dt*1.2),ss=(a,b)=>{const x=sat((nz-a)/(b-a));return x*x*(3-2*x)};
  fx.early=ease(fx.early,ss(.1,.4));fx.bleed=ease(fx.bleed,ss(.15,.75));fx.red=ease(fx.red,ss(.35,.85));fx.demon=ease(fx.demon,ss(.45,.9));
  const far=!(window.__mp&&(__mp.ghost||__mp.demon))&&!carrying&&!inBase()&&!(window.__rlm&&__rlm.on)&&!(window.__trap&&__trap.on)&&Math.hypot(cam.position.x-babyPos().x,cam.position.z-babyPos().z)>4&&!inNursery();fx.stretch=ease(fx.stretch,far?ss(.1,.9):0);
  fx.glitch=fx.red>.02?Math.min(1,fx.red*.45+(Math.random()<fx.red*.06?.6:0)):0;
@@ -1214,7 +1214,7 @@ let calm=false;try{calm=localStorage.getItem('reduceFlash')==='1'}catch(e){}wind
 const flEl=document.getElementById('flashOpt');const flTxt=()=>{if(flEl)flEl.textContent='F: reduce flashing ('+(calm?'on':'off')+')'};flTxt();
 addEventListener('keydown',e=>{if(e.code==='KeyF'&&!e.repeat&&!(window.__xt&&__xt.bladeFight&&__xt.bladeFight.S)){calm=!calm;try{localStorage.setItem('reduceFlash',calm?'1':'0')}catch(err){}flTxt();subtitle(calm?'Reduce flashing: on':'Reduce flashing: off',1500)}});
 // loud baby: switched-on lights stutter (surge, drop out) - at most ~2.5 on/off changes per second per light; reduce-flashing swaps in a slow dimming pulse
-let ft=0;function flicker(dt){ft+=dt;const a=sat((noise-.15)/.65);allL.forEach((l,i)=>{const u=l.userData;if(!(u.base>0)||l.intensity<=0)return;if(a<.01){u.fs=1;return}
+let ft=0;function flicker(dt){ft+=dt;const a=window.__mp&&__mp.demon?0:sat((noise-.15)/.65);allL.forEach((l,i)=>{const u=l.userData;if(!(u.base>0)||l.intensity<=0)return;if(a<.01){u.fs=1;return}
  if(calm){l.intensity*=1-.4*a*(.5+.5*Math.sin(ft*1.3+i*1.7));return}
  u.ft=(u.ft||0)-dt;if(u.ft<=0){const r=Math.random();u.fs=r<.35*a*Math.min(1,a*2)?.04:r<.35*a+.3*a?1+.9*a:1;u.ft=.2+Math.random()*.35*(1.3-a)}l.intensity*=u.fs===undefined?1:u.fs})}
 function post(dt){flicker(dt||1/60);const dk=fx.dark;if(fx.early>.005)fxEl.style.setProperty('--vig',Math.min(.97,parseFloat(fxEl.style.getPropertyValue('--vig')||.45)+.18*fx.early).toFixed(3));if(dk<.005)return;allL.forEach(l=>l.intensity*=1-.72*dk);hemi.intensity*=1-.85*dk;fxEl.style.setProperty('--vig',Math.min(.97,parseFloat(fxEl.style.getPropertyValue('--vig')||.45)+.5*dk).toFixed(3));fxEl.style.setProperty('--vc',(55-38*dk).toFixed(1)+'%')}
@@ -3989,7 +3989,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   if(MP.demon){const mic=V.denied?'Hiss (no mic)':V.muted?'Hiss':'Voice',late=XT.hour()>=24,cdT=k=>left(k)?' <span class="k">'+left(k)+'s</span>':'';
    hud.innerHTML='<b>DEMON</b>'+(MP.sp?'':' &middot; Mic: '+mic+' <span class="k">[M]</span>')+(MP.sp?safe(()=>SPH.hud(),'sphud')||'':'')+(ST.stun>0?'<br><span class="w">STUNNED</span>':'')+(ST.xray>0?'<br><span class="ok">She is crying: you can feel them</span>':'')+
     (B?'<br>WASD move &middot; mouse aim<br>[Click / 1] claws &middot; [Right-click / 2] lunge &middot; [Space / 3] tail sweep':
-    '<br><span class="k">[Q]</span> ceiling '+(ST.ceil?'(on)':'')+' &middot; <span class="k">[R]</span> flicker'+cdT('flick')+' &middot; <span class="k">[H]</span> hiss'+cdT('hiss')+'<br><span class="k">[X]</span> show yourself'+cdT('show')+' &middot; <span class="k">[E]</span> open a hiding spot / door<br>'+
+    '<br><span class="k">[Q]</span> ceiling '+(ST.ceil?'(on)':'')+' &middot; <span class="k">[R]</span> flicker'+cdT('flick')+' &middot; <span class="k">[H]</span> hiss'+cdT('hiss')+'<br><span class="k">[X]</span> scare'+cdT('show')+' &middot; <span class="k">[E]</span> open a hiding spot / door<br>'+
     (late?'<span class="k">[Click / J]</span> claws'+cdT('claw'):'<span class="k">Claws after midnight. Until then: stalk and scare.</span>'))}
   else hud.innerHTML='<b>HUNT</b> &middot; '+(MP.ghost?'You are a ghost':'Survive until 6 AM, or find the katana')+(ST.hits&&!MP.ghost?'<br><span class="w">Wounded: '+(ST.left>1?ST.left+' more hits':'one more hit')+' kills you</span>':'')+(ST.inv>0&&!MP.ghost?' <span class="ok">('+Math.ceil(ST.inv)+'s safe)</span>':'')+(XT.hour()<24?'<br><span class="k">She cannot hurt you before midnight</span>':'')}
  setInterval(()=>safe(drawHud,'hud'),250);
@@ -4063,7 +4063,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
 #hTB button small{display:block;font-size:.5rem;opacity:.8;margin-top:2px}
 @media (orientation:portrait){#hTB{grid-template-columns:repeat(3,52px);gap:8px}#hTB button{width:52px;height:52px}#hTB button.big{height:112px}}`;document.head.appendChild(c)}
  const tb=document.createElement('div');tb.id='hTB';tb.hidden=true;document.body.appendChild(tb);let tbMode='';
- const HB=[['claw','Claws','big'],['ceil','Ceiling'],['flick','Flicker'],['hiss','Hiss'],['show','Show'],['use','Open']],FB=[['swipe','Claws','big'],['lunge','Lunge'],['sweep','Sweep']];
+ const HB=[['claw','Claws','big'],['ceil','Ceiling'],['flick','Flicker'],['hiss','Hiss'],['show','Scare'],['use','Open']],FB=[['swipe','Claws','big'],['lunge','Lunge'],['sweep','Sweep']];
  function tbBuild(m){tbMode=m;tb.innerHTML=(m==='f'?FB:HB).map(([k,t,c])=>'<button type="button" data-k="'+k+'" class="'+(c||'')+'">'+t+'<small></small></button>').join('')}
  tb.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();e.stopPropagation();const k=b.dataset.k;
   if(tbMode==='f')fightAtk(k);else if(k==='claw')claw();else if(k==='use')useE();else act(k);b.classList.add('on');setTimeout(()=>b.classList.remove('on'),160)});
@@ -4246,7 +4246,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   // something frightening at p: she runs (after her reaction time), unless she is armed and it is close
   function alarm(p,k){if(N.dead||N.ended)return;N.fear=Math.min(1,N.fear+k*.5);if(N.hideS){N.hideT+=6*k;return}
    if(N.armed&&XT.hour()>=24&&k<1.2)return;if(N.mode==='flee'&&!N.alarm)return;if(!N.alarm||N.alarm.k<k)N.alarm={t:P().react*(N.mode==='flee'?.3:1),p,k}}
-  function flee(from){N.mode='flee';N.act=null;N.task=null;N.quest&&(N.quest.busy=0);const pp=P(),Sp=XT.hide.SPOTS;let best=null,bs=-1e9;
+  function flee(from){if(N.task&&N.task.length)N.resume=N.task;N.mode='flee';N.act=null;N.task=null;N.quest&&(N.quest.busy=0);const pp=P(),Sp=XT.hide.SPOTS;let best=null,bs=-1e9;
    Sp.forEach(s=>{const e=RW(s.ex[0],s.ex[1],s.fl,s.bsm),dD=Math.hypot(e.x-from.x,e.z-from.z),dN=Math.hypot(e.x-N.x,e.z-N.z)+Math.abs(e.h-N.h)*2.5;
     if(dD<3.5)return;const sc=dD-.75*dN+Math.random()*2*(1.2-pp.peek)+(N.hideLast===s.id?-4:0);if(sc>bs){bs=sc;best=s}});
    if(!best){N.mode='idle';return}const e=RW(best.ex[0],best.ex[1],best.fl,best.bsm);
@@ -4295,11 +4295,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    // senses (five times a second)
    N.sense-=dt;if(N.sense<=0){N.sense=.2;const s=sees();if(s){N.lastSeen=dm();const close=dDist();
      if(N.armed&&XT.hour()>=24){if(N.mode!=='fight'&&!N.hideS){N.mode='fight';stop();N.act=null;N.task=null;say('(The sitter raises the sword.)')}}
-     else if(N.mode!=='flee'&&N.mode!=='hide')alarm(N.lastSeen,close<3?1.4:1)}
+     else if(N.mode!=='flee'&&N.mode!=='hide'&&!(N.mode==='task'&&close>3.5))alarm(N.lastSeen,close<3?1.4:1)}
     else if(N.mode==='fight'&&N.lastSeen&&dDist()>9){N.mode='idle'}}
    if(N.alarm){N.alarm.t-=dt;if(N.alarm.t<=0){const a=N.alarm;N.alarm=null;if(N.mode!=='hide'){if(N.mode!=='flee')say(['(The sitter gasps.)','"Who\'s there?"','(Quick footsteps. She is running.)'][Math.floor(Math.random()*3)]);flee(a.p)}}}
    let mv=0;
-   if(N.mode==='hide'){N.hideT-=dt;const d=dDist();
+   if(N.mode==='hide'){N.hideT-=dt*(1+2*C().noise);const d=dDist();
     // listening: she stays put while you are close
     if(N.hideT<=0&&d>4.5)unhide();
     else if(d<3&&AC&&!muted&&Math.random()<dt*.35*(1.1-pp.peek))safe(()=>burst(AC.currentTime,900,.8,.03,.5,'bandpass'),'breath')}
@@ -4314,7 +4314,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    else{// idle: what next?
     N.idleT-=dt;const [k,v]=need();
     if(!N.questDone&&XT.hour()>=pp.kh&&v<.85){N.mode='quest';N.quest=N.quest||{};stop()}
-    else{const T=careTask();if(T){N.task=T;N.mode='task';stop()}
+    else{const T=N.resume||careTask();N.resume=null;if(T){N.task=T;N.mode='task';stop()}
      else if(N.idleT<=0){N.idleT=rnd(8,16);const c=at('crib');if(Math.hypot(c.x-N.x,c.z-N.z)>3||Math.abs(c.h-N.h)>1)goTo({x:c.x+rnd(-1,1),z:c.z+rnd(.5,2),h:0},1)}
      mv=walk(dt,pp.wk)}}
    // footsteps you can hear
