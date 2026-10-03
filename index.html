@@ -2613,7 +2613,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  (function tick(){safe(ui,'ui');requestAnimationFrame(tick)})();
  // a tap on the paused overlay resumes; keys held by toggles are released on pause by the main loop
 })();
-// ---------- 14. the little shelf in the nursery: six things hidden around the house. Set them in the rhyme's order and a compartment opens (the secret ending) ----------
+// ---------- 14. the little shelf in the nursery: six things hidden around the house. Set them in the right order (no in-game hint) and a compartment opens (the secret ending) ----------
 // Swap the hook: __xt.shelf.ORDER (left to right) and __xt.shelf.onSolve() decide what solves it and what happens.
 (function(){const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush ext] shelf '+(t||''),e)}};
  const S=.2;// every item is scaled so its largest side is the same, in the house and on the shelf
@@ -2658,7 +2658,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   {k:'flake',n:'snowflake ornament',x:8.6,y:.005,z:4.35,flat:1,where:"parents' bedroom floor"},
   {k:'die',n:'die',x:-3.55,y:F+.42,z:5.9,where:'downstairs bathroom, on the toilet lid'}];
  const NM={};ITEMS.forEach(it=>NM[it.k]=it.n);
- const SH={ORDER:ITEMS.map(it=>it.k),onSolve(){XT.ending('secret')}};XT.shelf=SH;
+ const SH={ORDER:['die','flake','ball','logo','pot','onion'],onSolve(){XT.ending('secret')}};XT.shelf=SH;
  let inv=[],sel=0,slots=[null,null,null,null,null,null],done=false,wrongKey='',told=false;
  const bills=[];
  // ---- the shelf: a plain light-brown plank on metal brackets, bolted to a built-out piece of the nursery wall opposite the crib.
@@ -2685,10 +2685,6 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  XT.place(unit,.6,0,3.45);unit.rotation.y=Math.PI;
  const myS={x0:-.4,x1:1.6,z0:3.03,z1:3.45,y0:0,y1:2.8};myS.r={x0:myS.x0,x1:myS.x1,z0:myS.z0,z1:myS.z1};solids.push(myS);
  const hb=(w,h,d,x,y,z,label,act,par)=>{const m=new THREE.Mesh(BG(w,h,d),hitM);m.position.set(x,y,z);(par||unit).add(m);m.userData.i={get label(){return label()},act(){safe(act,'act')}};inter.push(m);return m};
- // the old card that gives the order: tacked to the nursery wall beside the window
- const RHYME='<p class="hd">An old card, the ink gone brown</p><p>Six places on a shelf. Set them from left to right:</p><p>the one that makes the cook cry,<br>the blue that holds the water,<br>the window of four colours,<br>the one that bounces and never keeps still,<br>the star that only falls in winter,<br>and last, the bone that always shows you six.</p><p>Set them right and what I left here is yours. It is the only thing in this house that ever made the one below bleed.</p><p>- K.</p><p class="close">[E] or [Esc] to put it down</p>';
- {const cg=new THREE.Group(),cm=new THREE.Mesh(new THREE.PlaneGeometry(.12,.16),new THREE.MeshPhongMaterial({shininess:5,map:tex(60,80,(q,w,h)=>{q.fillStyle='#e6dcc0';q.fillRect(0,0,w,h);q.fillStyle='rgba(40,28,20,.7)';for(let r=0;r<7;r++)q.fillRect(8,10+r*9,40-(r*13)%16,2)})}));cm.position.z=.002;cg.add(cm);cg.rotation.y=Math.PI/2;cg.rotation.z=.06;
-  const ch=new THREE.Mesh(BG(.26,.3,.14),hitM);cg.add(ch);XT.place(cg,-3.94,1.45,-1.35);ch.userData.i={label:'Read: an old card',act(){safe(()=>openDoc(RHYME),'card')}};inter.push(ch)}
  const shelfInst={};const ORD=['1st','2nd','3rd','4th','5th','6th'];
  for(let i=0;i<6;i++)hb(.3,.6,.42,SLOT_X(i),SH_Y+.05,.35,()=>{if(done)return'Shelf';const c=slots[i];if(c)return'Take back the '+NM[c];if(inv.length)return'Put the '+NM[inv[sel]]+' here ('+ORD[i]+' space from the left)';return'Shelf: empty space ('+ORD[i]+' of 6)'},()=>slotAct(i));
  // ---- the six things, out in the house ----
@@ -2742,12 +2738,14 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 #bf .hurt{position:absolute;inset:0;background:radial-gradient(transparent 40%,rgba(160,0,0,.6));opacity:0;transition:opacity .45s}#bf .hurt.on{opacity:1;transition:none}
 #bfB{position:absolute;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;grid-template-columns:repeat(2,64px);gap:10px;pointer-events:none}
 #bfB button{pointer-events:auto;touch-action:none;width:64px;height:64px;border-radius:50%;border:1.5px solid rgba(232,226,214,.35);background:rgba(14,14,18,.6);color:#e8e2d6;font:600 .62rem/1.1 var(--ui,system-ui,sans-serif);letter-spacing:.06em;text-transform:uppercase;padding:0;-webkit-tap-highlight-color:transparent}#bfB button.on{background:rgba(200,164,92,.45)}#bfB .sl{background:rgba(90,24,24,.6)}
+#bf .intro{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:auto;cursor:pointer;width:min(30rem,calc(100% - 32px));max-height:calc(100% - 32px);overflow:auto;box-sizing:border-box;background:rgba(12,9,11,.92);border:1px solid #6a2024;border-radius:8px;padding:1.1rem 1.3rem;font-size:.8rem;line-height:1.5;color:#e8e0d4;box-shadow:0 10px 40px rgba(0,0,0,.7)}
+#bf .intro h3{margin:0 0 .5rem;font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;color:#d9c48a}#bf .intro ul{margin:.2rem 0 .6rem;padding-left:1.1rem}#bf .intro li{margin:.2rem 0}#bf .intro .go{text-align:center;color:#ffd36a;letter-spacing:.12em;text-transform:uppercase;font-size:.72rem;margin-top:.6rem}
 @media (max-width:1000px){#bf .help{display:none}}`;document.head.appendChild(css3);
  const bf=document.createElement('div');bf.id='bf';bf.hidden=true;
- bf.innerHTML='<div class="hurt"></div><div class="boss"><p>The thing below the floor</p><div class="bar"><span><i></i></span><span><i></i></span><span><i></i></span></div></div><div class="cue" hidden></div><div class="me"><div class="hp"></div><div class="st"></div></div><div class="help"></div>'+
+ bf.innerHTML='<div class="hurt"></div><div class="boss"><p>The thing below the floor</p><div class="bar"><span><i></i></span><span><i></i></span><span><i></i></span></div></div><div class="cue" hidden></div><div class="me"><div class="hp"></div><div class="st"></div></div><div class="help"></div><div class="intro" hidden></div>'+
   '<div id="bfB" hidden><button type="button" data-a="dl">&#9664; Dodge</button><button type="button" data-a="dr">Dodge &#9654;</button><button type="button" data-a="bl">Block</button><button type="button" class="sl" data-a="sl">Slash</button></div>';
  document.body.appendChild(bf);
- const bfQ=s=>bf.querySelector(s),cueEl=bfQ('.cue'),hpEl=bfQ('.hp'),stEl=bfQ('.st'),hurtEl=bfQ('.hurt'),bars=[...bf.querySelectorAll('.bar i')],tB=bfQ('#bfB');
+ const bfQ=s=>bf.querySelector(s),introEl=bfQ('.intro'),cueEl=bfQ('.cue'),hpEl=bfQ('.hp'),stEl=bfQ('.st'),hurtEl=bfQ('.hurt'),bars=[...bf.querySelectorAll('.bar i')],tB=bfQ('#bfB');
  bfQ('.help').textContent='Left-click / J: slash  -  hold Right-click / K: block (just before the hit: parry)  -  Space: dodge (A / D picks the side)';
  const DF={easy:{hp:6,bh:5,sp:.8,pw:.35},normal:{hp:4,bh:6,sp:1,pw:.25},nightmare:{hp:3,bh:7,sp:1.25,pw:.18}};
  const tch=()=>!!window.__touchMode;
@@ -2757,7 +2755,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  let FS=null;const IN={l:0,r:0,blk:false,blkT:-9};
  const sfx=(f,q,g,d,ty)=>safe(()=>{if(AC)burst(AC.currentTime,f,q,g,d,ty)},'sfx');
  const cue=(txt,cls,dur)=>{cueEl.hidden=!txt;cueEl.textContent=txt||'';cueEl.className='cue '+(cls||'');if(FS)FS.cueT=dur||0};
- function act(a,down){if(!FS||FS.st==='intro'||FS.over||FS.spec||(paused&&!FS.MP))return;const S=FS;
+ function act(a,down){if(!FS||FS.st==='intro'||FS.st==='ready'||FS.over||FS.spec||(paused&&!FS.MP))return;const S=FS;
   if(a==='bl'){if(down&&!IN.blk){IN.blk=true;IN.blkT=S.T}else if(!down)IN.blk=false;return}
   if(!down)return;
   if(a==='sl'){if(S.cd>0||IN.blk||S.dodgeT>0)return;S.cd=.5;S.swing=S.T;slash();sfx(4200,2,.16,.22,'bandpass');
@@ -2770,17 +2768,27 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   if(a==='dl'||a==='dr'||a==='dg'){if(S.dodgeT>-.15)return;let d=a==='dl'?-1:a==='dr'?1:(IN.r?1:IN.l?-1:(S.px>0?-1:1));
    if(Math.abs(S.px+d*.9)>1.0)d=-d;S.dodgeT=.32;S.dFrom=S.px;S.dTo=Math.max(-.95,Math.min(.95,S.px+d*.9));sfx(900,1,.12,.25,'lowpass')}}
  // a cut lands (the host's copy of the fight decides; single-player is its own host)
- function damage(S){if(!S||S.st==='intro'||S.st==='finish'||S.st==='lost')return;const open=S.st==='idle'||S.st==='recover'||S.st==='stag';if(!open)return;
+ function damage(S){if(!S||S.st==='intro'||S.st==='ready'||S.st==='finish'||S.st==='lost')return;const open=S.st==='idle'||S.st==='recover'||S.st==='stag';if(!open)return;
   const dm=S.st==='stag'?2:1;S.bhp=Math.max(0,S.bhp-dm);S.flinch=.18;safe(()=>XT.demonSfx&&XT.demonSfx.hiss(S.g.position.x,S.g.position.z,1.2),'hiss');
   if(S.st==='idle')S.stT=Math.min(S.stT,.15+Math.random()*.35);
   const per=S.D.bh,np=Math.min(2,Math.floor((3*per-S.bhp)/per));
   if(S.bhp<=0){S.st='finish';S.fT=0;cue('');return}
   if(np>S.ph){S.ph=np;S.st='roar';S.stT=1.7}}
- addEventListener('keydown',e=>{if(!FS||FS.st==='intro'||FS.over)return;const c=e.code;
+ addEventListener('keydown',e=>{if(!FS||FS.st==='intro'||FS.st==='ready'||FS.over)return;const c=e.code;
   if(c==='KeyA'||c==='ArrowLeft')IN.l=1;else if(c==='KeyD'||c==='ArrowRight')IN.r=1;else if(c==='Space'){e.preventDefault();if(!e.repeat)act('dg',true)}
   else if(c==='KeyJ'){if(!e.repeat)act('sl',true)}else if(c==='KeyK'||c==='ShiftLeft'||c==='ShiftRight'){if(!e.repeat)act('bl',true)}},true);
  addEventListener('keyup',e=>{const c=e.code;if(c==='KeyA'||c==='ArrowLeft')IN.l=0;else if(c==='KeyD'||c==='ArrowRight')IN.r=0;else if(c==='KeyK'||c==='ShiftLeft'||c==='ShiftRight')act('bl',false)});
- document.addEventListener('mousedown',e=>{if(!FS||FS.over||e.target.closest&&e.target.closest('#bfB,#ov,#overlay,button'))return;
+ function introHtml(){const T=tch();return '<h3>How to fight her</h3><ul>'+
+  (T?'<li><b>Slash</b> button: cut her when she is open (after she attacks, or while she is stunned)</li><li>Hold <b>Block</b> against the claws. Block just before they land to <b>parry</b> and stun her</li><li><b>Dodge</b> buttons: roll out of the tail sweep and sidestep the lunge</li>'
+  :'<li><b>Left-click</b> or <b>J</b>: slash. She can only be cut when she is open: after an attack, or while stunned</li><li>Hold <b>Right-click</b> or <b>K</b>: block the claws. Block just before they land to <b>parry</b> and stun her</li><li><b>Space</b>: dodge (A / D picks the side). Dodge the tail sweep, sidestep the lunge</li>')+
+  '<li>Watch the warning at the top of the screen. It tells you what is coming</li></ul><div class="go">'+(T?'Tap':'Click')+' when you are ready</div>'}
+ function dismissIntro(){const S=FS;if(!S||S.st!=='ready'||S.rdy)return;S.rdy=true;introEl.hidden=true;
+  if(!S.MP){S.st='idle';S.stT=1.2;S.T=0;return}
+  if(S.host)S.rdyIds.add(S.me);else safe(()=>__mp.send({t:'bready'}),'bready');
+  if(S.st==='ready')cue('Waiting for the others','',30)}
+ document.addEventListener('pointerdown',e=>{if(!FS||FS.st!=='ready'||FS.rdy||(paused&&!FS.MP))return;if(e.target.closest&&e.target.closest('#ov,#overlay,#tset,#mp,#mpPanel'))return;
+  if(!introEl.hidden||document.pointerLockElement){e.preventDefault&&e.pointerType!=='mouse'&&e.preventDefault();dismissIntro();if(!document.pointerLockElement&&!tch())safe(()=>{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})},'lock')}},true);
+ document.addEventListener('mousedown',e=>{if(!FS||FS.st==='ready'||FS.over||e.target.closest&&e.target.closest('#bfB,#ov,#overlay,button'))return;
   if(!document.pointerLockElement&&!tch()){safe(()=>{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})},'lock')}
   if(e.button===0)act('sl',true);else if(e.button===2)act('bl',true)});
  document.addEventListener('mouseup',e=>{if(e.button===2)act('bl',false)});
@@ -2810,7 +2818,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const DD=MP?Object.assign({},DD0,{bh:Math.max(1,Math.round(DD0.bh*__mp.bossK('hp',NF))),sp:DD0.sp*__mp.bossK('sp',NF)}):DD0;
   const lane0=MP&&!spec?(FT.indexOf(me)-(NF-1)/2)*1.9:0;
   const S=FS={st:'intro',D:DD,g,php:DD.hp,bhp:DD.bh*3,ph:0,stT:1.4,atk:null,last:[],px:0,hx:0,dist:2.7,T:0,cd:0,dodgeT:-1,dFrom:0,dTo:0,iT:0,swing:-9,flinch:0,cueT:0,lane:0,hit:false,over:false,fT:0,lk:null,shake:0,
-   MP,me,host,spec,lane0,tg:me,aid:0,seenAid:0,seenPh:0,rA:-1,rW:null,rH:false,blkd:false,dead:false,wT:1};
+   MP,me,host,spec,lane0,tg:me,rdy:false,rdyIds:new Set(),rdyT:0,aid:0,seenAid:0,seenPh:0,rA:-1,rW:null,rH:false,blkd:false,dead:false,wT:1};
   if(spec)S.over=true;
   IN.l=IN.r=0;IN.blk=false;
   const pos=()=>S.spec?PF.clone().addScaledVector(fwd,-1.3).add(new THREE.Vector3(0,.3,0)):PF.clone().addScaledVector(rt,S.lane0+S.px);
@@ -2880,11 +2888,15 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
       sfx(3200,.8,.4,.7,'highpass');sfx(600,1,.3,.4,'bandpass');safe(()=>XT.demonSfx.hiss(winP.x,winP.z,1.3),'hiss')}
      if(st.win){const end=PF.clone().addScaledVector(fwd,2.7),k=sm((t-9.8)/3.4);g.position.lerpVectors(winP,end,k);g.position.y=stopP.y;XT.demon.force=k<.6?'crawl':'walk';g.lookAt(cam.position.x,g.position.y,cam.position.z)}
      if(vm.visible){S.T=t;sword()}
-     if(t>=13.4){S.st='idle';S.T=0;S.stT=1.6;bf.hidden=false;document.getElementById('cutSkip').hidden=true;const b=document.getElementById('cutBars');if(b)b.hidden=true;
-      if(S.spec)subtitle('(You have no sword. You can only watch them fight her.)',4000);
-      else subtitle(tch()?'Kill her. Watch what she does: dodge the tail and the lunge, block the claws.':'Kill her. Watch what she does: dodge the tail and the lunge, block the claws. Strike when she is open.',5000);drawHud(S)}
+     if(t>=13.4){S.st='ready';S.rdyT=0;S.T=0;S.stT=1.6;bf.hidden=false;if(!S.spec){introEl.innerHTML=introHtml();introEl.hidden=false}else S.rdy=true;document.getElementById('cutSkip').hidden=true;const b=document.getElementById('cutBars');if(b)b.hidden=true;
+      if(S.spec)subtitle('(You have no sword. You can only watch them fight her.)',4000);drawHud(S)}
      return false}
     if(S.MP&&S.st!=='finish'&&window.__mp&&__mp.pendingEnd)return true;
+    // the instructions stay up until dismissed; in multiplayer the host starts the fight when every fighter is ready, or after 30 s
+    if(S.st==='ready'){S.rdyT+=dt;safe(()=>{XT.demon.force='walk';const tg=new THREE.Vector3(S.g.position.x,1.35,S.g.position.z);look(tg.x,tg.y,tg.z);S.lk=tg},'rdy');safe(sword,'sword');drawHud(S);
+     if(S.MP&&S.host){const F=safe(()=>__mp.fighters(),'f')||[];if(S.rdyT>30||F.every(id=>S.rdyIds.has(id))){S.st='idle';S.stT=1.2;S.T=0}}
+     return false}
+    if(!introEl.hidden){introEl.hidden=true;S.rdy=true}if(S.rdy&&cueEl.textContent==='Waiting for the others'){cue('')}
     if(paused&&!S.MP)return false;
     if(S.st==='lost'){S.fT+=dt;XT.demon.force='scare';sword();return S.fT>.9}
     if(S.st==='finish'){S.fT+=dt;const f=S.fT;S.T+=dt;bf.hidden=true;cueEl.hidden=true;
@@ -2898,7 +2910,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
      sword();if(f>4.6&&!st.f1){st.f1=1;const fd=document.getElementById('xfade');if(fd){fd.hidden=false;fd.textContent='Dawn.';requestAnimationFrame(()=>fd.classList.add('on'))}}
      return f>6}
     safe(()=>fight(dt),'fight');safe(sword,'sword');return false},
-   end(){const won=S.st==='finish';FS=null;bf.hidden=true;cueEl.hidden=true;IN.blk=false;vm.visible=false;scene.remove(vm);ash.forEach(m=>scene.remove(m));XT.demon.force=null;g.scale.setScalar(1);if(GL)GL.intensity=0;
+   end(){const won=S.st==='finish';FS=null;introEl.hidden=true;bf.hidden=true;cueEl.hidden=true;IN.blk=false;vm.visible=false;scene.remove(vm);ash.forEach(m=>scene.remove(m));XT.demon.force=null;g.scale.setScalar(1);if(GL)GL.intensity=0;
     hpEl.parentNode.hidden=false;bfQ('.help').hidden=false;
     if(won){g.visible=false;XT.ending('secret')}else{XT.ending('death',{h:'Taken.',p:'The sword was not enough. She was faster than you.'})}}};
   XT.cutUI(true);document.getElementById('cutSkip').hidden=true;XT.playCut(c)}
@@ -3295,7 +3307,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   if(m.pl)m.pl.forEach(p=>{if(p.id!==MP.id)pushRep(p.id,p.r)});
   if(m.held){XT.mpHeld=Object.keys(m.held).filter(k=>m.held[k]!==MP.id);safe(()=>XT.shelfDbg.sync(),'held')}
   drawVote(m.v?Object.assign({},m.v,{me:m.v.ids&&m.v.ids.includes(MP.id)}):null);
-  if(m.boss){const S=XT.bladeFight&&XT.bladeFight.S;if(S&&S.st!=='intro'&&S.st!=='finish'){const b=m.boss;if(b.st!==S.st||Math.abs(b.stT-S.stT)>.2)S.stT=b.stT;S.st=b.st;S.atk=b.atk;S.aid=b.aid;S.tg=b.tg;S.wT=b.wT;S.bhp=b.bhp;S.ph=b.ph}}}
+  if(m.boss){const S=XT.bladeFight&&XT.bladeFight.S;if(S&&S.st!=='intro'&&S.st!=='finish'&&!(S.st==='ready'&&m.boss.st==='ready')){const b=m.boss;if(b.st!==S.st||Math.abs(b.stT-S.stT)>.2)S.stT=b.stT;S.st=b.st;S.atk=b.atk;S.aid=b.aid;S.tg=b.tg;S.wT=b.wT;S.bhp=b.bhp;S.ph=b.ph}}}
  function hostHandle(pid,m){const p=P.get(pid);switch(m.t){
   case 'p':if(!p)break;{const now=performance.now();if(p.rep&&p.last){const dt=(now-p.last)/1000;if(dt>.03&&m.r.ar===p.rep.ar)p.sp=Math.hypot(m.r.x-p.rep.x,m.r.z-p.rep.z)/dt}
    const wasGh=p.rep&&p.rep.gh;p.rep=m.r;p.last=now;pushRep(pid,m.r);if(m.r.ent&&!entered)entered=true;if(m.r.gh&&!wasGh)checkAllDead();
@@ -3310,6 +3322,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'endreq':if(['dawn','cult','secret','parents'].includes(m.id)){decideEnd(m.id,m.extra);runPending()}break;
   case 'solve':hostSolve();break;
   case 'bslash':safe(()=>XT.bladeFight.remoteSlash(),'bslash');break;
+  case 'bready':{const S=XT.bladeFight.S;if(S&&S.rdyIds)S.rdyIds.add(pid);break}
   case 'bhit':{const S=XT.bladeFight.S;if(S&&m.r==='parry'&&S.aid===m.aid&&(S.st==='strike'||S.st==='wind')){S.st='stag';S.stT=1.6}break}
   case 'bdead':if(p){p.rep=Object.assign({},p.rep||{},{gh:1})}else if(pid===MP.id){}checkAllDead();break}}
  // the host's own player: everything a client would send, handled directly
