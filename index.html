@@ -46,6 +46,25 @@ body:has(#title:not([hidden])) #cross{display:none}
 #skipB{position:fixed;z-index:3;top:calc(env(safe-area-inset-top,0px) + 34px);right:16px;font-family:var(--ui);font-size:.7rem;letter-spacing:.06em;color:var(--dim);background:var(--panel);border:1px solid #2c2d33;border-radius:6px;padding:.3rem .6rem;cursor:pointer}#skipB:hover{color:var(--fg)}#tfade.on{opacity:1}
 .brand{font-family:'Caveat','Segoe Print',cursive!important;font-size:2.4rem!important;letter-spacing:.12em;color:#8a2020!important;margin:0 0 .4rem!important}
 </style>
+<style id="ldCss">
+#ld{position:fixed;inset:0;z-index:20;background:#060508;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;padding:16px;color:#cfc4b4;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;transition:opacity .8s}
+#ld.out{opacity:0;pointer-events:none}
+#ld .cd{position:relative;width:46px;height:120px}
+#ld .cd .wx{position:absolute;left:8px;bottom:0;width:30px;height:70px;border-radius:4px 4px 2px 2px;background:linear-gradient(90deg,#b8ac94,#e8dfcc 45%,#a89c84)}
+#ld .cd .wk{position:absolute;left:22px;bottom:70px;width:2px;height:9px;background:#2a2420}
+#ld .cd .fl{position:absolute;left:14px;bottom:76px;width:18px;height:34px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(ellipse at 50% 75%,#fff6d0 0,#ffc04a 35%,rgba(255,110,20,.55) 65%,transparent 72%);transform-origin:50% 90%;animation:ldF 1.7s ease-in-out infinite alternate;will-change:transform}
+#ld .cd .gl{position:absolute;left:-60px;bottom:30px;width:166px;height:166px;border-radius:50%;background:radial-gradient(rgba(255,170,60,.16),transparent 65%);animation:ldG 2.3s ease-in-out infinite alternate;will-change:opacity}
+@keyframes ldF{0%{transform:scale(1,1) rotate(-2deg)}35%{transform:scale(.92,1.08) rotate(2deg)}70%{transform:scale(1.05,.94) rotate(-1deg)}100%{transform:scale(.96,1.04) rotate(1.5deg)}}
+@keyframes ldG{from{opacity:.65}to{opacity:1}}
+#ld .bar{width:min(16rem,70vw);height:3px;background:#1e1a20;border-radius:2px;overflow:hidden}#ld .bar i{display:block;height:100%;width:6%;background:#8a2020;transition:width .4s}
+#ld .ln{position:relative;width:min(28rem,100%);height:3.6em;text-align:center;font-size:.85rem;line-height:1.4}
+#ld .ln p{position:absolute;inset:0;margin:0;opacity:0;animation:ldL 45.0s linear infinite}
+#ld .ln p b{display:block;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#8a7a68;font-weight:600;margin-bottom:.2rem}
+#ld .ln p.cr{font-family:'Caveat','Segoe Print',cursive;font-size:1.35rem;color:#b8a0a0}
+@keyframes ldL{0%{opacity:0}2%{opacity:1}9.11%{opacity:1}10.0%{opacity:0}100%{opacity:0}}
+#ld .t{font-family:'Caveat','Segoe Print',cursive;font-size:2.2rem;letter-spacing:.12em;color:#8a2020}
+@media (prefers-reduced-motion:reduce){#ld .cd .fl,#ld .cd .gl{animation:none}#ld .ln p{animation:none}#ld .ln p:first-child{opacity:1}}
+</style><div id="ld" role="status" aria-label="Loading"><div class="t">Hush</div><div class="cd" aria-hidden="true"><div class="gl"></div><div class="wx"></div><div class="wk"></div><div class="fl"></div></div><div class="bar"><i id="ldB"></i></div><div class="ln"><p class="" style="animation-delay:0.0s"><b>Tip</b>Pick her up when she fusses. Held close, she cries more quietly.</p><p class="cr" style="animation-delay:4.5s">She stopped crying at 9:14. Nobody was holding her.</p><p class="" style="animation-delay:9.0s"><b>Tip</b>Noise carries. The quieter the house, the safer you are.</p><p class="cr" style="animation-delay:13.5s">Don&#x27;t answer if it calls you by name.</p><p class="" style="animation-delay:18.0s"><b>Tip</b>Closets, beds and the pantry are good places to hide. Hold Shift to hold your breath.</p><p class="cr" style="animation-delay:22.5s">The house is older than the street it stands on.</p><p class="" style="animation-delay:27.0s"><b>Tip</b>Batteries don&#x27;t last forever. Use the flashlight when you need it.</p><p class="cr" style="animation-delay:31.5s">Something below the floor is listening.</p><p class="" style="animation-delay:36.0s"><b>Tip</b>Read what people left behind. The parents didn&#x27;t tell you everything.</p><p class="cr" style="animation-delay:40.5s">Every sitter thought they would be the one who stayed.</p></div></div>
 <div id="overlay" hidden><div class="box"><h1>Hush</h1><p>Click to start - WASD to move, Shift to sprint, Space to jump, mouse to look, C or Ctrl to crouch, E to open doors, use things, sit and pick her up or hide (closets, under beds, the pantry; hold Shift to hold your breath), L flashlight, M to mute</p><p id="flashOpt">F: reduce flashing (off)</p><button id="ovSet" type="button">Settings</button></div></div>
 <div id="title"><div class="keys">WASD move - Shift sprint - Space jump - C crouch - E use / hide - L flashlight - T skip an hour - M mute - F reduce flashing</div>
 </div><div id="tfade" hidden></div><div id="tset" hidden><h2>Settings</h2><label>Master volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Voice chat <input id="sVoice" type="range" min="0" max="1.5" step="0.05"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><label>Invert Y <input id="sInvY" type="checkbox"></label><label>Graphics <select id="sQ"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><button id="tsetClose" type="button">Done</button></div>
@@ -64,7 +83,9 @@ body:has(#title:not([hidden])) #cross{display:none}
 <li>If something scratches at the basement door, leave it be. Do not go into the basement.</li>
 <li>Keep her quiet. Whatever happens, keep her quiet.</li></ul>
 <p class="sig">We'll be home by 6 in the morning.<br>- M &amp; D</p><p class="close">[E] or [Esc] to put the note down</p></div></div>
+<script>try{document.getElementById("ldB").style.width="12%"}catch(e){}</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>try{document.getElementById("ldB").style.width="30%"}catch(e){}</script>
 <script>
 const W=8,D=7,H=2.8;const MPK=k=>window.__mp&&__mp.active?__mp.k(k):1;
 const renderer=new THREE.WebGLRenderer({antialias:true});
@@ -1713,6 +1734,7 @@ const STR=(function(){const C=CARE.dbg;
  return{apply,remap,unstick,stats:{recs:recs.length,clusters:clusters.length,spans:recs.filter(r=>r.sp.x||r.sp.z).length,solids:srecs.length}}})();
 window.__str=STR;window.__MAP=MAP;window.__RP=RP;
 </script>
+<script>try{document.getElementById("ldB").style.width="62%"}catch(e){}</script>
 <script>
 // ===== Hush extensions: full save, difficulty, phone, lore, intro and endings =====
 // Everything lives in this IIFE so no top-level names collide with the main script.
@@ -3059,6 +3081,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  b.addEventListener('click',e=>{e.stopPropagation();XT.help.open()});
 })();
 </script>
+<script>try{document.getElementById("ldB").style.width="78%"}catch(e){}</script>
 <script>
 // ===== 16. Play together: online multiplayer (up to 4) over WebRTC with PeerJS and its free public broker =====
 // The host runs the night (clock, the baby, noise, events, the demon, the house) and sends absolute state 10x a second.
@@ -3583,6 +3606,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
 })();
 
 </script>
+<script>try{document.getElementById("ldB").style.width="88%"}catch(e){}</script>
 <script>
 // ===== 17. Settings: voice volume, invert Y, graphics quality (Low / Medium / High). Saved in localStorage. =====
 (function(){'use strict';const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush set] '+(t||''),e)}};
@@ -3631,6 +3655,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
 })();
 
 </script>
+<script>try{document.getElementById("ldB").style.width="94%"}catch(e){}</script>
 <script>
 // ===== 18. Achievements: saved in localStorage, a toast when one unlocks, a list on the title screen. Hidden ones stay "???" =====
 (function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush ach] '+(t||''),e)}};
@@ -3697,3 +3722,5 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  XT.ach={A,get got(){return got},unlock,get run(){return run},reset(){got={};ls.set(got);draw()}};
 })();
 </script>
+
+<script>(function(){const el=document.getElementById("ld");if(!el)return;const b=document.getElementById("ldB");if(b)b.style.width="100%";requestAnimationFrame(()=>requestAnimationFrame(()=>{el.classList.add("out");setTimeout(()=>{el.remove();const c=document.getElementById("ldCss");if(c)c.remove()},900)}))})();</script>
