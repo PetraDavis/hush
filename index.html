@@ -3802,10 +3802,12 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
   q.fillStyle='#120a06';[[30,40],[66,40]].forEach(([x,y])=>{q.beginPath();q.ellipse(x,y,9,4,0,0,7);q.fill()});
   const mat=new THREE.MeshPhongMaterial({map:new THREE.CanvasTexture(c),shininess:40,specular:0x5a5030,side:THREE.DoubleSide});
   const g=new THREE.Group(),m=new THREE.Mesh(new THREE.SphereGeometry(.11,14,8,0,Math.PI*2,0,Math.PI/2),mat);m.scale.set(.82,.32,1.1);g.add(m);
-  g.position.set(7.58,BF+.012,-13.32);g.rotation.y=.6;BSM.G.add(g);
-  const hb=new THREE.Mesh(BG(.32,.22,.34),hitM);hb.position.set(7.58,BF+.1,-13.3);BSM.G.add(hb);
+  g.position.set(7.2,BF+.012,-13.4);g.rotation.y=.6;BSM.G.add(g);
+  const hb=new THREE.Mesh(BG(.32,.22,.34),hitM);hb.position.set(7.2,BF+.1,-13.4);BSM.G.add(hb);
   hb.userData.i={label:'Something under the plank',act(){try{localStorage.setItem('hushHuntUnlocked','1')}catch(e){}g.visible=false;const i=inter.indexOf(hb);if(i>=0)inter.splice(i,1);
-   subtitle('A mask of pale yellow snake scales, still warm. (Hunt unlocked: host it from Play together.)',5500);safe(()=>MP.lobbyDraw&&MP.lobbyDraw(),'lobby')}};inter.push(hb);
+   subtitle('Your hand finds something under the plank: a mask of pale yellow snake scales, still warm. (Hunt unlocked: host it from Play together.)',5500);safe(()=>MP.lobbyDraw&&MP.lobbyDraw(),'lobby')}};inter.push(hb);
+  // the gap's hiding spot sits in front of it, so it is found by squeezing in between the crates
+  let feel=0;XT.onUpdate(dt=>{if(!g.visible||!XT.hide||XT.hide.hid!=='crates'){feel=0;return}feel+=dt;if(feel>1.5){feel=-1e9;hb.userData.i.act()}});
   XT.huntMask={g,hb}},'mask');
 
  // ---------- the AI demon sits this one out ----------
