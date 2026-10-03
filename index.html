@@ -3255,13 +3255,42 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function ghostTargets(){const L=[];AV.forEach((a,id)=>{if(a.last&&!a.last.gh)L.push(id)});return L}
  function ghostHud(){if(!MP.ghost){ghostEl.hidden=true;return}const T=ghostTargets(),id=T[gIdx%Math.max(1,T.length)];
   ghostEl.innerHTML='<b>Ghost</b> '+(gMode==='follow'&&id?'watching <span style="color:'+COL[(roster.find(p=>p.id===id)||{slot:0}).slot]+'">'+esc(MP.nameOf(id))+'</span>':'free camera')+
-   '<br><small>'+(window.__touchMode?'':'[Tab] next teammate &middot; [G] '+(gMode==='follow'?'free camera':'follow')+(gMode==='free'?' &middot; WASD, Space up, C down':''))+'</small>'}
+   '<br><small>'+(window.__touchMode?'':'[Tab] next teammate &middot; [V] '+(gMode==='follow'?'free camera':'follow')+' &middot; [1-5] pick a scare, [G] haunt'+(gMode==='free'?' &middot; WASD, Space up, C down':''))+'</small>'}
  MP.ghostCam=(dt,f,s)=>{const T=ghostTargets();if(gMode==='follow'&&T.length){const id=T[gIdx%T.length],a=AV.get(id);if(a&&a.cur){const c=a.cur;
     if(c.ar==='r'){cam.position.set(4.8,F+1.6,8);}else{cam.position.set(mX(c.x),c.cy,mZ(c.z));yaw=c.yaw;pitch=c.pi}}return}
   if(gMode==='follow'&&!T.length)gMode='free';
   const sp=(keys.ShiftLeft||keys.ShiftRight?7:3.5)*dt,cp=Math.cos(pitch);cam.position.x+=(-Math.sin(yaw)*cp*f+Math.cos(yaw)*s)*sp;cam.position.z+=(-Math.cos(yaw)*cp*f-Math.sin(yaw)*s)*sp;
   cam.position.y+=(Math.sin(pitch)*f+(keys.Space?1:0)-(keys.KeyC||keys.ControlLeft?1:0))*sp;cam.position.y=Math.max(BF-1,Math.min(8,cam.position.y));fy=cam.position.y-1.6};
- addEventListener('keydown',e=>{if(!MP.active||!MP.ghost||paused)return;if(e.code==='Tab'){e.preventDefault();gIdx++;gMode='follow';ghostHud()}else if(e.code==='KeyG'){gMode=gMode==='follow'?'free':'follow';ghostHud()}},true);
+ addEventListener('keydown',e=>{if(!MP.active||!MP.ghost||paused)return;if(e.code==='Tab'){e.preventDefault();gIdx++;gMode='follow';ghostHud()}else if(e.code==='KeyV'){gMode=gMode==='follow'?'free':'follow';ghostHud()}
+  else if(e.code==='KeyG'){if(!e.repeat)ghostScare()}else if(/^Digit[1-5]$/.test(e.code)){gSel=+e.code.slice(5)-1;gsDraw()}},true);
+ // ---------- ghost scares: the dead can still be felt. Small, harmless, on cooldowns; the host checks and passes them on ----------
+ const GS=[{k:'knock',n:'Knock',cd:12,nz:.02},{k:'creak',n:'Creak',cd:9,nz:.01},{k:'lights',n:'Flicker lights',cd:24,nz:0},{k:'door',n:'Nudge a door',cd:16,nz:.015},{k:'whisper',n:'Whisper',cd:14,nz:0}];
+ let gSel=0;const gReady={};const gHost=new Map();// host: pid -> {kind: time}
+ const gsEl=document.createElement('div');gsEl.id='gScare';gsEl.hidden=true;document.body.appendChild(gsEl);
+ {const c=document.createElement('style');c.textContent=`#gScare{position:fixed;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 18% + 58px);display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:calc(100% - 32px);font-family:var(--ui)}
+#gScare button{font:600 .68rem var(--ui);letter-spacing:.04em;color:#cfd8e8;background:rgba(20,26,40,.75);border:1px solid #4a5a7a;border-radius:6px;padding:.35rem .6rem;cursor:pointer;touch-action:manipulation}
+#gScare button.sel{border-color:#9fb4e0;box-shadow:0 0 0 1px #9fb4e0}#gScare button:disabled{opacity:.45;cursor:default}#gScare button small{opacity:.7;font-weight:400}`;document.head.appendChild(c)}
+ function gsDraw(){if(!MP.ghost||!MP.active){gsEl.hidden=true;return}gsEl.hidden=false;const now=performance.now()/1000,T=window.__touchMode;
+  gsEl.innerHTML=GS.map((g,i)=>{const left=Math.max(0,Math.ceil((gReady[g.k]||0)-now));return '<button type="button" data-i="'+i+'" class="'+(i===gSel?'sel':'')+'"'+(left?' disabled':'')+'>'+(T?'':(i+1)+' ')+g.n+(left?' <small>'+left+'s</small>':'')+'</button>'}).join('')}
+ gsEl.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();e.stopPropagation();gSel=+b.dataset.i;ghostScare()});
+ ['click','mousedown'].forEach(k=>gsEl.addEventListener(k,e=>e.stopPropagation()));
+ setInterval(()=>safe(gsDraw,'gs'),500);
+ function ghostScare(){if(!MP.active||!MP.ghost)return;const g=GS[gSel],now=performance.now()/1000;if((gReady[g.k]||0)>now)return;gReady[g.k]=now+g.cd;
+  const p={k:g.k,x:+iX(cam.position.x).toFixed(2),z:+iZ(cam.position.z).toFixed(2),y:+cam.position.y.toFixed(2)};
+  if(MP.host)hostScare(MP.id,p);else send(Object.assign({t:'gs'},p));gsDraw()}
+ // host: check the cooldown, nudge the noise a little, tell everyone
+ function hostScare(pid,p){const g=GS.find(q=>q.k===p.k);if(!g)return;const now=performance.now()/1000,m=gHost.get(pid)||{};if((m[g.k]||0)>now+.5)return;m[g.k]=now+g.cd;gHost.set(pid,m);
+  if(g.nz)CD.noise=Math.min(1,CD.noise+g.nz);const msg={t:'gfx',k:g.k,x:+p.x||0,z:+p.z||0,y:+p.y||0};bcast(msg);safe(()=>playScare(msg),'gfx')}
+ // everyone: play it where the ghost is
+ function playScare(m){const x=mX(m.x),z=mZ(m.z),y=m.y,cp=cam.position,d=Math.hypot(x-cp.x,z-cp.z,(y-cp.y)*1.5);if(d>16)return;const g0=1/(1+d*d*.05);
+  if(m.k==='knock'){if(AC&&!muted){const t0=AC.currentTime+.03;for(let i=0;i<3;i++){burst(t0+i*.3+Math.random()*.04,110,1.4,.55*g0,.12,'lowpass');burst(t0+i*.3,900,3,.08*g0,.03,'bandpass')}}}
+  else if(m.k==='creak')safe(()=>XT.hinge(x,z,1.4,true),'creak');
+  else if(m.k==='whisper'){if(AC&&!muted){const t0=AC.currentTime;for(let i=0;i<5;i++)burst(t0+i*.13+Math.random()*.05,2300+Math.random()*1900,3,.05*g0,.35,'bandpass')}}
+  else if(m.k==='door'){let best=null,bd=4;doors.forEach(dr=>{const q=dr.pv.position,dd=Math.hypot(q.x-x,q.z-z);if(dd<bd){bd=dd;best=dr}});
+   if(best){best.pv.rotation.y+=(best.open?-.22:.22)*(best.dir||1);best.sp=1.2;best.spO=best.open;safe(()=>XT.hinge(best.pv.position.x,best.pv.position.z,1,false),'hinge')}}
+  else if(m.k==='lights'){const L=[];scene.traverse(o=>{if(o.isPointLight&&o.intensity>.05&&o.visible){const w=o.getWorldPosition(new THREE.Vector3());if(Math.hypot(w.x-x,w.z-z)<5&&Math.abs(w.y-y)<3)L.push(o)}});
+   const calm=window.__getCalm&&__getCalm(),base=L.map(l=>l.intensity);let t=0;const iv=setInterval(()=>{t+=.06;L.forEach((l,i)=>{l.intensity=calm?base[i]*(.55+.45*Math.cos(t*2.6)):base[i]*(Math.random()<.5?.08:1)});if(t>=1.3){clearInterval(iv);L.forEach((l,i)=>l.intensity=base[i])}},60)}}
+
  renderer.domElement.addEventListener('mousedown',()=>{if(MP.active&&MP.ghost&&document.pointerLockElement){gIdx++;gMode='follow';ghostHud()}});
 
  // ---------- endings: one decision, by the host, for everyone ----------
@@ -3379,6 +3408,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 
  // ---------- messages ----------
  function clientHandle(m){if(MP.active&&!MP.host)lastHostMsg=performance.now();switch(m.t){
+  case 'gfx':safe(()=>playScare(m),'gfx');break;
   case 'welcome':MP.id=m.pid;roster=m.roster;MP.code=m.code;MP.hostId=m.host;lastHostMsg=performance.now();reconnecting=false;syncAvatars();lobbyDraw();callMissing();
    if(m.started&&!MP.started)startGame(m.cfg,true);break;
   case 'roster':roster=m.roster;syncAvatars();lobbyDraw();callMissing();micHud();break;
@@ -3418,6 +3448,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'vote':hostVote(pid);break;
   case 'endreq':if(['dawn','cult','secret','parents'].includes(m.id)){decideEnd(m.id,m.extra);runPending()}break;
   case 'solve':hostSolve();break;
+  case 'gs':safe(()=>hostScare(pid,m),'gs');break;
   case 'bslash':safe(()=>XT.bladeFight.remoteSlash(),'bslash');break;
   case 'bready':{const S=XT.bladeFight.S;if(S&&S.rdyIds)S.rdyIds.add(pid);break}
   case 'bhit':{const S=XT.bladeFight.S;if(S&&m.r==='parry'&&S.aid===m.aid&&(S.st==='strike'||S.st==='wind')){S.st='stag';S.stT=1.6}break}
