@@ -1308,9 +1308,9 @@ const DEMON=(function(){const C=CARE.dbg,pics=C.pics,g=new THREE.Group();g.visib
   doorway(){const c=doors.filter(d=>{const p=d.pv.getWorldPosition(new THREE.Vector3());p.y+=1;const[a,L]=ang(p);return L>3&&L<10&&a<.5&&Math.abs(d.solid.y0-fy)<.5&&clear(p)});if(!c.length)return;const d=pick(c),s=d.solid,sx=Math.sign(s.x0-cam.position.x)||1;
    place((s.x0+s.x1)/2+sx*.35,s.y0,s.z0+.12);g.rotation.z=.3*sx;return{dur:dur()}},
   monitor(){if(monEl.hidden)return;mc.style.display='block';return{dur:dur(),tick(a){monDraw(Math.min(1,a.t*3)*(a.t%.3<.22?1:.3))},end(){mc.style.display='none'}}},
-  scare(){const d=view();const l=Math.hypot(d.x,d.z)||1;const sx=d.x/l,sz=d.z/l;parts.forEach(o=>{o.material.depthTest=false});g.renderOrder=9;parts.forEach(o=>o.renderOrder=9);
-   place(cam.position.x+sx*3,cam.position.y-2.25,cam.position.z+sz*3);sting();lastScare=clk;stats.scares=(stats.scares||0)+1;
-   return{dur:.75,tick(a){const k=Math.min(1,a.t/.4),e=k*k;const dd=3-2.65*e;g.position.set(cam.position.x+sx*dd,cam.position.y-2.25,cam.position.z+sz*dd);g.lookAt(cam.position.x,g.position.y,cam.position.z);shake=(C.calm?.25:1)*(1-a.t/.75)},
+  scare(){const d=view();const l=Math.hypot(d.x,d.z)||1;const sx=d.x/l,sz=d.z/l;let D0=3;while(D0>.5&&!losClear(cam.position.x,cam.position.z,cam.position.x+sx*(D0+.3),cam.position.z+sz*(D0+.3),fy))D0-=.2;parts.forEach(o=>{o.material.depthTest=false});g.renderOrder=9;parts.forEach(o=>o.renderOrder=9);
+   place(cam.position.x+sx*D0,cam.position.y-2.25,cam.position.z+sz*D0);sting();lastScare=clk;stats.scares=(stats.scares||0)+1;
+   return{dur:.75,tick(a){const k=Math.min(1,a.t/.4),e=k*k;const dd=D0-(D0-.35)*e;g.position.set(cam.position.x+sx*dd,cam.position.y-2.25,cam.position.z+sz*dd);g.lookAt(cam.position.x,g.position.y,cam.position.z);shake=(C.calm?.25:1)*(1-a.t/.75)},
     end(){parts.forEach(o=>{o.material.depthTest=true;o.renderOrder=0});shake=0}}}};
  function sting(){if(!AC||muted)return;const t0=AC.currentTime,o=AC.createGain();o.gain.setValueAtTime(.0001,t0);o.gain.exponentialRampToValueAtTime(.7,t0+.02);o.gain.exponentialRampToValueAtTime(.0001,t0+1.6);o.connect(master);
   [92,131,185,277,415,622].forEach(f=>{const s=AC.createOscillator();s.type='sawtooth';s.frequency.setValueAtTime(f*1.03,t0);s.frequency.exponentialRampToValueAtTime(f*.92,t0+1.5);s.connect(o);s.start(t0);s.stop(t0+1.7)});burst(t0,900,.6,.5,.5,'bandpass')}
@@ -1351,7 +1351,7 @@ const TRAP=(function(){const DM=DEMON.dbg,g=DM.g;let S=null;const deadEl=documen
   if(dd<.9&&S.t>1.2){S.out=1;g.visible=false;if(S.ex.d)S.ex.d.open=true;if(S.ex.bas)basementOpen=true;subtitle('The door gives. You stumble out, gasping.',3500);if(AC)burst(AC.currentTime,200,1,.4,.3,'lowpass');return}
   // it walks you down: it keeps G metres behind you, closing at its own pace while your legs open the gap
   S.G+=legs-(.45+.1*S.t)*dt*MPK('trap');const wx=D.x-cam.position.x,wz=D.z-cam.position.z,wl=Math.hypot(wx,wz)||1;
-  g.visible=true;g.scale.setScalar(1);g.rotation.set(0,0,0);g.position.set(cam.position.x-wx/wl*Math.max(.4,S.G)+wz/wl*.25,fy,cam.position.z-wz/wl*Math.max(.4,S.G)-wx/wl*.25);g.lookAt(cam.position.x,fy,cam.position.z);
+  g.visible=true;g.scale.setScalar(1);g.rotation.set(0,0,0);{let gv=Math.max(.4,S.G);while(gv>.4&&!losClear(cam.position.x,cam.position.z,cam.position.x-wx/wl*gv,cam.position.z-wz/wl*gv,fy))gv-=.2;g.position.set(cam.position.x-wx/wl*gv+wz/wl*.25,fy,cam.position.z-wz/wl*gv-wx/wl*.25)}g.lookAt(cam.position.x,fy,cam.position.z);
   if(S.G<.7||S.t>20)return die();
   const dl=S.G;
   S.stepT-=dt;if(S.stepT<=0&&AC){S.stepT=.45;burst(AC.currentTime,110,1.2,Math.min(.9,.9/Math.max(.8,dl)),.12,'lowpass')}}
@@ -1585,6 +1585,10 @@ const inStair=(x,z)=>{x=iX(x);z=iZ(z);return x>0&&x<4&&z>3.5&&z<5.5};const ov=(s
 function support(x,z){let g=groundAt(x,z);for(const s of solids)if(ov(s,x,z,.12)&&s.y1<=fy+.37&&s.y1>g)g=s.y1;return g}
 function ceilAt(x,z){if(window.__rlm&&__rlm.on)return 99;{const o=BO(),lx=x-o.x,lz=z-o.z;if(lz<-3.5&&lz>-7.6&&lx>6.1&&lx<7.2)return -.8;if(fy<-3.2)return BC}return inStair(x,z)||fy>-1.45?2.8:-.1}
 function groundAt(x,z){if(window.__rlm&&__rlm.on)return 0;{const o=BO(),lx=x-o.x,lz=z-o.z;if(lz<-3.56&&lz>-7.7&&lx>6.1&&lx<7.2){const d=-3.56-lz;return F-Math.min(13,Math.floor(d/(4.04/13))+1)*(2.9/13)}if(fy<-4.35)return BF}x=iX(x);z=iZ(z);if(x>0&&x<4&&z>3.5&&z<5.5)return -2.9+2.9*x/4;return fy>-1.45?0:-2.9}
+// line of sight across the house floor plan: false when a wall or a shut door stands between the two points (yF: the floor height there)
+function losClear(ax,az,bx,bz,yF){const L=Math.hypot(bx-ax,bz-az),n=Math.ceil(L/.04);if(n<1)return true;
+ for(let i=1;i<n;i++){const t=i/n,d=t*L;if(d<.03||L-d<.03)continue;const x=ax+(bx-ax)*t,z=az+(bz-az)*t;if(solids.some(q=>ov(q,x,z,0)&&q.y1>yF+1.5&&q.y0<yF+1&&q.x1-q.x0<30&&q.z1-q.z0<30))return false}return true}
+window.__los=losClear;
 function blocked(x,z){if(window.__rlm&&__rlm.on)return __rlm.blocked(x,z);if(groundAt(x,z)>fy+.45)return true;return solids.some(s=>ov(s,x,z,R)&&s.y1>fy+.36&&s.y0<fy+PH())}
 let last=performance.now(),t=0,bob=0;
 let __loopErr=0,skipT0=0,busyT=0,stuckT=0;window.__frames=0;
@@ -2877,7 +2881,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const sw=mk(new THREE.RingGeometry(.35,GEO.sweep.r,40,1,-Math.PI/2-GEO.sweep.a,2*GEO.sweep.a)),cl=mk(new THREE.RingGeometry(.2,GEO.swipe.r,24,1,-Math.PI/2-GEO.swipe.a,2*GEO.swipe.a)),ln=mk(new THREE.PlaneGeometry(2*GEO.lunge.w,1));
   [sw,cl,ln].forEach(m=>{m.rotation.x=-Math.PI/2;g.add(m)});g.visible=false;scene.add(g);TEL={g,sweep:sw,swipe:cl,lunge:ln};return TEL}
  // is (x,z) inside the blow's shape? (ax,az: where she stood when it started, ad: the way she faced, al: how far the lunge goes)
- function inGeo(S,k,x,z){const dx=x-S.ax,dz=z-S.az,d=Math.hypot(dx,dz),fx=Math.sin(S.ad),fz=Math.cos(S.ad),al=dx*fx+dz*fz,ang=Math.acos(Math.max(-1,Math.min(1,al/Math.max(d,1e-3))));
+ function inGeo(S,k,x,z){return inGeo0(S,k,x,z)&&losClear(k==='lunge'?S.bx:S.ax,k==='lunge'?S.bz:S.az,x,z,fy)}
+ function inGeo0(S,k,x,z){const dx=x-S.ax,dz=z-S.az,d=Math.hypot(dx,dz),fx=Math.sin(S.ad),fz=Math.cos(S.ad),al=dx*fx+dz*fz,ang=Math.acos(Math.max(-1,Math.min(1,al/Math.max(d,1e-3))));
   if(k==='sweep')return d<GEO.sweep.r+.25&&ang<GEO.sweep.a;if(k==='swipe')return d<GEO.swipe.r+.2&&ang<GEO.swipe.a;
   return al>-.4&&al<S.al+.6&&Math.abs(dx*fz-dz*fx)<GEO.lunge.w}
  function startFight(){const D=DEMON.dbg,g=D.g;safe(()=>D.stop(),'stop');const GL=(window.__demon&&__demon.glow)||D.glow;safe(()=>{if(!lightOn)setLight(true)},'light');
@@ -3995,7 +4000,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // ---------- the demon's own controls ----------
  function fwdTarget(){let best=null,bd=SK().reach;const fx=-Math.sin(yaw),fz=-Math.cos(yaw);
   MP.dbg.AV.forEach((a,id)=>{const r=a.cur;if(id===DID()||!r||r.gh||r.hid||r.ar==='r'||Math.abs(r.y-fy)>1)return;const dx=mX(r.x)-cam.position.x,dz=mZ(r.z)-cam.position.z,d=Math.hypot(dx,dz);
-   if(d<bd&&(dx*fx+dz*fz)/Math.max(d,1e-3)>.5){bd=d;best=id}});return best}
+   if(d<bd&&(dx*fx+dz*fz)/Math.max(d,1e-3)>.5&&losClear(cam.position.x,cam.position.z,mX(r.x),mZ(r.z),fy)){bd=d;best=id}});return best}
  const ready=k=>{if((ST.cd[k]||0)>now())return false;ST.cd[k]=now()+CD[k];return true};
  const swish=()=>{if(AC)safe(()=>{const t0=AC.currentTime;burst(t0,2600,1.5,.18,.18,'bandpass');burst(t0+.02,700,1,.12,.2,'bandpass')},'swish')};
  function claw(){if(ST.stun>0)return;if(XT.hour()<24){subtitle('Not yet. Until midnight you can only stalk and scare.',2000);return}if(ST.ceil){subtitle('Drop from the ceiling first [Q].',1500);return}
@@ -4051,7 +4056,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   if(k==='flick'){MP.toAll({t:'gfx',k:'lights',x:+m.x||0,z:+m.z||0,y:+m.y||0});return}
   if(k==='hiss'||k==='show'){MP.toAll({t:'hfx',k,x:+m.x||0,z:+m.z||0});return}
   if(k==='claw'){if(!D)return;MP.toAll({t:'hfx',k:'claw',x:D.x,z:D.z});if(XT.hour()<24||!m.id)return;const r=repOf(m.id);
-   if(r&&!r.gh&&!r.hid&&r.ar!=='r'&&!isDm(m.id)&&Math.hypot(r.x-D.x,r.z-D.z)<SK().reach+.7&&Math.abs(r.y-D.y)<1.2)hitP(m.id);return}
+   if(r&&!r.gh&&!r.hid&&r.ar!=='r'&&!isDm(m.id)&&Math.hypot(r.x-D.x,r.z-D.z)<SK().reach+.7&&Math.abs(r.y-D.y)<1.2&&losClear(mX(D.x),mZ(D.z),mX(r.x),mZ(r.z),Math.min(r.y,D.y)))hitP(m.id);return}
   if(k==='spot'){let occ=null;MP.roster().forEach(p=>{if(isDm(p.id))return;const r=repOf(p.id);if(r&&!r.gh&&r.hs===m.s)occ=p.id});MP.toAll({t:'hfx',k:'creak',s:m.s});
    if(occ){MP.sendTo(occ,{t:'hfound'});MP.sendTo(pid,{t:'hspot',r:'found',n:MP.nameOf(occ)});if(XT.hour()>=24)setTimeout(()=>safe(()=>hitP(occ),'hit'),250)}else MP.sendTo(pid,{t:'hspot',r:'empty'})}};
  const isDm=id=>id===DID();
