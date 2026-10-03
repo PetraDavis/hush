@@ -2442,7 +2442,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  const NK={1:{need:1,ev:1,k:1},2:{need:1.2,ev:1.4,k:1.35},3:{need:1.4,ev:1.8,k:1.75}};
  let unlocked=cl3(parseInt(XT.ls.get('hushNights'))||1),sel=Math.min(unlocked,cl3(parseInt(XT.ls.get('hushNightSel'))||1));
  function cl3(v){return Math.max(1,Math.min(3,v|0))}
- XT.night=sel;XT.nightsUnlocked=()=>unlocked;XT.nightK=()=>NK[XT.night].k;
+ XT.night=sel;XT.nightsUnlocked=()=>unlocked;XT.nightK=()=>NK[XT.night].k;XT.nightNeed=()=>NK[XT.night].need;
  XT.cycleNight=()=>{XT.night=XT.night%unlocked+1;XT.ls.set('hushNightSel',XT.night);apply()};
  XT.unlockNight=n=>{n=cl3(n);if(n>unlocked){unlocked=n;XT.ls.set('hushNights',n)}};
  // ---- phone calls for each night ----
@@ -3089,7 +3089,9 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   get client(){return this.active&&!this.host}};
  window.__mp=MP;
  const nP=()=>Math.max(1,roster.length);
- MP.k=key=>{const n=nP();if(key==='bossHp')return 1+PER.bossHp*(n-1);if(key==='bossSp')return 1+PER.bossSp*(n-1);const f=PER[key];return f?Math.pow(f,n-1):1};
+ // balance: the per-player growth stops at these caps, so a full house of 4 stays hard but playable (see the balance notes)
+ const MPCAP={need:1.3,noise:1.25,sight:1.25,hunt:1.2,prowl:1.3,search:1.15,ev:1.3,slam:1.3,trap:1.15,torch:1.3};
+ MP.k=key=>{const n=nP();if(key==='bossHp')return 1+PER.bossHp*(n-1);if(key==='bossSp')return 1+PER.bossSp*(n-1);const f=PER[key];if(!f)return 1;const v=Math.pow(f,n-1);return MPCAP[key]&&f>1?Math.min(v,MPCAP[key]):v};
  MP.bossK=(w,n)=>w==='hp'?1+PER.bossHp*(n-1):1+PER.bossSp*(n-1);
 
  // ---------- transport: PeerJS, or an in-page fake (BroadcastChannel) for tests ----------
@@ -3436,12 +3438,14 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // host-side world pacing for the extra players (on top of difficulty and night)
  let prevN=null;
  XT.onUpdate(dt=>{if(!MP.active||!MP.host||!MP.started)return;const C=CD;
-  const kn=MP.k('need');if(kn!==1&&C.RATE)for(const q in C.RATE)C.RATE[q]*=kn;
-  const n=C.noise,kz=MP.k('noise');if(prevN!==null&&n>prevN&&kz!==1)C.noise=Math.min(1,prevN+(n-prevN)*kz);prevN=C.noise;
+  // and the stacked total (difficulty x night x players) has a ceiling too
+  const dd=XT.diff?XT.diff():{imp:1,nz:1,agg:1},nn=XT.nightNeed?XT.nightNeed():1;
+  const kn=Math.min(MP.k('need'),Math.max(1,2.2/(dd.imp*nn)));if(kn!==1&&C.RATE)for(const q in C.RATE)C.RATE[q]*=kn;
+  const n=C.noise,kz=Math.min(MP.k('noise'),Math.max(1,1.6/dd.nz));if(prevN!==null&&n>prevN&&kz!==1)C.noise=Math.min(1,prevN+(n-prevN)*kz);prevN=C.noise;
   if(!XT.live())return;const D=DEMON.dbg,ks=MP.k('sight');if(ks!==1&&!D.active&&D.next>0)D.next-=dt*(ks-1)*(.35+1.6*C.noise);
   const kh=MP.k('hunt');if(kh!==1&&HUNT.t>0)HUNT.t+=dt*(kh-1);
   // prowls after midnight, aimed at someone who is alive
-  if(XT.hour()>=24&&!TRAP.on&&HUNT.t<10&&!D.active){const agg=XT.diff?XT.diff().agg:1,nk=XT.nightK?XT.nightK():1;prowlT-=dt*agg*nk*MP.k('prowl');
+  if(XT.hour()>=24&&!TRAP.on&&HUNT.t<10&&!D.active){const agg=XT.diff?XT.diff().agg:1,nk=XT.nightK?XT.nightK():1;prowlT-=dt*Math.min(agg*nk*MP.k('prowl'),Math.max(agg*nk,2.4));
    if(prowlT<=0){prowlT=240+Math.random()*220;const id=pickAlive();if(id===MP.id)safe(()=>XT.hide.prowlStart(),'prowl');else if(id)sendTo(id,{t:'prowl'})}}});
 
  // ---------- sessions ----------
