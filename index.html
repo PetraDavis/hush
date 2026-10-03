@@ -1160,7 +1160,7 @@ function update(dt,t){
   const[k,v]=top(),cry=v>CRY_AT,fuss=v>FUSS_AT;window.__crying=cry;
   if(!MPC){const seatNear=inSeat&&nearSeat();let dn=cry?.045*IMPATIENCE*(CAR?.7:seatNear?.8:1):fuss?.016*IMPATIENCE*(CAR?.5:seatNear?.7:1):asleep?-.05:seatNear?-.035:-.025;
   if(act||(MPA&&__mp.anyBusy()))dn-=.07;if(GLD)dn-=.03;
-  const p=RP;if(MPA&&__mp.ghost)lastPos=null;else{if(lastPos){const sp=Math.hypot(p.x-lastPos.x,p.z-lastPos.z)/Math.max(dt,1e-3);if(sp>2.6)dn+=.012}lastPos={x:p.x,z:p.z}}if(MPA)dn+=__mp.runNoise();
+  const p=RP;if(MPA&&(__mp.ghost||__mp.demon))lastPos=null;else{if(lastPos){const sp=Math.hypot(p.x-lastPos.x,p.z-lastPos.z)/Math.max(dt,1e-3);if(sp>2.6)dn+=.012}lastPos={x:p.x,z:p.z}}if(MPA)dn+=__mp.runNoise();
   doors.forEach((d,i)=>{if(d.open!==doorPrev[i]){doorPrev[i]=d.open;const bp=babyPos(),dd=Math.hypot(d.pv.position.x-bp.x,d.pv.position.z-bp.z);noise=Math.min(1,noise+(dd<6?.04:.02));if(asleep&&dd<5&&Math.random()<.35)wake('The door woke her.')}});
   noise=sat(noise+dn*dt)}else doors.forEach((d,i)=>doorPrev[i]=d.open);
   mouth.scale.set(cry?.9:fuss?.7:.5,cry?1.2:fuss?.7:.4,1);
@@ -1168,13 +1168,13 @@ function update(dt,t){
   // events
   if(MPC){try{__mp.clientEvent(dt,creep)}catch(e){console.error(e)}}
   else if(EV.cur){const c=EV.cur;c.t+=dt;c.nextPlay-=dt;if(c.nextPlay<=0&&AC){c.e.play(c,.55+.6*creep);c.nextPlay=(c.e.gap[0]+Math.random()*(c.e.gap[1]-c.e.gap[0]))/(.7+.5*creep)}
-   const b=MPA&&__mp.ghost?false:c.e.broke();if(b&&!c.prevB)endEvent(true);else{c.prevB=b;if(c.t>=c.dur)endEvent(false)}}
+   const b=MPA&&(__mp.ghost||__mp.demon)?false:c.e.broke();if(b&&!c.prevB)endEvent(true);else{c.prevB=b;if(c.t>=c.dur)endEvent(false)}}
   else if(18+clockT/HOUR_SEC>=18.6&&!(window.__rlm&&__rlm.on)){EV.next-=dt*(.5+creep)*MPK('ev');if(EV.next<=0){const pool=EVENTS.filter(e=>e.id!==EV.last&&!(e.id==='scratch'&&basementOpen));startEvent(pool[Math.floor(Math.random()*pool.length)])}}
   if(dread>0)dread-=dt}
  // escalation: one smooth ramp - faint signs while she only fusses, building into bleeding, red light, demonic pictures and full stretch
  const sh=.08*creep+(dread>0?.1:0),nz=sat(noise+sh),ease=(a,b)=>a+(b-a)*Math.min(1,dt*1.2),ss=(a,b)=>{const x=sat((nz-a)/(b-a));return x*x*(3-2*x)};
  fx.early=ease(fx.early,ss(.1,.4));fx.bleed=ease(fx.bleed,ss(.15,.75));fx.red=ease(fx.red,ss(.35,.85));fx.demon=ease(fx.demon,ss(.45,.9));
- const far=!(window.__mp&&__mp.ghost)&&!carrying&&!inBase()&&!(window.__rlm&&__rlm.on)&&!(window.__trap&&__trap.on)&&Math.hypot(cam.position.x-babyPos().x,cam.position.z-babyPos().z)>4&&!inNursery();fx.stretch=ease(fx.stretch,far?ss(.1,.9):0);
+ const far=!(window.__mp&&(__mp.ghost||__mp.demon))&&!carrying&&!inBase()&&!(window.__rlm&&__rlm.on)&&!(window.__trap&&__trap.on)&&Math.hypot(cam.position.x-babyPos().x,cam.position.z-babyPos().z)>4&&!inNursery();fx.stretch=ease(fx.stretch,far?ss(.1,.9):0);
  fx.glitch=fx.red>.02?Math.min(1,fx.red*.45+(Math.random()<fx.red*.06?.6:0)):0;
  drips.forEach(d=>{const s=Math.min(1,sat((fx.bleed-.25)/.75)*d.sp*1.3);d.m.visible=s>.01;if(!d.m.visible)return;d.m.scale.y=s;d.m.position.y=d.top-d.h*s/2;d.tex.repeat.y=s;d.tex.offset.y=1-s;d.m.material.opacity=Math.min(1,s*3)});
  const dk=sat(fx.bleed*.7+fx.red*.5);fx.dark=dk;allL.forEach(l=>l.color.copy(l.userData.c0).lerp(RED,Math.max(fx.red,dk*.7)*.9));hemi.color.copy(hemiC0).lerp(RED,dk*.7);scene.fog.color.copy(fogC0).lerp(new THREE.Color(.03,0,0),dk);seep.update(dt,fx.bleed);
@@ -1195,7 +1195,7 @@ let ft=0;function flicker(dt){ft+=dt;const a=sat((noise-.15)/.65);allL.forEach((
  if(calm){l.intensity*=1-.4*a*(.5+.5*Math.sin(ft*1.3+i*1.7));return}
  u.ft=(u.ft||0)-dt;if(u.ft<=0){const r=Math.random();u.fs=r<.35*a*Math.min(1,a*2)?.04:r<.35*a+.3*a?1+.9*a:1;u.ft=.2+Math.random()*.35*(1.3-a)}l.intensity*=u.fs===undefined?1:u.fs})}
 function post(dt){flicker(dt||1/60);const dk=fx.dark;if(fx.early>.005)fxEl.style.setProperty('--vig',Math.min(.97,parseFloat(fxEl.style.getPropertyValue('--vig')||.45)+.18*fx.early).toFixed(3));if(dk<.005)return;allL.forEach(l=>l.intensity*=1-.72*dk);hemi.intensity*=1-.85*dk;fxEl.style.setProperty('--vig',Math.min(.97,parseFloat(fxEl.style.getPropertyValue('--vig')||.45)+.5*dk).toFixed(3));fxEl.style.setProperty('--vc',(55-38*dk).toFixed(1)+'%')}
-return{update,render,post,warp,busy,free,jump(){if((window.__mp&&__mp.active)&&!__mp.host){try{__mp.send({t:'jump'})}catch(e){}return}noise=Math.min(1,noise+.015);const bp=babyPos();if(asleep&&Math.hypot(cam.position.x-bp.x,cam.position.z-bp.z)<3.5&&Math.random()<.3)wake('Your footsteps woke her.')},lullaby(v){lull=v},
+return{update,render,post,warp,busy,free,jump(){if(window.__mp&&__mp.demon)return;if((window.__mp&&__mp.active)&&!__mp.host){try{__mp.send({t:'jump'})}catch(e){}return}noise=Math.min(1,noise+.015);const bp=babyPos();if(asleep&&Math.hypot(cam.position.x-bp.x,cam.position.z-bp.z)<3.5&&Math.random()<.3)wake('Your footsteps woke her.')},lullaby(v){lull=v},
  skip(sec){const st=20;let cried=0;for(let k=0;k<sec;k+=st){N.hunger+=st*RATE.hunger*(asleep?.35:1);N.diaper+=st*RATE.diaper*(asleep?.4:1);if(asleep){napT-=st;if(napT<=0){asleep=false;N.sleepy=0}}else{N.sleepy+=st*RATE.sleepy;N.bored+=st*RATE.bored*(carrying?.5:1);if(top()[1]>CRY_AT-.1)cried+=st}if(N.burp>0)N.burp+=st/90;for(const q in N)N[q]=Math.min(1,N[q])}
   eyes2.forEach(e=>e.scale.y=asleep?.15:1);const v=top()[1];if(cried>0||(!asleep&&v>.75)){noise=Math.min(.9,noise+.25+.5*Math.min(1,cried/sec));return cried>sec*.4?'She cried for most of that hour. The house heard every minute of it.':'She fussed while you waited.'}return asleep?'She slept through it.':'The hour passes quietly.'},
  dbg:{RATE,get babyP(){return babyPos()},get calm(){return calm},get sK(){return MAP.k},get fov(){return cam.fov},carry(){carrying=true;inArms()},N,stats,fx,EV,EVENTS,get noise(){return noise},set noise(v){noise=v},get carrying(){return carrying},get inSeat(){return inSeat},SEAT,get asleep(){return asleep},set asleep(v){asleep=v},get bottle(){return bottleS},set bottle(v){bottleS=v},anim:{feed:()=>feedAnim(()=>{}),burp:()=>burpAnim(()=>{}),play:()=>playAnim(()=>{stats.plays++}),diaper:()=>diaperAnim(()=>{})},get busy(){return !!act},forceIdle(){act=null;progEl.hidden=true;resetAnim();if(carrying)inArms();else if(inSeat)toSeat();else inCrib()},rockStart(){if(!asleep){N.sleepy=Math.max(N.sleepy,.35);subtitle(lull?'You rock her gently while the music box plays.':'You rock her gently. (The music box helps.)',3000)}},get warm(){return warmS},mp:{get carrying(){return carrying},set carrying(v){carrying=v},get inSeat(){return inSeat},set inSeat(v){inSeat=v},get seatAt(){return seatAt},set seatAt(v){if(SEATS[v]){seatAt=v;SEAT.x=SEATS[v].x;SEAT.z=SEATS[v].z}},inCrib,inArms,toSeat,bb,endEvent,get napT(){return napT},set napT(v){napT=v},get warmT(){return warmT},set warmT(v){warmT=v},get warmS(){return warmS},set warmS(v){if(v===warmS)return;warmS=v;warmLed.material.color.setHex(v===1?0xff3018:v===2?0x30ff60:0x301010)},get lull(){return lull},get act(){return act},scream,inGlider,inNursery,get dread(){return dread},set dread(v){dread=v},EV,EVENTS},startEvent,drips,pics,seep,skipWarm(){warmT=0}}}})();
@@ -1551,7 +1551,7 @@ function target(){ray.setFromCamera({x:0,y:0},cam);ray.far=1.9;const h=ray.inter
 let noteOpen=false,entered=false,noteSeen=false;const noteEl=document.getElementById('note'),subEl=document.getElementById('sub');
 function openNote(v,html){noteOpen=v;noteEl.hidden=!v;const pp=noteEl.querySelector('.paper');if(pp._o===undefined)pp._o=pp.innerHTML;pp.innerHTML=v&&html?html:pp._o;if(v&&!html)noteSeen=true}
 function subtitle(txt,ms){subEl.textContent=txt;subEl.hidden=false;clearTimeout(subEl._t);subEl._t=setTimeout(()=>subEl.hidden=true,ms)}
-function interact(){if(window.__mp&&__mp.ghost)return;if(noteOpen){openNote(false);return}if(CARE.busy())return;if(seated){stand();return}const o=target()||CARE.free();if(o)o.act()}
+function interact(){if((window.__mp&&(__mp.ghost||__mp.demon)))return;if(noteOpen){openNote(false);return}if(CARE.busy())return;if(seated){stand();return}const o=target()||CARE.free();if(o)o.act()}
 let msgT=0,rattle=0;
 function tryDoor(){msg.classList.add('show');clearTimeout(msgT);msgT=setTimeout(()=>msg.classList.remove('show'),1600);rattle=.35}
 const R=.25;
@@ -1577,18 +1577,18 @@ if(resumeClamp>0){resumeClamp--;dt=Math.min(dt,1/60)}t+=dt;STR.apply();
 // safety nets: a note flag with no note on screen, and standing inside a collision box (every step is blocked) for a moment
 if(noteOpen&&noteEl.hidden)noteOpen=false;
 if(!seated&&!(window.__mp&&__mp.ghost)&&!(window.__rlm&&__rlm.on)&&blocked(cam.position.x,cam.position.z)){if((stuckT+=dt)>.3){stuckT=0;STR.unstick();console.warn('[Hush] watchdog: pushed out of a collider')}}else stuckT=0;
-let f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),s=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);const jm=window.__joy?Math.min(1,Math.hypot(__joy.x,__joy.y)):0;if(jm>.12&&!(seated&&seated.hide)){f=-__joy.y/Math.max(jm,1e-3)*jm;s=__joy.x/Math.max(jm,1e-3)*jm}if(noteOpen||ended||CARE.busy()){f=0;s=0}
+let f=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0),s=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0);const jm=window.__joy?Math.min(1,Math.hypot(__joy.x,__joy.y)):0;if(jm>.12&&!(seated&&seated.hide)){f=-__joy.y/Math.max(jm,1e-3)*jm;s=__joy.x/Math.max(jm,1e-3)*jm}if(noteOpen||ended||CARE.busy()||window.__noMove){f=0;s=0}
 if(window.__mp&&__mp.ghost){try{__mp.ghostCam(dt,f,s)}catch(e){console.error(e)}}else{
-if(!entered&&RP.z<9.3&&RP.z>6.6&&RP.x>2.8&&RP.x<6.8&&fy<-1){entered=true;subtitle('They left a note for me on the dinner table.',5500)}
+if(!entered&&!(window.__mp&&__mp.demon)&&RP.z<9.3&&RP.z>6.6&&RP.x>2.8&&RP.x<6.8&&fy<-1){entered=true;subtitle('They left a note for me on the dinner table.',5500)}
 if(seated){if(f||s)stand();else cam.position.set(seated.x,seated.y,seated.z)}
 if(!seated){if(keys.KeyC||keys.ControlLeft||keys.ControlRight)crouch=true;else if(crouch&&!solids.some(q=>ov(q,cam.position.x,cam.position.z,R)&&q.y1>fy+.36&&q.y0<fy+1.7))crouch=false;
 eyeH+=((crouch?.6:1.6)-eyeH)*Math.min(1,dt*10);
-if(f||s){const l=Math.hypot(f,s),sp=(crouch?.9:keys.ShiftLeft||keys.ShiftRight?3.4:1.8)*dt/l*(jm>.12?Math.min(1,l):1);let dx=(-Math.sin(yaw)*f+Math.cos(yaw)*s)*sp,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*s)*sp;
+if(f||s){const l=Math.hypot(f,s),sp=(crouch?.9:keys.ShiftLeft||keys.ShiftRight?3.4*(window.__runK||1):1.8)*(window.__dmSp||1)*dt/l*(jm>.12?Math.min(1,l):1);let dx=(-Math.sin(yaw)*f+Math.cos(yaw)*s)*sp,dz=(-Math.cos(yaw)*f-Math.sin(yaw)*s)*sp;
 if(!blocked(cam.position.x+dx,cam.position.z))cam.position.x+=dx;if(!blocked(cam.position.x,cam.position.z+dz))cam.position.z+=dz;if(grounded)bob=Math.sin(t*(keys.ShiftLeft||keys.ShiftRight?13:9))*.02}
 const S=support(cam.position.x,cam.position.z);
 if(grounded&&vy<=0&&fy-S<=.45){fy=S;vy=0}else{vy-=9.8*dt;fy+=vy*dt;grounded=false;if(fy<=S){fy=S;vy=0;grounded=true}}
 const C=ceilAt(cam.position.x,cam.position.z);if(fy+eyeH+.15>C){fy=C-eyeH-.15;vy=Math.min(vy,0)}
-cam.position.y=fy+eyeH+bob}}
+cam.position.y=fy+eyeH+bob+(window.__camLift||0)}}
 RP.x=iX(cam.position.x);RP.z=iZ(cam.position.z);
 cam.rotation.set(pitch,yaw,0);
 mobile.rotation.y+=dt*.15;rocker.rotation.x=Math.sin(t*.8)*.05;
@@ -1597,7 +1597,7 @@ if(!basementOpen&&bAng<=0){bDoor.position.x=mX(6.65);if(rattle>0){rattle-=dt;bDo
 doors.forEach(d=>{const tg=d.open?1.45*d.dir:0;if(d.sp&&(Math.abs(tg-d.pv.rotation.y)<.02||d.open!==d.spO))d.sp=0;d.pv.rotation.y+=(tg-d.pv.rotation.y)*Math.min(1,dt*(d.sp||5));const sw=Math.abs(d.pv.rotation.y)>.3;
  // a door closing on you (E in the doorway, a slam) stays passable until you step clear, so it can never lock you inside its slab
  if(!sw&&d.solid.off&&d.solid.x0!==undefined&&!seated){d.solid.off=false;if(ov(d.solid,cam.position.x,cam.position.z,R)&&d.solid.y1>fy+.36&&d.solid.y0<fy+PH())d.solid.off=true}else d.solid.off=sw});
-{const o=noteOpen||CARE.busy()||(window.__mp&&__mp.ghost)?null:seated?{label:'Stand up'}:(document.pointerLockElement||window.__touchMode)?(target()||CARE.free()):null;hint.hidden=!o;if(o)hint.textContent='[E] '+o.label}
+{const o=noteOpen||CARE.busy()||(window.__mp&&(__mp.ghost||__mp.demon))?null:seated?{label:'Stand up'}:(document.pointerLockElement||window.__touchMode)?(target()||CARE.free()):null;hint.hidden=!o;if(o)hint.textContent='[E] '+o.label}
 CARE.update(dt,t);atmos(dt,t);VFX.update(dt,t);SND.update(dt,t);BSM.update(dt,t);HUNT.update(dt);try{MUS.update(dt)}catch(e){console.error(e)}CARE.post(dt);TRAP.update(dt);RLM.update(dt);if(!TRAP.on&&!RLM.on)DEMON.update(dt);DEMON.pre();CARE.render();DEMON.post();try{window.__xt&&__xt.update(dt)}catch(e){if(__loopErr++<20)console.error('[Hush] ext error:',e)}requestAnimationFrame(loop)}
 // ===== title screen: the parents' note on the dining table by candlelight; the menu is written on the note =====
 const TITLE=(function(){const el=document.getElementById('title'),setEl=document.getElementById('tset');
@@ -2875,7 +2875,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const DD=MP?Object.assign({},DD0,{bh:Math.max(1,Math.round(DD0.bh*__mp.bossK('hp',NF))),sp:DD0.sp*__mp.bossK('sp',NF)}):DD0;
   const lane0=MP&&!spec?(FT.indexOf(me)-(NF-1)/2)*1.2:0;
   const S=FS={st:'intro',D:DD,g,php:DD.hp,bhp:DD.bh*3,ph:0,stT:1.4,atk:null,last:[],T:0,cd:0,dodgeT:-1,rd:{x:0,z:0},iT:0,swing:-9,flinch:0,cueT:0,hit:false,over:false,fT:0,lk:null,shake:0,
-   MP,me,host,spec,lane0,tg:me,rdy:false,rdyIds:new Set(),rdyT:0,aid:0,seenAid:0,seenPh:0,rA:-1,rW:null,rH:false,blkd:false,dead:false,wT:1,
+   MP,me,host,spec,lane0,tg:me,hunt:!!(MP&&__mp.hm),dmMe:!!(MP&&__mp.demon),rdy:false,rdyIds:new Set(),rdyT:0,aid:0,seenAid:0,seenPh:0,rA:-1,rW:null,rH:false,blkd:false,dead:false,wT:1,
    p:new THREE.Vector3(PF.x,0,PF.z),py:0,vy:0,bx:null,bz:0,br:0,ax:0,az:0,ad:0,al:4,mv:{m:'circle',t:1,dir:1,gx:0,gz:0},nx:null,apT:0,lpx:0,lpz:0,spd:0};
   {const q=PF.clone().addScaledVector(rt,lane0);if(!blocked(q.x,q.z))S.p.set(q.x,0,q.z)}
   if(spec)S.over=true;
@@ -2907,6 +2907,14 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    else if(S.st==='strike'){if(S.atk==='lunge'){const k=sm(1-Math.max(0,S.stT)/.3),tx=S.ax+Math.sin(S.ad)*S.al*k,tz=S.az+Math.cos(S.ad)*S.al*k;if(free(tx,tz)){S.bx=tx;S.bz=tz}}
     else if(S.atk==='swipe')moveB(Math.sin(S.br)*1.2*dt,Math.cos(S.br)*1.2*dt)}
    else if(S.st==='stag'||S.st==='recover')turn(face,1.2,dt)}
+  // Hunt: the demon player moves her and picks the blows (XT.huntFightIn: {x,z} move wish in world space, f facing, a queued attack)
+  function huntAI(dt,sp){const I=XT.huntFightIn||{x:0,z:0,f:S.br,a:null};
+   if(S.st==='idle'){const v=Math.hypot(I.x,I.z);if(v>.05){const k=Math.min(1,v)*2.7*sp*dt/v;moveB(I.x*k,I.z*k)}if(typeof I.f==='number')turn(I.f,5,dt);
+    if(I.a&&ATK[I.a]){S.atk=I.a;I.a=null;S.aid++;S.st='wind';S.stT=Math.max(.45,ATK[S.atk].w/sp);S.wT=S.stT;S.ax=S.bx;S.az=S.bz;S.ad=S.br;S.al=reach();
+     const F=safe(()=>__mp.fighters(),'f')||[];let best=null,bd=1e9;F.forEach(id=>{const q=id===S.me?(S.dead?null:{x:S.p.x,z:S.p.z}):safe(()=>__mp.posOf(id),'pos');if(q){const d=Math.hypot(q.x-S.bx,q.z-S.bz);if(d<bd){bd=d;best=id}}});if(best)S.tg=best}}
+   else{if(I.a&&S.st!=='wind'&&S.st!=='strike')I.a=null;if(S.st==='wind'){const k=1-S.stT/S.wT;if(k<.65&&typeof I.f==='number')turn(I.f,3.2,dt);S.ax=S.bx;S.az=S.bz;S.ad=S.br;S.al=reach()}
+    else if(S.st==='strike'){if(S.atk==='lunge'){const k=sm(1-Math.max(0,S.stT)/.3),tx=S.ax+Math.sin(S.ad)*S.al*k,tz=S.az+Math.cos(S.ad)*S.al*k;if(free(tx,tz)){S.bx=tx;S.bz=tz}}
+     else if(S.atk==='swipe')moveB(Math.sin(S.br)*1.2*dt,Math.cos(S.br)*1.2*dt)}}}
   // how far the lunge can go before she meets a wall
   function reach(){const fx=Math.sin(S.br),fz=Math.cos(S.br);let r=0;while(r<4.5&&free(S.bx+fx*(r+.15),S.bz+fz*(r+.15)))r+=.15;return Math.max(1,r)}
   function fight(dt){S.T+=dt;S.cd=Math.max(0,S.cd-dt);S.iT=Math.max(0,S.iT-dt);S.flinch=Math.max(0,S.flinch-dt);S.shake=Math.max(0,S.shake-dt);
@@ -2925,7 +2933,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    // she gets faster / furious
    if(S.ph!==S.seenPh){S.seenPh=S.ph;if(S.ph>0){cue(S.ph===1?'She is getting faster':'She is furious','bad',1.6);
     safe(()=>{XT.voice&&XT.voice(S.ph===1?'You cut me. Nobody has cut me in so long.':'Little sitter. I will wear your face.','chorus',2.2,.45);XT.demonSfx.crack(S.g.position.x,S.g.position.z,1.3)},'roar')}}
-   S.stT-=dt;if(S.host)ai(dt,sp);
+   S.stT-=dt;if(S.host)(S.hunt?huntAI:ai)(dt,sp);
    let pose=S.spd>.35?'crawl':'walk';
    if(S.st==='wind'){pose=ATK[S.atk].pose;if(S.host&&S.stT<=0){S.st='strike';S.stT=S.atk==='lunge'?.3:.24;S.hit=false}}
    else if(S.st==='strike'){pose=ATK[S.atk].pose;if(S.host&&S.stT<=0){S.st='recover';S.stT=ATK[S.atk].r/Math.sqrt(sp)}}
@@ -2961,6 +2969,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    // the camera: yours, steered by the mouse or the right thumb
    if(live){const dodgeDip=S.dodgeT>0?-.25*Math.sin(Math.PI*(1-S.dodgeT/.36)):0,sh=S.shake*.12;
     cam.position.set(S.p.x+(Math.random()-.5)*sh,EYE+S.py+dodgeDip+(Math.random()-.5)*sh,S.p.z);cam.rotation.set(pitch,yaw,0)}
+   else if(S.dmMe){const fx=-Math.sin(yaw),fz=-Math.cos(yaw);let bk=2.6;while(bk>.6&&blocked(g.position.x-fx*bk,g.position.z-fz*bk))bk-=.2;cam.position.set(g.position.x-fx*bk,FLR+2.3,g.position.z-fz*bk);cam.rotation.set(Math.max(-.9,Math.min(.2,pitch-.3)),yaw,0)}
    else{const p=SPEC;cam.position.copy(p);const tg=new THREE.Vector3(g.position.x,1.1+FLR,g.position.z);if(!S.lk)S.lk=tg.clone();S.lk.lerp(tg,Math.min(1,dt*4));look(S.lk.x,S.lk.y,S.lk.z)}
    window.__fightMv=live&&!S.over;
    if(S.php<=0)S.over=true;drawHud(S);if(S.spec||S.dead){hpEl.parentNode.hidden=true;bfQ('.help').hidden=true;tB.hidden=true}}
@@ -3108,10 +3117,12 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   bossHp:.6,  // the boss: + 60% health per extra fighter (added, not multiplied)
   bossSp:.1   // the boss: + 10% attack speed per extra fighter (added)
  };
- const MP={active:false,host:false,id:null,code:null,available:false,started:false,ghost:false,remoteHolder:null,pendingEnd:null,ended:false,PER,
+ // Hunt mode is locked until the snake-scale mask is found in the house (or ?hunt=1 for testing). Only the host's unlock matters.
+ window.huntUnlocked=function huntUnlocked(){try{if(new URLSearchParams(location.search).get('hunt')==='1')return true}catch(e){}try{return localStorage.getItem('hushHuntUnlocked')==='1'}catch(e){return false}};
+ const MP={mode:'coop',hunt:null,demon:false,active:false,host:false,id:null,code:null,available:false,started:false,ghost:false,remoteHolder:null,pendingEnd:null,ended:false,PER,
   get client(){return this.active&&!this.host}};
  window.__mp=MP;
- const nP=()=>Math.max(1,roster.length);
+ const nP=()=>Math.max(1,roster.length-(MP.hm?1:0));// in Hunt the demon player is not a babysitter
  // balance: the per-player growth stops at these caps, so a full house of 4 stays hard but playable (see the balance notes)
  const MPCAP={need:1.3,noise:1.25,sight:1.25,hunt:1.2,prowl:1.3,search:1.15,ev:1.3,slam:1.3,trap:1.15,torch:1.3};
  MP.k=key=>{const n=nP();if(key==='bossHp')return 1+PER.bossHp*(n-1);if(key==='bossSp')return 1+PER.bossSp*(n-1);const f=PER[key];if(!f)return 1;const v=Math.pow(f,n-1);return MPCAP[key]&&f>1?Math.min(v,MPCAP[key]):v};
@@ -3217,16 +3228,17 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function myReport(){const RL=!!(window.__rlm&&__rlm.on),c=cam.position,B=XT.bladeFight&&XT.bladeFight.S;
   return{x:+(RL?c.x:iX(c.x)).toFixed(2),z:+(RL?c.z:iZ(c.z)).toFixed(2),y:+fy.toFixed(2),cy:+c.y.toFixed(2),yaw:+yaw.toFixed(3),pi:+pitch.toFixed(3),cr:crouch?1:0,
    hid:XT.hide&&XT.hide.hid?1:0,gh:MP.ghost?1:0,tor:XT.torch&&XT.torch.on?1:0,ar:RL?'r':'h',gl:CD.mp.carrying&&CD.mp.inGlider()?1:0,nu:CD.mp.inNursery()?1:0,
-   inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,ent:entered?1:0}}
- const alive=()=>{const L=[];if(MP.host){if(!MP.ghost)L.push({id:MP.id,r:myReport()});P.forEach((p,id)=>{if(p.rep&&!p.rep.gh)L.push({id,r:p.rep})})}return L};
+   inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],dm:MP.demon?1:0,hs:XT.hide&&XT.hide.hid||'',cl:window.__dmCeil?1:0,busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,ent:entered?1:0}}
+ const isDm=id=>!!(MP.hm&&MP.hm.demon===id);
+ const alive=()=>{const L=[];if(MP.host){if(!MP.ghost&&!MP.demon)L.push({id:MP.id,r:myReport()});P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))L.push({id,r:p.rep})})}return L};
  MP.anyCarry=()=>CD.mp.carrying||!!MP.remoteHolder;
  MP.holderGlider=()=>CD.mp.carrying?CD.mp.inGlider():!!(MP.remoteHolder&&P.get(MP.remoteHolder)&&P.get(MP.remoteHolder).rep&&P.get(MP.remoteHolder).rep.gl);
  MP.anyNursery=()=>alive().some(a=>a.id===MP.id?CD.mp.inNursery():a.r.nu&&a.r.ar!=='r');
  MP.nearBaby=r=>{const bp=CD.babyP;return alive().some(a=>a.r.ar!=='r'&&Math.hypot(mX(a.r.x)-bp.x,mZ(a.r.z)-bp.z)<=r&&((a.r.y<-1)===(bp.y<-1)))};
  MP.anyNear=(x,z,r,fl)=>alive().some(a=>a.r.ar!=='r'&&(fl<0?a.r.y<-1:a.r.y>-1)&&Math.hypot(a.r.x-x,a.r.z-z)<r);
- MP.anyBusy=()=>{let b=false;P.forEach(p=>{if(p.rep&&!p.rep.gh&&p.rep.busy)b=true});return b};
- MP.runNoise=()=>{let n=0;P.forEach(p=>{if(p.rep&&!p.rep.gh&&p.sp>2.6)n+=.012});return n};
- MP.fighters=()=>{const L=[];roster.forEach(p=>{const gh=p.id===MP.id?MP.ghost:!!(MP.host?(P.get(p.id)&&P.get(p.id).rep&&P.get(p.id).rep.gh):p.gh);if(!gh)L.push(p)});return L.sort((a,b)=>a.slot-b.slot).map(p=>p.id)};
+ MP.anyBusy=()=>{let b=false;P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id)&&p.rep.busy)b=true});return b};
+ MP.runNoise=()=>{let n=0;P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id)&&p.sp>2.6)n+=.012});return n};
+ MP.fighters=()=>{const L=[];roster.forEach(p=>{const gh=p.id===MP.id?MP.ghost:!!(MP.host?(P.get(p.id)&&P.get(p.id).rep&&P.get(p.id).rep.gh):p.gh);if(!gh&&!isDm(p.id))L.push(p)});return L.sort((a,b)=>a.slot-b.slot).map(p=>p.id)};
  MP.laneOf=id=>{const a=AV.get(id);return a&&a.last?a.last.lat||0:0};
  MP.posOf=id=>{const a=AV.get(id);return a&&a.last&&a.last.ar!=='r'?{x:mX(a.last.x),z:mZ(a.last.z)}:null};
 
@@ -3296,7 +3308,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // ---------- endings: one decision, by the host, for everyone ----------
  const oe=XT.ending;
  XT.ending=function(id,extra){if(!MP.active)return oe.call(XT,id,extra);
-  if(MP.pendingEnd){const pe=MP.pendingEnd;MP.pendingEnd=null;MP.ended=true;ghostEl.hidden=true;voteEl.hidden=true;return oe.call(XT,pe.id,pe.extra)}
+  if(MP.pendingEnd){const pe=MP.pendingEnd;MP.pendingEnd=null;MP.ended=true;ghostEl.hidden=true;voteEl.hidden=true;if(MP.hm&&MP.huntEnd)return MP.huntEnd(pe.id,pe.extra);return oe.call(XT,pe.id,pe.extra)}
   if(MP.ended)return true;
   if(MP.host){decideEnd(id,extra);return runPending()}
   if(id!=='death')send({t:'endreq',id,extra});return true};
@@ -3304,14 +3316,14 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function runPending(){if(!MP.pendingEnd||MP.ended)return true;if(window.__cut&&window.__cut.noSkip)return true;
   if(window.__cut&&!window.__cut.noSkip){/* replace any other cut scene */}return XT.ending(MP.pendingEnd.id,MP.pendingEnd.extra)}
  MP.decideEnd=decideEnd;
- function checkAllDead(){if(!MP.host||MP.decided||!MP.started)return;let any=!MP.ghost;P.forEach(p=>{if(p.rep&&!p.rep.gh)any=true});
+ function checkAllDead(){if(!MP.host||MP.decided||!MP.started)return;let any=!MP.ghost&&!MP.demon;P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))any=true});
   if(!any){const B=XT.bladeFight&&XT.bladeFight.S;decideEnd('death',B?{h:'Taken.',p:'The swords were not enough. She was faster than all of you.'}:{h:'Taken.',p:'One by one, it found all of you.'});runPending()}}
 
  // ---------- skip hour: a vote ----------
  const voteEl=document.createElement('div');voteEl.id='mpVote';voteEl.hidden=true;document.body.appendChild(voteEl);
  let vote=null;// host: {yes:Set,t0}
- MP.voteSkip=()=>{if(!MP.started)return;if(18+clockT/HOUR_SEC>=29.5){subtitle('Too close to dawn to skip.',1500);return}send({t:'vote'})};
- function hostVote(pid){if(!vote){vote={yes:new Set(),t0:performance.now()}}vote.yes.add(pid);checkVote()}
+ MP.voteSkip=()=>{if(!MP.started)return;if(MP.hm&&18+clockT/HOUR_SEC>=24){subtitle('No skipping after midnight in Hunt.',1800);return}if(18+clockT/HOUR_SEC>=29.5){subtitle('Too close to dawn to skip.',1500);return}send({t:'vote'})};
+ function hostVote(pid){if(MP.hm&&18+clockT/HOUR_SEC>=24)return;if(!vote){vote={yes:new Set(),t0:performance.now()}}vote.yes.add(pid);checkVote()}
  function checkVote(){if(!vote)return;const n=roster.length;if(vote.yes.size*2>n){vote=null;bcast({t:'skip'});skipHour.force=true;safe(skipHour,'skip')}
   else if(performance.now()-vote.t0>15000){vote=null;bcast({t:'sub',txt:'(Not enough votes to skip the hour.)',ms:2500});subtitle('(Not enough votes to skip the hour.)',2500)}}
  MP.skipDone=m=>{bcast({t:'skipmsg',m})};
@@ -3353,7 +3365,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   AV.forEach((a,id)=>{const B=a.buf;if(!B.length){a.g.visible=false;return}let r;
    if(B.length===1||now<=B[0].t)r=B[0].r;else{let i=B.length-1;while(i>0&&B[i-1].t>now)i--;const A0=B[Math.max(0,i-1)],A1=B[i];
     if(now>=A1.t)r=A1.r;else{const k=(now-A0.t)/Math.max(1,A1.t-A0.t);r=Object.assign({},A1.r,{x:A0.r.x+(A1.r.x-A0.r.x)*k,z:A0.r.z+(A1.r.z-A0.r.z)*k,cy:A0.r.cy+(A1.r.cy-A0.r.cy)*k,yaw:lerpA(A0.r.yaw,A1.r.yaw,k),pi:A0.r.pi+(A1.r.pi-A0.r.pi)*k})}}
-   const prev=a.cur;a.cur=r;const sameArea=(r.ar==='r')===RL;
+   const prev=a.cur;a.cur=r;if(isDm(id)){a.g.visible=false;return}const sameArea=(r.ar==='r')===RL;
    const vis=sameArea&&!r.hid&&!r.ct&&!inCut&&(!r.gh||MP.ghost)&&id!==T;
    const sc=RL?__rlm.scene:scene;if(a.g.parent!==sc)sc.add(a.g);
    a.g.visible=vis;if(!vis)return;
@@ -3396,6 +3408,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    if(c){const x=c.ar==='r'?c.x:mX(c.x),z=c.ar==='r'?c.z:mZ(c.z),d=Math.hypot(x-L.x,c.cy-L.y,z-L.z);
     // gentle falloff: full within 6 m, never under 40%, slightly muffled through floors
     g=d<=6?1:Math.max(.4,1-(d-6)*.075);muf=floorOf(c.cy-1.6,c.ar)!==myF;if(muf)g=Math.max(.4,g*.85)}
+   if(MP.hm){g=1;muf=false}// Hunt: everyone at full volume, no position clue
    if(!isFinite(g))g=1;const t=V.ctx.currentTime;r.g.gain.setTargetAtTime(g*(window.__voiceVol!=null?__voiceVol:1)*(muted?0:Math.min(1.25,VOL/.8)),t,.15);r.flt.frequency.setTargetAtTime(muf?1100:18000,t,.2)})}
  addEventListener('keydown',e=>{if(e.code!=='KeyM'||e.repeat||!MP.active)return;if(V.denied){subtitle('No microphone permission: you are muted.',2000);return}setMute(!V.muted);subtitle(V.muted?'Microphone muted':'Microphone on',1200)});
  // HUD: mic + players
@@ -3409,9 +3422,9 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // ---------- messages ----------
  function clientHandle(m){if(MP.active&&!MP.host)lastHostMsg=performance.now();switch(m.t){
   case 'gfx':safe(()=>playScare(m),'gfx');break;
-  case 'welcome':MP.id=m.pid;roster=m.roster;MP.code=m.code;MP.hostId=m.host;lastHostMsg=performance.now();reconnecting=false;syncAvatars();lobbyDraw();callMissing();
+  case 'welcome':MP.id=m.pid;roster=m.roster;if(m.diff)MP.hostDiff=m.diff;if(m.mode)MP.mode=m.mode;MP.hostHu=!!m.hu;MP.code=m.code;MP.hostId=m.host;lastHostMsg=performance.now();reconnecting=false;syncAvatars();lobbyDraw();callMissing();
    if(m.started&&!MP.started)startGame(m.cfg,true);break;
-  case 'roster':roster=m.roster;syncAvatars();lobbyDraw();callMissing();micHud();break;
+  case 'roster':roster=m.roster;if(m.diff)MP.hostDiff=m.diff;if(m.mode)MP.mode=m.mode;MP.hostHu=!!m.hu;syncAvatars();lobbyDraw();callMissing();micHud();break;
   case 'full':lobbyStatus('Lobby full. That game already has 4 players.',true);teardown(true);break;
   case 'started':lobbyStatus('That game has already started.',true);teardown(true);break;
   case 'start':graceT=performance.now()+45000;if(!MP.started)setTimeout(()=>safe(()=>startGame(m.cfg,false),'start'),300);break;
@@ -3428,7 +3441,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'end':MP.pendingEnd={id:m.id,extra:m.extra};MP.decided=m.id;runPending();break;
   case 'boss':MP.boss=true;setTimeout(()=>safe(()=>XT.bladeFight.start(),'boss'),900);break;
   case 'drop':{const D=XT.shelfDbg;if(D&&D.inv.includes(m.k)){D.inv=D.inv.filter(k=>k!==m.k);D.sync();subtitle('Someone else already has the '+m.k+'.',2200)}break}
-  case 'note':subtitle(m.txt,m.ms||3500);break}}
+  case 'note':subtitle(m.txt,m.ms||3500);break
+  default:if(MP.onC)safe(()=>MP.onC(m),'onC')}}
  let stQ=null;
  function applyState(m){if(m.f)applyHostFields(m.f);sEV=m.ev||null;
   if(m.pl)m.pl.forEach(p=>{if(p.id!==MP.id)pushRep(p.id,p.r)});
@@ -3446,13 +3460,14 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'nottrap':safe(()=>CD.mp.scream(),'scream');break;
   case 'dead':if(p){p.rep=Object.assign({},p.rep||{},{gh:1});pushRep(pid,p.rep)}if(MP.remoteHolder===pid)holderSet('');bcast({t:'note',txt:'('+MP.nameOf(pid)+' is gone.)',ms:3000},pid);if(pid!==MP.id)subtitle('('+MP.nameOf(pid)+' is gone.)',3000);checkAllDead();break;
   case 'vote':hostVote(pid);break;
-  case 'endreq':if(['dawn','cult','secret','parents'].includes(m.id)){decideEnd(m.id,m.extra);runPending()}break;
+  case 'endreq':if(['dawn','cult','secret','parents'].includes(m.id)&&!(MP.hm&&m.id==='cult')){decideEnd(m.id,m.extra);runPending()}break;
   case 'solve':hostSolve();break;
   case 'gs':safe(()=>hostScare(pid,m),'gs');break;
   case 'bslash':safe(()=>XT.bladeFight.remoteSlash(),'bslash');break;
   case 'bready':{const S=XT.bladeFight.S;if(S&&S.rdyIds)S.rdyIds.add(pid);break}
   case 'bhit':{const S=XT.bladeFight.S;if(S&&m.r==='parry'&&S.aid===m.aid&&(S.st==='strike'||S.st==='wind')){S.st='stag';S.stT=1.6}break}
-  case 'bdead':if(p){p.rep=Object.assign({},p.rep||{},{gh:1})}else if(pid===MP.id){}checkAllDead();break}}
+  case 'bdead':if(p){p.rep=Object.assign({},p.rep||{},{gh:1})}else if(pid===MP.id){}checkAllDead();break
+  default:if(MP.onH)safe(()=>MP.onH(pid,m),'onH')}}
  // the host's own player: everything a client would send, handled directly
  function endEventMP(pid){if(CD.EV.cur)CD.mp.endEvent(true,pid)}
 
@@ -3470,7 +3485,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    if(!reconnecting&&lastHostMsg&&performance.now()-lastHostMsg>lim(hostConn&&hostConn.open,7000,20000))hostLost()}
   if(MP.pendingEnd&&!MP.ended)runPending();
   if(tickN%2===0){safe(voiceTick,'voice');}if(tickN%3===0)safe(micHud,'mic');if(tickN%10===0&&MP.ghost)ghostHud()}
- let rosterT=0;function bcastRoster(force){const now=performance.now();if(!force&&now-rosterT<1000)return;rosterT=now;bcast({t:'roster',roster})}
+ let rosterT=0;function bcastRoster(force){const now=performance.now();if(!force&&now-rosterT<1000)return;rosterT=now;bcast({t:'roster',roster,diff:XT.diffKey(),mode:MP.mode,hu:huntUnlocked()?1:0})}
  function hostTick(){const now=performance.now();
   // players who went quiet are gone
   P.forEach((p,id)=>{const t=Math.max(p.last||0,p.seen||0),c=conns.get(id);if(t&&now-t>lim(c&&c.open,12000,25000))dropPlayer(id)});
@@ -3496,7 +3511,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const dd=XT.diff?XT.diff():{imp:1,nz:1,agg:1},nn=XT.nightNeed?XT.nightNeed():1;
   const kn=Math.min(MP.k('need'),Math.max(1,2.2/(dd.imp*nn)));if(kn!==1&&C.RATE)for(const q in C.RATE)C.RATE[q]*=kn;
   const n=C.noise,kz=Math.min(MP.k('noise'),Math.max(1,1.6/dd.nz));if(prevN!==null&&n>prevN&&kz!==1)C.noise=Math.min(1,prevN+(n-prevN)*kz);prevN=C.noise;
-  if(!XT.live())return;const D=DEMON.dbg,ks=MP.k('sight');if(ks!==1&&!D.active&&D.next>0)D.next-=dt*(ks-1)*(.35+1.6*C.noise);
+  if(!XT.live()||MP.hm)return;const D=DEMON.dbg,ks=MP.k('sight');if(ks!==1&&!D.active&&D.next>0)D.next-=dt*(ks-1)*(.35+1.6*C.noise);
   const kh=MP.k('hunt');if(kh!==1&&HUNT.t>0)HUNT.t+=dt*(kh-1);
   // prowls after midnight, aimed at someone who is alive
   if(XT.hour()>=24&&!TRAP.on&&HUNT.t<10&&!D.active){const agg=XT.diff?XT.diff().agg:1,nk=XT.nightK?XT.nightK():1;prowlT-=dt*Math.min(agg*nk*MP.k('prowl'),Math.max(agg*nk,2.4));
@@ -3518,14 +3533,14 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
     if(!known&&roster.length>=MAXP){safe(()=>c.send({t:'full'}));setTimeout(()=>safe(()=>c.close()),400);return}
     let p=known;if(!p){const used=new Set(roster.map(q=>q.slot));let slot=0;while(used.has(slot))slot++;p={id:c.peer,name:(d.name||'').trim().slice(0,16)||'Player '+(slot+1),slot,join:++joinSeq,gh:0};roster.push(p)}
     conns.set(c.peer,c);if(!P.has(c.peer))P.set(c.peer,{rep:null,last:performance.now(),sp:0});
-    c.send({t:'welcome',pid:c.peer,roster,code:MP.code,host:MP.id,started:MP.started,cfg:cfg()});bcastRoster(true);syncAvatars();lobbyDraw();micHud();
+    c.send({t:'welcome',pid:c.peer,roster,code:MP.code,host:MP.id,started:MP.started,cfg:cfg(),diff:XT.diffKey(),mode:MP.mode,hu:huntUnlocked()?1:0});bcastRoster(true);syncAvatars();lobbyDraw();micHud();
     if(MP.started)bcast({t:'note',txt:'('+p.name+' joined.)',ms:2500},c.peer);return}
    if(!conns.has(c.peer))return;const pp=P.get(c.peer);if(pp)pp.seen=performance.now();hostHandle(c.peer,d)});
   c.on('close',()=>{if(conns.get(c.peer)===c)dropPlayer(c.peer)});c.on('error',()=>{})}
  function dropPlayer(id){if(id===MP.id)return;const p=roster.find(q=>q.id===id);conns.delete(id);P.delete(id);roster=roster.filter(q=>q.id!==id);cleanCall(id);
   if(MP.remoteHolder===id)holderSet('');Object.keys(held).forEach(k=>{if(held[k]===id)delete held[k]});
   syncAvatars();lobbyDraw();bcastRoster(true);micHud();if(p&&MP.started){subtitle('('+p.name+' left.)',2500);bcast({t:'note',txt:'('+p.name+' left.)',ms:2500})}if(vote)checkVote();checkAllDead()}
- const cfg=()=>({diff:XT.diffKey?XT.diffKey():'normal',night:XT.night||1});
+ const cfg=()=>({diff:XT.diffKey?XT.diffKey():'normal',night:XT.night||1,mode:MP.hm?'hunt':'coop',demon:MP.hm?MP.hm.demon:null});
  function netErr(t){return t==='peer-unavailable'?'No game with that code. Check it and try again.':t==='network'||t==='server-error'||t==='socket-error'||t==='socket-closed'?'Could not reach the matchmaking server. Multiplayer works on petradavis.github.io/hush':t==='browser-incompatible'?'This browser cannot do peer-to-peer connections.':'Connection failed ('+(t||'unknown')+').'}
  function joinGame(code){code=(code||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!code||MP.active||peer){if(!code)lobbyStatus('Type the code first.',true);return}
   myName=nameIn.value.trim().slice(0,16);lobbyStatus('Joining '+code+'...');initMic();peer=mkPeer();let to=null;
@@ -3563,6 +3578,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 
  // ---------- starting the night together ----------
  function startGame(c,late){if(MP.started)return;MP.started=true;buildFieldsOnce();lobbyEl.hidden=true;invEl.hidden=true;
+  if(c&&c.mode==='hunt'&&c.demon){MP.hm={demon:c.demon};MP.demon=c.demon===MP.id;safe(()=>MP.onHunt&&MP.onHunt(late),'hunt start')}
   safe(()=>{if(c&&XT.parts.diff)XT.parts.diff.load(c.diff);if(c&&XT.parts.night)XT.parts.night.load(c.night)},'cfg');
   // fewer spare batteries for a bigger group
   safe(()=>{const ids=Object.keys(XT.torch.items),keep=Math.max(2,Math.round(ids.length*MP.k('spare')));ids.slice(keep).forEach(id=>XT.torch.mpTake(id))},'spares');
@@ -3571,7 +3587,9 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  let spawnPending=false;
  XT.onUpdate(()=>{if(!spawnPending||!MP.active||window.__cut)return;spawnPending=false;const m=me();if(!m)return;const dx=(m.slot-1.5)*.8;if(!blocked(cam.position.x+dx,cam.position.z))cam.position.x+=dx});
  // host start
- let starting=false;function hostStart(){if(!MP.host||MP.started||starting)return;starting=true;graceT=performance.now()+45000;const c=cfg();bcast({t:'start',cfg:c});
+ let starting=false;function hostStart(){if(!MP.host||MP.started||starting)return;
+  if(MP.mode==='hunt'){if(!huntUnlocked()){MP.mode='coop';lobbyDraw();return}if(roster.length<2){lobbyStatus('Hunt needs at least 2 players.',true);return}MP.hm={demon:roster[Math.floor(Math.random()*roster.length)].id}}
+  starting=true;graceT=performance.now()+45000;const c=cfg();bcast({t:'start',cfg:c});
   // let the start message leave before this page freezes building the night
   setTimeout(()=>{starting=false;safe(()=>startGame(c,false),'start')},600)}
  // a paused player keeps their place: the night goes on without them
@@ -3586,7 +3604,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 #mpL button.ghost{background:none;color:#3a2a2a;border-color:#8a7a60}#mpL .st{font:.78rem/1.4 var(--ui);color:#4a3a30;min-height:1.1em}#mpL .st.err{color:#9a1a1a}
 #mpL .code{font:700 1.6rem var(--ui);letter-spacing:.25em;text-align:center;background:#1e1a2a;color:#efe4cb;border-radius:5px;padding:.3rem}
 #mpL ul{list-style:none;margin:0;padding:0;font:.85rem var(--ui)}#mpL li{display:flex;align-items:center;gap:.5rem;padding:.15rem 0}#mpL li i{width:.8rem;height:.8rem;border-radius:50%;flex:none}
-#mpL .sm{font:.72rem/1.4 var(--ui);color:#5a4a40}#mpL .or{text-align:center;font-size:1.2rem;color:#6a5a50}
+#mpL .sm{font:.72rem/1.4 var(--ui);color:#5a4a40}#mpL .mode{display:flex;gap:.4rem;margin:.5rem 0 .2rem}#mpL .mode button{flex:1;background:none;color:#3a2a2a;border-color:#8a7a60}#mpL .mode button.on{background:#3a1e1a;color:#f4ecdc;border-color:#3a1e1a}#mpL .mode button:disabled{opacity:.55;cursor:default}#mpL .mode button.on:disabled{opacity:1}#mpL .or{text-align:center;font-size:1.2rem;color:#6a5a50}
 #mpNote{position:absolute;left:0;right:0;bottom:40px;text-align:center;font-family:var(--ui);font-size:.72rem;color:#8a7e70;padding:0 16px;pointer-events:none}
 #mpInv{position:absolute;right:16px;top:calc(env(safe-area-inset-top,0px) + 14px);font:600 .78rem var(--ui);letter-spacing:.06em;color:#f4ecdc;background:#3a1e1a;border:1px solid #5a2e28;border-radius:5px;padding:.5rem .9rem;cursor:pointer;z-index:2}
 #mpMic{position:fixed;z-index:3;left:16px;top:calc(env(safe-area-inset-top,0px) + 12px);font-family:var(--ui);font-size:.66rem;color:var(--dim);letter-spacing:.04em;max-width:calc(50% - 40px)}
@@ -3602,7 +3620,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  lobbyEl.innerHTML='<div class="pp" role="dialog" aria-label="Play together"><h2>Play together</h2>'+
   '<label>Your name<input id="mpName" maxlength="16" autocomplete="nickname" placeholder="Player 1"></label>'+
   '<div id="mpPre"><div class="row"><button type="button" id="mpHost">Host a game</button></div><div class="or">or join with a code</div><div class="row"><input id="mpCode" maxlength="8" placeholder="CODE" aria-label="Game code" autocapitalize="characters"><button type="button" id="mpJoin">Join</button></div></div>'+
-  '<div id="mpIn" hidden><div class="code" id="mpCodeShow"></div><div class="row"><button type="button" id="mpCopy">Copy invite link</button></div><ul id="mpRoster"></ul></div>'+
+  '<div id="mpIn" hidden><div class="code" id="mpCodeShow"></div><div class="mode" id="mpMode" role="radiogroup" aria-label="Mode"><button type="button" data-m="coop" role="radio">Co-op</button><button type="button" data-m="hunt" role="radio">Hunt</button></div><div class="sm" id="mpModeD"></div><div class="mode" id="mpDiff" role="radiogroup" aria-label="Difficulty"><button type="button" data-d="easy" role="radio">Easy</button><button type="button" data-d="normal" role="radio">Normal</button><button type="button" data-d="nightmare" role="radio">Nightmare</button></div><div class="row"><button type="button" id="mpCopy">Copy invite link</button></div><ul id="mpRoster"></ul></div>'+
   '<div class="st" id="mpSt"></div><p class="sm">Up to 4 players. One baby, one house. The host\'s difficulty and night are used. Voice chat is on: press M to mute.</p>'+
   '<div class="row"><button type="button" id="mpStart" hidden>Start the night</button><button type="button" class="ghost" id="mpClose">Close</button></div></div>';
  document.body.appendChild(lobbyEl);
@@ -3615,6 +3633,8 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  lobbyEl.addEventListener('click',e=>e.stopPropagation());
  L$('mpHost').onclick=()=>hostGame();L$('mpJoin').onclick=()=>joinGame(codeIn.value);codeIn.addEventListener('keydown',e=>{if(e.key==='Enter')joinGame(codeIn.value)});
  L$('mpStart').onclick=()=>hostStart();
+ L$('mpDiff').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!MP.host||MP.started)return;const d=b.dataset.d;safe(()=>{XT.parts.diff.load(d);XT.ls.set('hushDiff',d);TITLE.redraw&&TITLE.redraw()},'diff');lobbyDraw();bcastRoster(true)});
+ L$('mpMode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!MP.host||MP.started)return;const m=b.dataset.m;if(m==='hunt'&&!huntUnlocked())return;MP.mode=m;lobbyDraw();bcastRoster(true)});
  L$('mpClose').onclick=()=>{if(MP.active&&!MP.started){teardown(false)}lobbyEl.hidden=true;lobbyDraw()};
  const invEl=document.createElement('button');invEl.id='mpInv';invEl.type='button';invEl.textContent='Copy invite link';invEl.hidden=true;safe(()=>document.getElementById('title').appendChild(invEl),'inv');
  const link=()=>SITE+'#join='+(MP.code||'');
@@ -3626,6 +3646,11 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  function lobbyDraw(){const inS=MP.active;L$('mpPre').hidden=inS;L$('mpIn').hidden=!inS;nameIn.disabled=inS;L$('mpStart').hidden=!(MP.host&&!MP.started);
   L$('mpCodeShow').textContent=MP.code||'';invEl.hidden=!(inS&&!MP.started&&TITLE.on);
   L$('mpRoster').innerHTML=roster.slice().sort((a,b)=>a.slot-b.slot).map(p=>'<li><i style="background:'+COL[p.slot%4]+'"></i>'+esc(p.name)+(p.id===MP.id?' (you)':'')+(p.join===0||p.id===MP.hostId?' &middot; host':'')+'</li>').join('');
+  {const dk=MP.host?XT.diffKey():MP.hostDiff||'normal';L$('mpDiff').querySelectorAll('button').forEach(b=>{const on=b.dataset.d===dk;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');b.disabled=!MP.host||MP.started})}
+  {const hu=MP.host?huntUnlocked():!!MP.hostHu;if(MP.mode==='hunt'&&!hu)MP.mode='coop';L$('mpMode').querySelectorAll('button').forEach(b=>{const m=b.dataset.m,on=MP.mode===m;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');
+    b.disabled=!MP.host||MP.started||(m==='hunt'&&!hu);if(m==='hunt')b.textContent=hu?'Hunt':'???'});
+   L$('mpModeD').textContent=MP.mode==='hunt'?'Hunt: one of you, picked at random, is the snake demon. The rest must survive until 6 AM, or find the katana and cut her down. Needs 2 or more players.':hu?'Co-op: everyone looks after her together.':'Co-op: everyone looks after her together. Another mode is hidden somewhere in the house.'}
+  if(inS&&MP.host&&!MP.started&&MP.mode==='hunt'&&roster.length<2){lobbyStatus('Hunt needs at least 2 players. Share the code.');return}
   if(inS&&!MP.host&&!MP.started)lobbyStatus('Waiting for the host to start the night. ('+roster.length+'/'+MAXP+')');else if(inS&&MP.host&&!MP.started)lobbyStatus(roster.length+'/'+MAXP+' players. Start when everyone is here.')}
  MP.openLobby=()=>{if(!MP.available)return;lobbyEl.hidden=false;lobbyDraw();setTimeout(()=>{try{(MP.active?L$('mpCopy'):nameIn).focus()}catch(e){}},30)};
  // an invite link joins by itself
@@ -3633,6 +3658,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
   const code=hm[1].toUpperCase();const go=()=>{if(!MP.available)return false;MP.openLobby();codeIn.value=code;joinGame(code);return true};
   let n=0;const iv=setInterval(()=>{if(go()||++n>40)clearInterval(iv)},250)}
  hashJoin();addEventListener('hashchange',()=>{if(TITLE.on)hashJoin()});
+ MP.bcast=bcast;MP.sendTo=sendTo;MP.playScare=m=>playScare(m);MP.toAll=m=>{bcast(m);clientHandle(m)};MP.repOf=id=>id===MP.id?myReport():(P.get(id)&&P.get(id).rep)||null;MP.lobbyDraw=()=>lobbyDraw();
  MP.dbg={roster:()=>roster,P,AV,V,get FL(){return FL},readAll,hostGame,joinGame,hostStart,teardown,held,get sEV(){return sEV},get vote(){return vote},myReport};
 })();
 
@@ -3754,4 +3780,215 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
 })();
 </script>
 
+<script>
+// ===== 19. Hunt: a multiplayer mode where one player is the snake demon and the rest are babysitters =====
+// The host picks the mode in the lobby (locked until the host has found the snake-scale mask, or ?hunt=1). A random player is the demon.
+// The AI demon is off (no sightings, hunts, prowls or traps). The demon player stalks, flickers lights, hisses and climbs the ceiling,
+// and after midnight her claws count: the first hit staggers, the second kills (the dead become ghosts). Messages go through the host.
+(function(){'use strict';const XT=window.__xt,MP=window.__mp;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush hunt] '+(t||''),e)}};
+ if(!XT||!MP)return;
+ const on=()=>!!(MP.active&&MP.hm),me=()=>on()&&!!MP.demon,DID=()=>MP.hm&&MP.hm.demon,now=()=>performance.now()/1000;
+ const CD={claw:1.2,flick:18,hiss:3,show:12,spot:1.5,skill:.5};
+ // the demon's skill (secret: babysitters only feel it). Lower skill: a stronger demon and weaker babysitters. Average still leaves them a bit stronger than in co-op.
+ const SKN=['New to games','Beginner','Average','Good','Expert'];
+ const SKP=[{sp:1.6,reach:2.3,stun:1.5,htd:2,run:.92},{sp:1.5,reach:2.1,stun:2.2,htd:2,run:.98},{sp:1.4,reach:1.9,stun:3,htd:2,run:1.06},{sp:1.32,reach:1.75,stun:3.6,htd:3,run:1.1},{sp:1.25,reach:1.6,stun:4.2,htd:3,run:1.15}];
+ let skI=2,skRev=null;const SK=()=>SKP[skI];
+ const ST={ceil:false,lift:0,stun:0,cd:{},xray:0,hits:0,stag:0,inv:0,placed:false,noCut:0,vh:false,vhOut:false};
+
+ // ---------- the unlock: a snake-scale mask, tucked under the plank between the basement crates ----------
+ safe(()=>{let got=false;try{got=localStorage.getItem('hushHuntUnlocked')==='1'}catch(e){}if(got)return;
+  const c=document.createElement('canvas');c.width=c.height=96;const q=c.getContext('2d');q.fillStyle='#e9dc8e';q.fillRect(0,0,96,96);
+  q.strokeStyle='rgba(150,130,50,.8)';q.lineWidth=1.5;for(let y=0;y<104;y+=9)for(let x=(y/9)%2?0:6;x<104;x+=12){q.beginPath();q.arc(x,y,6,0,Math.PI);q.stroke()}
+  q.fillStyle='#120a06';[[30,40],[66,40]].forEach(([x,y])=>{q.beginPath();q.ellipse(x,y,9,4,0,0,7);q.fill()});
+  const mat=new THREE.MeshPhongMaterial({map:new THREE.CanvasTexture(c),shininess:40,specular:0x5a5030,side:THREE.DoubleSide});
+  const g=new THREE.Group(),m=new THREE.Mesh(new THREE.SphereGeometry(.11,14,8,0,Math.PI*2,0,Math.PI/2),mat);m.scale.set(.82,.32,1.1);g.add(m);
+  g.position.set(7.58,BF+.012,-13.32);g.rotation.y=.6;BSM.G.add(g);
+  const hb=new THREE.Mesh(BG(.32,.22,.34),hitM);hb.position.set(7.58,BF+.1,-13.3);BSM.G.add(hb);
+  hb.userData.i={label:'Something under the plank',act(){try{localStorage.setItem('hushHuntUnlocked','1')}catch(e){}g.visible=false;const i=inter.indexOf(hb);if(i>=0)inter.splice(i,1);
+   subtitle('A mask of pale yellow snake scales, still warm. (Hunt unlocked: host it from Play together.)',5500);safe(()=>MP.lobbyDraw&&MP.lobbyDraw(),'lobby')}};inter.push(hb);
+  XT.huntMask={g,hb}},'mask');
+
+ // ---------- the AI demon sits this one out ----------
+ const du=DEMON.update;DEMON.update=function(){if(on())return;return du.apply(this,arguments)};
+ const hu=HUNT.update;HUNT.update=function(){if(on())return;return hu.apply(this,arguments)};
+ const ts=TRAP.start;TRAP.start=function(){if(on())return false;return ts.apply(this,arguments)};
+ safe(()=>{const H=XT.hide,ps=H.prowlStart;H.prowlStart=function(){if(on())return;return ps.apply(this,arguments)};const hh=XT.hideHunt;XT.hideHunt=function(){if(on())return true;return hh.apply(this,arguments)}},'hide');
+
+ // ---------- HUD ----------
+ const css=document.createElement('style');css.textContent=`#hHud{position:fixed;z-index:3;right:16px;top:calc(env(safe-area-inset-top,0px) + 12px);max-width:min(24rem,calc(50% - 24px));font-family:var(--ui);font-size:.66rem;line-height:1.55;color:#e8dcc8;background:rgba(18,10,10,.72);border:1px solid #6a2a24;border-radius:6px;padding:.4rem .7rem;pointer-events:none;text-align:right}
+#hHud b{color:#e0b84a;letter-spacing:.18em;font-weight:600}#hHud .k{color:#a89e90}#hHud .w{color:#ff8a7a}#hHud .ok{color:#bfe8a0}
+body.hDemon #need,body.hDemon #mon{display:none!important}
+#hFx{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .5s}#hFx.dm{opacity:1;background:radial-gradient(ellipse at center,transparent 55%,rgba(90,40,0,.35))}#hFx.st{opacity:1;background:radial-gradient(ellipse at center,rgba(40,40,40,.2) 20%,rgba(10,10,10,.85));backdrop-filter:blur(2px)}
+#hHit{position:fixed;inset:0;z-index:2;pointer-events:none;background:radial-gradient(transparent 35%,rgba(170,0,0,.7));opacity:0;transition:opacity .6s}#hHit.on{opacity:1;transition:none}
+#hEnd{position:fixed;inset:0;z-index:11;background:#050405;color:var(--fg);display:flex;align-items:center;justify-content:center;padding:24px 16px;text-align:center}#hEnd .in{max-width:30rem;display:flex;flex-direction:column;gap:.9rem}
+#hEnd .tag{font-family:var(--ui);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:#c9a45c;margin:0}#hEnd h1{font-family:var(--display);font-weight:400;font-size:2.1rem;margin:0}#hEnd p.txt{font-family:var(--display);color:#bfb6a8;font-size:1.05rem;line-height:1.5;margin:0}
+#hEnd button{align-self:center;font:600 .85rem var(--ui);color:#f0e6e0;background:#3a0e10;border:1px solid #6a2024;border-radius:6px;padding:.6rem 1.4rem;cursor:pointer}`;document.head.appendChild(css);
+ const hud=document.createElement('div');hud.id='hHud';hud.hidden=true;document.body.appendChild(hud);
+ const fxEl=document.createElement('div');fxEl.id='hFx';document.body.appendChild(fxEl);
+ const hitEl=document.createElement('div');hitEl.id='hHit';document.body.appendChild(hitEl);
+ const left=k=>Math.max(0,Math.ceil((ST.cd[k]||0)-now()));
+ function drawHud(){if(!on()||MP.ended){hud.hidden=true;return}hud.hidden=false;const V=MP.dbg.V,B=XT.bladeFight&&XT.bladeFight.S;
+  if(MP.demon){const mic=V.denied?'Hiss (no mic)':V.muted?'Hiss':'Voice',late=XT.hour()>=24,cdT=k=>left(k)?' <span class="k">'+left(k)+'s</span>':'';
+   hud.innerHTML='<b>DEMON</b> &middot; Mic: '+mic+' <span class="k">[M]</span>'+(ST.stun>0?'<br><span class="w">STUNNED</span>':'')+(ST.xray>0?'<br><span class="ok">She is crying: you can feel them</span>':'')+
+    (B?'<br>WASD move &middot; mouse aim<br>[Click / 1] claws &middot; [Right-click / 2] lunge &middot; [Space / 3] tail sweep':
+    '<br><span class="k">[Q]</span> ceiling '+(ST.ceil?'(on)':'')+' &middot; <span class="k">[R]</span> flicker'+cdT('flick')+' &middot; <span class="k">[H]</span> hiss'+cdT('hiss')+'<br><span class="k">[X]</span> show yourself'+cdT('show')+' &middot; <span class="k">[E]</span> open a hiding spot / door<br>'+
+    (late?'<span class="k">[Click / J]</span> claws'+cdT('claw'):'<span class="k">Claws after midnight. Until then: stalk and scare.</span>'))}
+  else hud.innerHTML='<b>HUNT</b> &middot; '+(MP.ghost?'You are a ghost':'Survive until 6 AM, or find the katana')+(ST.hits&&!MP.ghost?'<br><span class="w">Wounded: '+(ST.left>1?ST.left+' more hits':'one more hit')+' kills you</span>':'')+(ST.inv>0&&!MP.ghost?' <span class="ok">('+Math.ceil(ST.inv)+'s safe)</span>':'')+(XT.hour()<24?'<br><span class="k">She cannot hurt you before midnight</span>':'')}
+ setInterval(()=>safe(drawHud,'hud'),250);
+
+ // ---------- start ----------
+ MP.onHunt=()=>{document.body.classList.add('hunt');ST.placed=false;if(!MP.demon)window.__runK=SKP[2].run;
+  if(MP.demon){document.body.classList.add('hDemon');window.__dmSp=SK().sp;safe(pickSkill,'skill');fxEl.className='dm';safe(()=>{const L=new THREE.PointLight(0xffb090,.6,9,2);cam.add(L)},'sight');safe(vadInit,'vad')}
+  drawHud();setTimeout(()=>subtitle(MP.demon?'You are the demon. Stalk them, scare them. After midnight, hunt them.':'Hunt: one of you is the demon. Survive until 6 AM, or find the katana.',6000),1500)};
+ const send=m=>safe(()=>MP.send(m),'send');
+ const repOf=id=>MP.repOf(id);
+
+ // ---------- the skill picker (the demon only, instead of the intro) ----------
+ const skEl=document.createElement('div');skEl.id='hSk';skEl.hidden=true;document.body.appendChild(skEl);
+ {const c=document.createElement('style');c.textContent=`#hSk{position:fixed;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(6,3,4,.9)}#hSk .pp{width:min(26rem,100%);background:#efe4cb;color:#1e1a2a;padding:1rem 1.2rem;font-family:'Caveat','Segoe Print',cursive;transform:rotate(-.6deg);display:flex;flex-direction:column;gap:.45rem}
+#hSk h2{margin:0;font-size:2rem}#hSk p{margin:0;font:.75rem/1.4 var(--ui);color:#5a4a40}#hSk button{font:600 .85rem var(--ui);color:#f4ecdc;background:#3a1e1a;border:1px solid #5a2e28;border-radius:5px;padding:.55rem .9rem;cursor:pointer;text-align:left}#hSk button.on{outline:2px solid #c9a45c}`;document.head.appendChild(c)}
+ function pickSkill(){skEl.innerHTML='<div class="pp" role="dialog" aria-label="Your skill"><h2>You are the demon</h2><p>How good are you at games? Lower makes you stronger and them weaker. Only you will know.</p>'+SKN.map((n,i)=>'<button type="button" data-i="'+i+'" class="'+(i===skI?'on':'')+'">'+n+(i===2?' (default)':'')+'</button>').join('')+'</div>';skEl.hidden=false;
+  if(document.pointerLockElement)document.exitPointerLock();
+  let n=0;const iv=setInterval(()=>{if(++n>60){clearInterval(iv);return}safe(()=>{if(window.__cut&&!(XT.bladeFight&&XT.bladeFight.S))XT.skipCut()},'skip')},500)}
+ skEl.addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('button');if(!b)return;skI=+b.dataset.i;window.__dmSp=SK().sp;skEl.hidden=true;send({t:'hx',k:'skill',v:skI});subtitle('You are the demon. Stalk them, scare them. After midnight, hunt them.',4000)});
+ ['keydown','keyup'].forEach(k=>skEl.addEventListener(k,e=>e.stopPropagation()));
+ // ---------- the demon's body, as everyone else sees it ----------
+ let av=null;
+ function mkAv(){const c=DEMON.dbg.g.clone(true),rm=[];c.traverse(o=>{if(o.isLight)rm.push(o);if(o.isMesh||o.isSprite){o.frustumCulled=false;if(o.material){o.material=o.material.clone();o.material.depthTest=true;if(o.material.emissive&&o.material.emissive.getHex()===0)o.material.emissive.setHex(0x1a1814)}}});
+  rm.forEach(o=>o.parent&&o.parent.remove(o));c.visible=false;c.userData.noMap=1;c.renderOrder=0;scene.add(c);return{g:c,rig:XT.demon.rigOf(c),t:0,lp:null,spd:0,fT:0,fm:null,st:0}}
+ function avFrame(dt){if(!on()||MP.demon){if(av)av.g.visible=false;return}const a=MP.dbg.AV.get(DID()),r=a&&a.cur;if(!r){if(av)av.g.visible=false;return}
+  const RL=!!(window.__rlm&&__rlm.on),B=XT.bladeFight&&XT.bladeFight.S,vis=!B&&!window.__cut&&!RL&&r.ar!=='r'&&!r.ct;if(!av)av=mkAv();av.g.visible=vis;if(!vis){av.lp=null;return}
+  const x=mX(r.x),z=mZ(r.z),sp=av.lp?Math.hypot(x-av.lp.x,z-av.lp.z)/Math.max(dt,1e-3):0;av.lp={x,z};av.spd=av.spd*.8+Math.min(10,sp)*.2;
+  av.g.position.set(x,r.cl?r.y+2.78:r.y,z);av.g.rotation.set(0,r.yaw+Math.PI,r.cl?Math.PI:0);av.t+=dt;if(av.fT>0)av.fT-=dt;
+  const mode=av.fT>0&&av.fm?av.fm:r.cl?'ceil':av.spd>.3?'walk':'stand';XT.demon.pose(av.rig,mode,av.t,dt);
+  av.st-=dt;if(av.spd>.3&&av.st<=0){av.st=r.cl?.5:.62;safe(()=>(r.cl?XT.demonSfx.skitter:XT.demonSfx.slither)(x,z,.6),'step')}
+  av.g.traverse(o=>{if(o.isSprite){const s=.08+.025*Math.sin(av.t*11+o.position.x*40);o.scale.set(s,s,1)}})}
+ const dPos=()=>{const a=MP.dbg.AV.get(DID()),r=a&&a.cur;return r?{x:mX(r.x),z:mZ(r.z)}:null};
+
+ // ---------- the demon's own controls ----------
+ function fwdTarget(){let best=null,bd=SK().reach;const fx=-Math.sin(yaw),fz=-Math.cos(yaw);
+  MP.dbg.AV.forEach((a,id)=>{const r=a.cur;if(id===DID()||!r||r.gh||r.hid||r.ar==='r'||Math.abs(r.y-fy)>1)return;const dx=mX(r.x)-cam.position.x,dz=mZ(r.z)-cam.position.z,d=Math.hypot(dx,dz);
+   if(d<bd&&(dx*fx+dz*fz)/Math.max(d,1e-3)>.5){bd=d;best=id}});return best}
+ const ready=k=>{if((ST.cd[k]||0)>now())return false;ST.cd[k]=now()+CD[k];return true};
+ const swish=()=>{if(AC)safe(()=>{const t0=AC.currentTime;burst(t0,2600,1.5,.18,.18,'bandpass');burst(t0+.02,700,1,.12,.2,'bandpass')},'swish')};
+ function claw(){if(ST.stun>0)return;if(XT.hour()<24){subtitle('Not yet. Until midnight you can only stalk and scare.',2000);return}if(ST.ceil){subtitle('Drop from the ceiling first [Q].',1500);return}
+  if(!ready('claw'))return;swish();send({t:'hx',k:'claw',id:fwdTarget()})}
+ function nearSpot(){let best=null,bd=1.7;safe(()=>XT.hide.SPOTS.forEach(s=>{if(!s.hb)return;const p=s.hb.getWorldPosition(new THREE.Vector3());if(Math.abs(s.fl-fy)>1)return;const d=Math.hypot(p.x-cam.position.x,p.z-cam.position.z);if(d<bd){bd=d;best=s}}),'spots');return best}
+ function nearDoor(){let best=null,bd=1.6;doors.forEach(d=>{const p=d.pv.getWorldPosition(new THREE.Vector3());if(Math.abs(p.y-fy)>1.2&&Math.abs(d.solid.y0-fy)>.6)return;const dd=Math.hypot(p.x-cam.position.x,p.z-cam.position.z);if(dd<bd){bd=dd;best=d}});return best}
+ function useE(){if(ST.stun>0)return;if(ST.ceil){subtitle('Drop from the ceiling first [Q].',1500);return}const s=nearSpot();
+  if(s){if(!ready('spot'))return;send({t:'hx',k:'spot',s:s.id});return}const d=nearDoor();if(d)d.open=!d.open}
+ function act(k){if(!me()||ST.stun>0&&k!=='ceil')return;const p={x:+iX(cam.position.x).toFixed(2),z:+iZ(cam.position.z).toFixed(2),y:+(cam.position.y-ST.lift).toFixed(2)};
+  if(k==='ceil'){ST.ceil=!ST.ceil;safe(()=>XT.demonSfx.skitter(cam.position.x,cam.position.z,.5),'sk');return}
+  if(k==='flick'||k==='hiss'||k==='show'){if(!ready(k))return;send(Object.assign({t:'hx',k},p))}}
+ addEventListener('keydown',e=>{if(!me()||paused||window.__cut||MP.ended)return;const c=e.code,K={KeyQ:'ceil',KeyR:'flick',KeyH:'hiss',KeyX:'show'};
+  if(c==='KeyE'){e.stopImmediatePropagation();if(!e.repeat)useE();return}if(e.repeat)return;
+  if(K[c]){e.stopImmediatePropagation();act(K[c])}else if(c==='KeyJ')claw()},true);
+ renderer.domElement.addEventListener('mousedown',e=>{if(me()&&document.pointerLockElement&&!window.__cut&&e.button===0)claw()});
+
+ // ---------- the boss fight, with her in the demon player's hands ----------
+ const KS={};addEventListener('keydown',e=>{KS[e.code]=1;const B=XT.bladeFight&&XT.bladeFight.S;if(!me()||!B||e.repeat)return;
+  const a={Digit1:'swipe',KeyJ:'swipe',Digit2:'lunge',KeyK:'lunge',Digit3:'sweep',Space:'sweep'}[e.code];if(a){e.preventDefault();fightAtk(a)}},true);
+ addEventListener('keyup',e=>{KS[e.code]=0});addEventListener('blur',()=>{for(const k in KS)KS[k]=0});
+ document.addEventListener('mousedown',e=>{const B=XT.bladeFight&&XT.bladeFight.S;if(!me()||!B||B.st==='intro')return;if(!document.pointerLockElement)safe(()=>{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})},'lock');
+  if(e.button===0)fightAtk('swipe');else if(e.button===2)fightAtk('lunge')});
+ document.addEventListener('contextmenu',e=>{if(me())e.preventDefault()});
+ function fightAtk(a){const B=XT.bladeFight&&XT.bladeFight.S;if(!B||B.st!=='idle')return;if(MP.host){XT.huntFightIn=Object.assign(XT.huntFightIn||{x:0,z:0,f:B.br},{a})}else send({t:'hb',a})}
+ function fightIn(){const B=XT.bladeFight&&XT.bladeFight.S;if(!me()||!B)return;const f=(KS.KeyW||KS.ArrowUp?1:0)-(KS.KeyS||KS.ArrowDown?1:0),s=(KS.KeyD||KS.ArrowRight?1:0)-(KS.KeyA||KS.ArrowLeft?1:0);
+  const x=-Math.sin(yaw)*f+Math.cos(yaw)*s,z=-Math.cos(yaw)*f-Math.sin(yaw)*s,fc=Math.atan2(-Math.sin(yaw),-Math.cos(yaw)),m={x:+x.toFixed(2),z:+z.toFixed(2),f:+fc.toFixed(3)};
+  if(MP.host){const I=XT.huntFightIn||{};XT.huntFightIn=Object.assign(I,m)}else send(Object.assign({t:'hb'},m))}
+ setInterval(()=>safe(fightIn,'fightIn'),100);
+
+ // ---------- the demon's mic: unmuted, her real voice; muted, a hiss whenever she speaks ----------
+ let vad=null,hissN=null,vLast=0;
+ function vadInit(){const V=MP.dbg.V;if(vad||!V.ctx||!V.stream){setTimeout(()=>safe(vadInit,'vad'),1000);return}if(V.denied)return;
+  const cs=V.stream.clone();cs.getAudioTracks().forEach(t=>t.enabled=true);const src=V.ctx.createMediaStreamSource(cs),an=V.ctx.createAnalyser();an.fftSize=512;src.connect(an);vad={an,cs,buf:new Float32Array(512)}}
+ function vadTick(){if(!me()||!vad)return;const V=MP.dbg.V;let lv=0;if(V.muted&&!V.denied){vad.an.getFloatTimeDomainData(vad.buf);let s=0;for(let i=0;i<vad.buf.length;i++)s+=vad.buf[i]*vad.buf[i];lv=Math.sqrt(s/vad.buf.length)}
+  const t=now();if(lv>.03)vLast=t;const sp=t-vLast<.35;if(sp!==ST.vhOut){ST.vhOut=sp;send({t:'hx',k:'vh',on:sp?1:0})}}
+ setInterval(()=>safe(vadTick,'vadTick'),80);
+ function setHiss(v){if(!AC)return;if(!hissN){const n=AC.sampleRate*2|0,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+   const s=AC.createBufferSource();s.buffer=b;s.loop=true;const hp=AC.createBiquadFilter();hp.type='highpass';hp.frequency.value=3000;const pk=AC.createBiquadFilter();pk.type='peaking';pk.frequency.value=6200;pk.gain.value=8;const g=AC.createGain();g.gain.value=0;
+   s.connect(hp).connect(pk).connect(g).connect(master);s.start();hissN={g}}
+  hissN.g.gain.setTargetAtTime(v?.22:0,AC.currentTime,v?.04:.12)}
+
+ // ---------- host: checks the demon's requests and tells everyone ----------
+ const hits={},invU={},hcd={};let cryPrev=false,cryCd=0;
+ const ok=(k)=>{const t=now();if((hcd[k]||0)>t)return false;hcd[k]=t+CD[k]*.8;return true};
+ function hitP(id){const t=now();if((invU[id]||0)>t)return false;const r=repOf(id);if(!r||r.gh)return false;hits[id]=(hits[id]||0)+1;invU[id]=t+3;const htd=SK().htd,n=hits[id];MP.sendTo(id,{t:'hhit',n,dead:n>=htd?1:0,left:htd-n});
+  if(n<htd)MP.sendTo(DID(),{t:'note',txt:'(You cut '+MP.nameOf(id)+'. Once more.)',ms:2200});return true}
+ MP.onH=(pid,m)=>{if(!on())return;if(pid!==DID())return;
+  if(m.t==='hb'){const I=XT.huntFightIn||(XT.huntFightIn={x:0,z:0,f:0,a:null});if(m.a)I.a=m.a;else{I.x=+m.x||0;I.z=+m.z||0;if(typeof m.f==='number')I.f=m.f}return}
+  if(m.t!=='hx')return;const k=m.k;
+  if(k==='skill'){const v=Math.max(0,Math.min(4,m.v|0));skI=v;MP.toAll({t:'hsk',run:SKP[v].run});MP.sendTo(pid,{t:'hsk',v});return}
+  if(k==='vh'){MP.toAll({t:'hfx',k:'vh',on:m.on?1:0});return}
+  if(!ok(k))return;const D=repOf(pid);
+  if(k==='flick'){MP.toAll({t:'gfx',k:'lights',x:+m.x||0,z:+m.z||0,y:+m.y||0});return}
+  if(k==='hiss'||k==='show'){MP.toAll({t:'hfx',k,x:+m.x||0,z:+m.z||0});return}
+  if(k==='claw'){if(!D)return;MP.toAll({t:'hfx',k:'claw',x:D.x,z:D.z});if(XT.hour()<24||!m.id)return;const r=repOf(m.id);
+   if(r&&!r.gh&&!r.hid&&r.ar!=='r'&&!isDm(m.id)&&Math.hypot(r.x-D.x,r.z-D.z)<SK().reach+.7&&Math.abs(r.y-D.y)<1.2)hitP(m.id);return}
+  if(k==='spot'){let occ=null;MP.roster().forEach(p=>{if(isDm(p.id))return;const r=repOf(p.id);if(r&&!r.gh&&r.hs===m.s)occ=p.id});MP.toAll({t:'hfx',k:'creak',s:m.s});
+   if(occ){MP.sendTo(occ,{t:'hfound'});MP.sendTo(pid,{t:'hspot',r:'found',n:MP.nameOf(occ)});if(XT.hour()>=24)setTimeout(()=>safe(()=>hitP(occ),'hit'),250)}else MP.sendTo(pid,{t:'hspot',r:'empty'})}};
+ const isDm=id=>id===DID();
+
+ // ---------- everyone: what the host says ----------
+ MP.onC=m=>{if(!on())return;switch(m.t){
+  case 'hfx':if(m.k==='vh'){setHiss(!!m.on);break}
+   if(m.k==='creak'){const s=XT.hide.SPOTS.find(q=>q.id===m.s);if(s&&s.hb){const p=s.hb.getWorldPosition(new THREE.Vector3());safe(()=>XT.hinge(p.x,p.z,1.4,true),'creak')}break}
+   {const x=mX(m.x),z=mZ(m.z);if(m.k==='hiss')safe(()=>XT.demonSfx.hiss(x,z,1.4),'hiss');
+    else if(m.k==='claw'){if(!MP.demon&&AC)safe(()=>{const t0=AC.currentTime,d=Math.hypot(x-cam.position.x,z-cam.position.z),g=1/(1+d*d*.08);burst(t0,2600,1.5,.25*g,.18,'bandpass')},'claw');if(av){av.fT=.6;av.fm='scare'}}
+    else if(m.k==='show'){safe(()=>{XT.demonSfx.crack(x,z,1.4);setTimeout(()=>safe(()=>XT.demonSfx.rasp(x,z,1.2)),400)},'show');if(av){av.fT=2;av.fm='loom'}
+     if(!MP.demon&&!MP.ghost&&av&&av.g.visible&&Math.hypot(x-cam.position.x,z-cam.position.z)<9){hitEl.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>hitEl.classList.remove('on')));if(AC)safe(()=>burst(AC.currentTime,900,.6,.4,.5,'bandpass'),'sting')}}}
+   break;
+  case 'hhit':if(MP.demon||MP.ghost)break;if(m.dead){safe(()=>{if(XT.hide.hid)XT.hide.leave()},'leave');ST.hits=m.n;safe(()=>MP.die('Taken.','The demon caught you. You can still haunt the house.'),'die')}else stagger(m.left);break;
+  case 'hskr':skRev=Math.max(0,Math.min(4,m.v|0));safe(()=>{const e=endEl.querySelector('.sk');if(e)e.textContent='The demon played on: '+SKN[skRev]},'rev');break;
+  case 'hsk':if(MP.demon){if(typeof m.v==='number'){skI=m.v;window.__dmSp=SK().sp}}else window.__runK=+m.run||1;break;
+  case 'hfound':if(XT.hide.hid){safe(()=>XT.hide.leave(),'leave');subtitle('The doors are torn open. She found you!'+(XT.hour()<24?' Run.':''),2600)}break;
+  case 'hspot':if(!MP.demon)break;if(m.r==='found')subtitle('Found '+m.n+(XT.hour()<24?'. They run. You cannot hurt them before midnight.':'.'),2200);else{ST.stun=SK().stun;subtitle('Empty. You hiss and reel, stunned.',2200);safe(()=>XT.demonSfx.hiss(cam.position.x,cam.position.z,.8),'h')}break;
+  case 'hcry':if(MP.demon){ST.xray=5;subtitle('(She is crying. You can feel every one of them through the walls.)',2500)}break}};
+ function stagger(left){ST.hits++;ST.left=left;ST.stag=.6;ST.inv=3;hitEl.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>hitEl.classList.remove('on')));
+  safe(()=>{if(AC){const t0=AC.currentTime;burst(t0,120,1,.5,.35,'lowpass');burst(t0,700,2,.18,.2,'bandpass')}},'snd');
+  safe(()=>{const p=dPos();if(!p)return;let bx=cam.position.x-p.x,bz=cam.position.z-p.z;const L=Math.hypot(bx,bz)||1;bx/=L;bz/=L;for(let i=0;i<10;i++){const nx=cam.position.x+bx*.1,nz=cam.position.z+bz*.1;if(blocked(nx,nz))break;cam.position.x=nx;cam.position.z=nz}},'push');
+  pitch=Math.max(-1.2,pitch-.18);subtitle('Her claws open you up. Run! '+(left>1?left+' more hits and you are dead.':'One more and you are dead.'),3000)}
+
+ // ---------- outlines through the walls (the demon, while the baby cries) ----------
+ const xr=new Map(),xm=new THREE.MeshBasicMaterial({color:0xff3a2a,transparent:true,opacity:.5,depthTest:false,depthWrite:false,fog:false});
+ function xray(dt){const show=me()&&ST.xray>0;const seen=new Set();
+  if(show)MP.dbg.AV.forEach((a,id)=>{const r=a.cur;if(isDm(id)||!r||r.gh||r.ar==='r')return;seen.add(id);let g=xr.get(id);
+   if(!g){g=new THREE.Group();const b=new THREE.Mesh(new THREE.CylinderGeometry(.2,.17,1.25,10),xm);b.position.y=.8;const h=new THREE.Mesh(new THREE.SphereGeometry(.15,10,8),xm);h.position.y=1.6;g.add(b,h);g.renderOrder=20;b.renderOrder=h.renderOrder=20;g.userData.noMap=1;scene.add(g);xr.set(id,g)}
+   g.visible=true;g.position.set(mX(r.x),r.y,mZ(r.z));g.scale.y=r.cr||r.hid?.6:1});
+  xm.opacity=.55*Math.min(1,ST.xray/1.2);xr.forEach((g,id)=>{if(!seen.has(id))g.visible=false})}
+
+ // ---------- per frame ----------
+ XT.onUpdate(dt=>{if(!on())return;
+  safe(()=>avFrame(dt),'av');
+  ST.stun=Math.max(0,ST.stun-dt);ST.stag=Math.max(0,ST.stag-dt);ST.inv=Math.max(0,ST.inv-dt);ST.xray=Math.max(0,ST.xray-dt);
+  window.__noMove=MP.demon?ST.stun>0:ST.stag>0;
+  if(MP.demon){
+   fxEl.className=ST.stun>0?'st':'dm';
+   // place her upstairs, in the guest room, once the arrival is over
+   if(!ST.placed){ST.noCut+=dt;if(ST.noCut>1){ST.placed=true;safe(()=>{const x=mX(1.8),z=mZ(6.95);fy=0;vy=0;cam.position.set(x,1.6,z);yaw=0;pitch=0;if(blocked(x,z))STR.unstick()},'place')}}
+   // on the ceiling: the eye rises to just under it
+   const tgt=ST.ceil?Math.max(0,Math.min(1.25,ceilAt(cam.position.x,cam.position.z)-.35-(fy+1.6))):0;ST.lift+=(tgt-ST.lift)*Math.min(1,dt*5);if(Math.abs(ST.lift)<.002)ST.lift=0;
+   window.__camLift=ST.lift;window.__dmCeil=ST.ceil&&ST.lift>.3;
+   if(!window.__cut&&!paused){const s=nearSpot(),d=s?null:nearDoor();if(s||d){hint.hidden=false;hint.textContent='[E] '+(s?'Open: '+s.lbl.replace(/^(Hide|Squeeze) /,'').replace(/^(in|under|behind|between) the /,''):d.open?'Close the door':'Open the door')}}
+   safe(()=>xray(dt),'xray')}
+  // the baby's crying lights them up for the demon (the host notices)
+  if(MP.host){const c=!!window.__crying;if(c&&!cryPrev&&now()>cryCd){cryCd=now()+10;MP.toAll({t:'hcry'})}cryPrev=c}});
+ // during cut scenes nothing above runs; the cut counter starts again
+ {const oc=XT.cut;XT.cut=function(dt){if(on()&&MP.demon&&!ST.placed)ST.noCut=0;return oc.call(XT,dt)}}
+
+ // ---------- the end ----------
+ const endEl=document.createElement('div');endEl.id='hEnd';endEl.hidden=true;document.body.appendChild(endEl);
+ const TXT={
+  demon:{d:['You fed.','Every one of them, before the sun came up. The baby stops crying the moment the last one goes quiet.'],s:['Taken.','She found every one of you before dawn. In the morning the house is very tidy, and the baby is smiling.']},
+  dawn:{d:['Dawn.','They lasted the night. The light comes up grey through the windows, and you pour yourself back under the floor to wait for the next sitter.'],s:['You made it.','Six o\'clock. The car pulls into the drive. Somewhere inside the walls, something hisses once and goes still.']},
+  slain:{d:['Cut down.','An old blade, in a sitter\'s hands. You come apart like burnt paper. Below the floor, something patient starts counting again.'],s:['The Blade.','You found the katana and cut her down. At dawn you walk out together, the baby asleep, the house finally quiet.']}};
+ MP.huntEnd=function(id,extra){const k=id==='death'?'demon':id==='secret'?'slain':'dawn',t=TXT[k][MP.demon?'d':'s'],win=MP.demon?k==='demon':k!=='demon';
+  ended=true;window.__noMove=false;window.__camLift=0;setHiss(false);hud.hidden=true;fxEl.className='';['need','mon','skipB','hint','sub','bf','mpGhost','gScare','mpVote'].forEach(q=>{const e=document.getElementById(q);if(e)e.hidden=true});
+  safe(()=>{if(window.__cut)window.__cut=null},'cut');if(document.pointerLockElement)document.exitPointerLock();
+  endEl.innerHTML='<div class="in"><p class="brand">HUSH</p><p class="tag">Hunt &middot; '+(win?'You win':'You lose')+' &middot; '+(k==='demon'?'The demon wins':k==='dawn'?'The babysitters survive':'The demon is slain')+'</p><h1>'+t[0]+'</h1><p class="txt">'+t[1]+'</p><p class="tag sk">'+(skRev!==null?'The demon played on: '+SKN[skRev]:'')+'</p><button type="button">Back to the title</button></div>';
+  if(MP.host)MP.toAll({t:'hskr',v:skI});
+  endEl.hidden=false;endEl.querySelector('button').onclick=()=>{location.href=location.pathname+location.search};setTimeout(()=>safe(()=>endEl.querySelector('button').focus()),50);return true};
+ XT.hunt={ST,get av(){return av},get skill(){return skI},pickSkill,act,claw,useE,hits,setHiss,huntUnlocked:()=>huntUnlocked()};
+})();
+</script>
 <script>(function(){const el=document.getElementById("ld");if(!el)return;const b=document.getElementById("ldB");if(b)b.style.width="100%";requestAnimationFrame(()=>requestAnimationFrame(()=>{el.classList.add("out");setTimeout(()=>{el.remove();const c=document.getElementById("ldCss");if(c)c.remove()},900)}))})();</script>
