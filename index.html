@@ -773,6 +773,7 @@ function chime(n){const t0=AC.currentTime+.2;for(let i=0;i<n;i++){[1,2.4,3.9].fo
 const LULL=[[67,.5],[67,.5],[70,1],[67,.5],[67,.5],[70,1],[67,.5],[70,.5],[75,1],[74,.75],[72,.5],[72,1],[65,.5],[67,.5],[68,1],[65,.5],[65,.5],[67,1.5]];
 function playLullaby(done){initAudio();let t=AC?AC.currentTime+.1:0,T=0;if(AC)LULL.forEach(([m,d])=>{const f=440*Math.pow(2,(m-69)/12);tone(t+T,f*2,.09,1.2,'triangle',musG);tone(t+T,f*4,.02,.6,'sine',musG);T+=d*.55});else T=8;setTimeout(done,(T+.6)*1000)}
 function musicNote(){const f=440*Math.pow(2,([67,70,74,75][Math.floor(Math.random()*4)]-69)/12)*2;const d=Math.hypot(cam.position.x,cam.position.y-1,cam.position.z+.6);tone(AC.currentTime,f,.05/(1+d*.3),1.4,'triangle',musG)}
+addEventListener('keydown',e=>{if(!window.__typing)return;const i=document.getElementById('chatIn');if(!i||e.target===i)return;e.stopImmediatePropagation();e.preventDefault();if(e.key==='Enter'||e.key==='Escape'){i.dispatchEvent(new KeyboardEvent('keydown',{key:e.key,bubbles:true}));return}if(e.key==='Backspace'){i.value=i.value.slice(0,-1);return}if(e.key.length===1&&i.value.length<120)i.value+=e.key;try{i.focus()}catch(x){}},true);// chat: keys never reach the game while typing
 addEventListener('keydown',e=>{if(e.code==='KeyM'&&!(window.__mp&&__mp.active)){muted=!muted;if(outG)outG.gain.value=muted?0:.8*VOL;subtitle(muted?'Sound off':'Sound on',1200)}
 if(e.code==='KeyT'&&!e.repeat&&!paused)skipHour()});
 document.getElementById('overlay').addEventListener('click',()=>{initAudio();if(AC&&AC.state==='suspended')AC.resume()});
@@ -1921,7 +1922,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  const bars=document.createElement('div');bars.id='cutBars';bars.hidden=true;document.body.appendChild(bars);
  const lockIt=()=>{try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}};
  skipB.addEventListener('click',e=>{e.stopPropagation();lockIt();XT.skipCut()});
- addEventListener('keydown',e=>{if(!window.__cut)return;if(e.code==='Space'||e.code==='Enter'||e.code==='Escape'){e.preventDefault();XT.skipCut()}},true);
+ addEventListener('keydown',e=>{if(window.__typing||!window.__cut)return;if(e.code==='Space'||e.code==='Enter'||e.code==='Escape'){e.preventDefault();XT.skipCut()}},true);
  renderer.domElement.addEventListener('click',()=>{if(window.__cut&&window.__cut.skippable){lockIt();XT.skipCut()}});
  XT.cutUI=v=>{skipB.hidden=!v;bars.hidden=!v;if(v){overlay.hidden=true;document.getElementById('hud').hidden=true;['need','mon','skipB','hint'].forEach(id=>{const e=document.getElementById(id);if(e)e.hidden=true})}};
  XT.cutEnd=()=>{XT.cutUI(false);if(!document.pointerLockElement&&!window.__touchMode&&!ended&&!window.__dead){overlay.hidden=false;setPaused(true)}};
@@ -2167,7 +2168,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   // anything still searching sees you crawl out
   if(S&&!S.found&&S.ph!=='leave'&&!forced){found('It was waiting right outside.')}}
  // E enters / leaves; movement keys and jumping don't pull you out by accident
- addEventListener('keydown',e=>{if(!hid||paused)return;
+ addEventListener('keydown',e=>{if(window.__typing||!hid||paused)return;
   if(e.code==='KeyE'){e.stopImmediatePropagation();if(!e.repeat)safe(()=>leave(false),'leave');return}
   if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyC','ControlLeft','ControlRight'].includes(e.code)){e.stopImmediatePropagation();if(e.code==='Space')e.preventDefault()}},true);
  renderer.domElement.addEventListener('mousedown',e=>{if(hid&&document.pointerLockElement){e.stopImmediatePropagation();safe(()=>leave(false),'leave')}},true);
@@ -2821,7 +2822,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   if(S.bhp<=0){S.st='finish';S.fT=0;cue('');return}
   if(np>S.ph){S.ph=np;S.st='roar';S.stT=1.7}}
  const KM={KeyW:'f',ArrowUp:'f',KeyS:'b',ArrowDown:'b',KeyA:'l',ArrowLeft:'l',KeyD:'r',ArrowRight:'r',ShiftLeft:'run',ShiftRight:'run'};
- addEventListener('keydown',e=>{if(!FS||FS.st==='intro'||FS.over)return;const c=e.code;if(KM[c]){IN[KM[c]]=1;return}if(FS.st==='ready')return;
+ addEventListener('keydown',e=>{if(window.__typing||!FS||FS.st==='intro'||FS.over)return;const c=e.code;if(KM[c]){IN[KM[c]]=1;return}if(FS.st==='ready')return;
   if(c==='Space'){e.preventDefault();e.stopPropagation();if(!e.repeat)act('dg',true)}else if(c==='KeyF'){e.stopPropagation();if(!e.repeat)act('jp',true)}
   else if(c==='KeyJ'){if(!e.repeat)act('sl',true)}else if(c==='KeyK'){if(!e.repeat)act('bl',true)}},true);
  addEventListener('keyup',e=>{const c=e.code;if(KM[c])IN[KM[c]]=0;else if(c==='KeyK')act('bl',false)});
@@ -3275,7 +3276,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   if(gMode==='follow'&&!T.length)gMode='free';
   const sp=(keys.ShiftLeft||keys.ShiftRight?7:3.5)*dt,cp=Math.cos(pitch);cam.position.x+=(-Math.sin(yaw)*cp*f+Math.cos(yaw)*s)*sp;cam.position.z+=(-Math.cos(yaw)*cp*f-Math.sin(yaw)*s)*sp;
   cam.position.y+=(Math.sin(pitch)*f+(keys.Space?1:0)-(keys.KeyC||keys.ControlLeft?1:0))*sp;cam.position.y=Math.max(BF-1,Math.min(8,cam.position.y));fy=cam.position.y-1.6};
- addEventListener('keydown',e=>{if(!MP.active||!MP.ghost||paused)return;if(e.code==='Tab'){e.preventDefault();gIdx++;gMode='follow';ghostHud()}else if(e.code==='KeyV'){gMode=gMode==='follow'?'free':'follow';ghostHud()}
+ addEventListener('keydown',e=>{if(window.__typing||!MP.active||!MP.ghost||paused)return;if(e.code==='Tab'){e.preventDefault();gIdx++;gMode='follow';ghostHud()}else if(e.code==='KeyV'){gMode=gMode==='follow'?'free':'follow';ghostHud()}
   else if(e.code==='KeyG'){if(!e.repeat)ghostScare()}else if(/^Digit[1-5]$/.test(e.code)){gSel=+e.code.slice(5)-1;gsDraw()}},true);
  // ---------- ghost scares: the dead can still be felt. Small, harmless, on cooldowns; the host checks and passes them on ----------
  const GS=[{k:'knock',n:'Knock',cd:12,nz:.02},{k:'creak',n:'Creak',cd:9,nz:.01},{k:'lights',n:'Flicker lights',cd:24,nz:0},{k:'door',n:'Nudge a door',cd:16,nz:.015},{k:'whisper',n:'Whisper',cd:14,nz:0}];
@@ -3438,6 +3439,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'trap':{const e=CD.mp.EVENTS.find(x=>x.id===m.ev);let ok=false;if(e&&!MP.ghost)ok=!!safe(()=>window.__trap.start(e),'trap');if(!ok)send({t:'nottrap'});break}
   case 'evend':{const e=CD.mp.EVENTS.find(x=>x.id===m.id);if(MP.host)break;if(e){safe(()=>e.end&&e.end(!!m.broken),'end');if(e.id==='whisper')e.src=null}cEV=null;sEV=null;
    if(m.by===MP.id&&m.broken)break;subtitle(m.broken?'(Someone broke a house rule. Everything goes still. Then, upstairs, she starts to scream.)':(e&&e.endCap)||(m.id==='knock'?'(The knocking stops.)':m.id==='steps'?'(The footsteps fade.)':m.id==='whisper'?'(The whispering stops.)':'(The scratching stops.)'),3500);break}
+  case 'chat':safe(()=>chatShow(m),'chat');break;
   case 'sub':subtitle(m.txt,m.ms||3000);break;
   case 'skip':if(!MP.host){skipHour.force=true;safe(skipHour,'skip')}break;
   case 'skipmsg':skipHour.msg=m.m;break;
@@ -3462,6 +3464,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'broke':{const E=CD.EV;if(E.cur&&E.cur.e.id===m.ev)safe(()=>endEventMP(pid),'broke');break}
   case 'nottrap':safe(()=>CD.mp.scream(),'scream');break;
   case 'dead':if(p){p.rep=Object.assign({},p.rep||{},{gh:1});pushRep(pid,p.rep)}if(MP.remoteHolder===pid)holderSet('');bcast({t:'note',txt:'('+MP.nameOf(pid)+' is gone.)',ms:3000},pid);if(pid!==MP.id)subtitle('('+MP.nameOf(pid)+' is gone.)',3000);checkAllDead();break;
+  case 'chat':safe(()=>hostChat(pid,m),'chat');break;
   case 'vote':hostVote(pid);break;
   case 'endreq':if(['dawn','cult','secret','parents'].includes(m.id)&&!(MP.hm&&m.id==='cult')){decideEnd(m.id,m.extra);runPending()}break;
   case 'solve':hostSolve();break;
@@ -3532,8 +3535,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   peer.on('error',e=>{const t=e&&e.type;if(t==='unavailable-id'&&!MP.active){safe(()=>peer.destroy());peer=null;if(want&&(tries||0)<15)setTimeout(()=>hostGame(want,(tries||0)+1),2000);else hostGame();return}
    if(!MP.active){lobbyStatus(netErr(t),true);safe(()=>peer.destroy());peer=null}else console.warn('[Hush mp] peer error',t)});
   peer.on('disconnected',()=>{safe(()=>{if(!peer.destroyed)peer.reconnect()})})}
- function hostAccept(c){c.on('data',d=>{if(!d||typeof d!=='object')return;
-   if(d.t==='hello'){const known=roster.find(p=>p.id===c.peer);const tok=typeof d.tok==='string'?d.tok.slice(0,24):'';const aw=!known&&tok&&AWAY[tok];let rj=null;
+ function hostAccept(c){const H=d=>{if(!d||typeof d!=='object')return;
+   if(d.t==='hello'){const known=roster.find(p=>p.id===c.peer);const tok=typeof d.tok==='string'?d.tok.slice(0,24):'';if(tok)c._tok=tok;const aw=!known&&tok&&AWAY[tok];let rj=null;
     if(aw){delete AWAY[tok];const old=aw.id;rj={gh:aw.gh,pos:aw.pos,dm:aw.dm};const p={id:c.peer,name:aw.name,slot:aw.slot,join:aw.join,gh:aw.gh,tok};roster.push(p);
      if(aw.dm&&MP.hm){MP.hm.demon=c.peer;bcast({t:'hdm',id:c.peer})}safe(()=>MP.onRejoin&&MP.onRejoin(old,c.peer,aw),'rejoin')}
     const awN=Object.keys(AWAY).length;
@@ -3542,7 +3545,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
     conns.set(c.peer,c);if(!P.has(c.peer))P.set(c.peer,{rep:null,last:performance.now(),sp:0});
     c.send({t:'welcome',pid:c.peer,roster,code:MP.code,host:MP.id,started:MP.started,cfg:cfg(),rj,diff:XT.diffKey(),mode:MP.mode,hu:huntUnlocked()?1:0});bcastRoster(true);syncAvatars();lobbyDraw();micHud();
     if(MP.started){const t=rj?'('+p.name+' is back.)':'('+p.name+' joined.)';bcast({t:'note',txt:t,ms:2500},c.peer);subtitle(t,2500)}if(rj&&P.get(c.peer))P.get(c.peer).rep=null;return}
-   if(!conns.has(c.peer))return;const pp=P.get(c.peer);if(pp)pp.seen=performance.now();hostHandle(c.peer,d)});
+   if(!conns.has(c.peer)){if(c.open&&c._tok&&AWAY[c._tok]&&MP.started)H({t:'hello',tok:c._tok,name:''});if(!conns.has(c.peer))return}const pp=P.get(c.peer);if(pp)pp.seen=performance.now();hostHandle(c.peer,d)};c.on('data',H);
   c.on('close',()=>{if(conns.get(c.peer)===c)dropPlayer(c.peer)});c.on('error',()=>{})}
  function dropPlayer(id){if(id===MP.id)return;const p=roster.find(q=>q.id===id);
   if(p&&MP.started&&!MP.decided&&p.tok){const r=P.get(id)&&P.get(id).rep;AWAY[p.tok]={id,name:p.name,slot:p.slot,join:p.join,gh:r&&r.gh?1:p.gh?1:0,dm:isDm(id)?1:0,t:performance.now(),pos:r&&r.ar!=='r'?{x:r.x,z:r.z,y:r.y,yaw:r.yaw}:null}}conns.delete(id);P.delete(id);roster=roster.filter(q=>q.id!==id);cleanCall(id);
@@ -3686,6 +3689,32 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  if(!lobbyReturn())autoRejoin();
  hashJoin();addEventListener('hashchange',()=>{if(TITLE.on)hashJoin()});
  MP.bcast=bcast;MP.sendTo=sendTo;MP.playScare=m=>playScare(m);MP.toAll=m=>{bcast(m);clientHandle(m)};MP.repOf=id=>id===MP.id?myReport():(P.get(id)&&P.get(id).rep)||null;MP.lobbyDraw=()=>lobbyDraw();
+
+ // ---------- text chat: Enter to type. Lines show bottom-left for a few seconds; the whole log shows while typing ----------
+ // A muted demon's words come out as a hiss for the babysitters.
+ {const c=document.createElement('style');c.textContent=`#chat{position:fixed;z-index:4;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);width:min(26rem,calc(100% - 32px));font-family:var(--ui);font-size:.8rem;pointer-events:none;display:flex;flex-direction:column;gap:6px}
+#chat ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;max-height:40vh;overflow:hidden;justify-content:flex-end}
+#chat li{color:#efe6da;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8);line-height:1.35;overflow-wrap:anywhere;transition:opacity .6s}#chat li.old{opacity:0}#chat li b{font-weight:600}#chat li.sys{color:#a89e90;font-style:italic}
+#chat.open ol{background:rgba(10,9,12,.78);border:1px solid #2c2a30;border-radius:6px;padding:.4rem .55rem;overflow:auto;pointer-events:auto}#chat.open li.old{opacity:1}
+#chat input{pointer-events:auto;font:inherit;color:#efe6da;background:rgba(10,9,12,.9);border:1px solid #c9a45c;border-radius:5px;padding:.45rem .6rem;outline:none;min-width:0}
+body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document.head.appendChild(c)}
+ const chatEl=document.createElement('div');chatEl.id='chat';chatEl.hidden=true;chatEl.innerHTML='<ol aria-live="polite"></ol><input id="chatIn" maxlength="120" autocomplete="off" placeholder="Say something (Enter to send, Esc to close)" hidden>';document.body.appendChild(chatEl);
+ const chatOl=chatEl.querySelector('ol'),chatIn=chatEl.querySelector('input'),LOG=[];const CMAX=120;
+ const CRX=new RegExp('['+String.fromCharCode(0)+'-'+String.fromCharCode(31)+String.fromCharCode(127)+'-'+String.fromCharCode(159)+String.fromCharCode(0x200b)+'-'+String.fromCharCode(0x200f)+String.fromCharCode(0x2028)+'-'+String.fromCharCode(0x202e)+String.fromCharCode(0x2066)+'-'+String.fromCharCode(0x2069)+']','g');
+ const clean=x=>String(x==null?'':x).replace(CRX,' ').replace(/\s+/g,' ').trim().slice(0,CMAX);
+ const hissOf=x=>'s'.repeat(Math.max(3,Math.min(14,Math.ceil(x.length/3))))+'...';
+ function chatShow(m){const li=document.createElement('li');if(m.sys){li.className='sys';li.textContent=clean(m.x)}else{const b=document.createElement('b');b.style.color=COL[(+m.s||0)%4];b.textContent=clean(m.n).slice(0,16)+(m.g?' (ghost)':'')+': ';li.appendChild(b);li.appendChild(document.createTextNode(clean(m.x)))}
+  chatOl.appendChild(li);LOG.push(li);while(LOG.length>40)LOG.shift().remove();chatEl.hidden=!MP.active;chatOl.scrollTop=chatOl.scrollHeight;setTimeout(()=>li.classList.add('old'),8000)}
+ const rate=new Map(),CST={rx:[]};
+ function hostChat(pid,m){CST.rx.push(String(m.x).slice(0,20));const x=clean(m.x);if(!x)return;const now=performance.now(),r=(rate.get(pid)||[]).filter(t=>now-t<5000);if(r.length>=5)return;r.push(now);rate.set(pid,r);
+  const p=roster.find(q=>q.id===pid);if(!p)return;const rep=pid===MP.id?myReport():P.get(pid)&&P.get(pid).rep,g=!!(rep&&rep.gh),dm=isDm(pid),mu=!!(rep&&rep.mu)||(pid===MP.id&&V.muted);
+  const msg={t:'chat',id:pid,n:p.name,s:p.slot,g:g?1:0,x};
+  if(dm&&mu){const h=Object.assign({},msg,{x:hissOf(x)});roster.forEach(q=>sendTo(q.id,q.id===pid?msg:h))}else{bcast(msg);clientHandle(msg)}}
+ function chatOpen(v){if(v===!chatIn.hidden)return;window.__typing=v;chatIn.hidden=!v;chatEl.classList.toggle('open',v);chatEl.hidden=!MP.active;if(v){for(const k in keys)keys[k]=false;chatIn.value='';setTimeout(()=>chatIn.focus(),0)}else chatIn.blur()}
+ chatIn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){const x=clean(chatIn.value);if(x)send({t:'chat',x});chatOpen(false)}else if(e.key==='Escape')chatOpen(false)});
+ ['keyup','keypress'].forEach(k=>chatIn.addEventListener(k,e=>e.stopPropagation()));chatIn.addEventListener('blur',()=>{if(!chatIn.hidden)setTimeout(()=>{if(document.activeElement!==chatIn)chatOpen(false)},0)});
+ addEventListener('keydown',e=>{if(e.key!=='Enter'||e.repeat||window.__typing||!MP.active||!MP.started||paused||window.__cut||MP.ended)return;e.preventDefault();chatOpen(true)});
+ MP.chat={CST,open:chatOpen,show:chatShow,clean,get log(){return LOG.map(l=>l.textContent)}};
  MP.dbg={drop:id=>dropPlayer(id),roster:()=>roster,P,AV,V,get FL(){return FL},readAll,hostGame,joinGame,hostStart,teardown,held,get sEV(){return sEV},get vote(){return vote},myReport};
 })();
 
@@ -3909,13 +3938,13 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  function act(k){if(!me()||ST.stun>0&&k!=='ceil')return;const p={x:+iX(cam.position.x).toFixed(2),z:+iZ(cam.position.z).toFixed(2),y:+(cam.position.y-ST.lift).toFixed(2)};
   if(k==='ceil'){ST.ceil=!ST.ceil;safe(()=>XT.demonSfx.skitter(cam.position.x,cam.position.z,.5),'sk');return}
   if(k==='flick'||k==='hiss'||k==='show'){if(!ready(k))return;send(Object.assign({t:'hx',k},p))}}
- addEventListener('keydown',e=>{if(!me()||paused||window.__cut||MP.ended)return;const c=e.code,K={KeyQ:'ceil',KeyR:'flick',KeyH:'hiss',KeyX:'show'};
+ addEventListener('keydown',e=>{if(window.__typing||!me()||paused||window.__cut||MP.ended)return;const c=e.code,K={KeyQ:'ceil',KeyR:'flick',KeyH:'hiss',KeyX:'show'};
   if(c==='KeyE'){e.stopImmediatePropagation();if(!e.repeat)useE();return}if(e.repeat)return;
   if(K[c]){e.stopImmediatePropagation();act(K[c])}else if(c==='KeyJ')claw()},true);
  renderer.domElement.addEventListener('mousedown',e=>{if(me()&&document.pointerLockElement&&!window.__cut&&e.button===0)claw()});
 
  // ---------- the boss fight, with her in the demon player's hands ----------
- const KS={};addEventListener('keydown',e=>{KS[e.code]=1;const B=XT.bladeFight&&XT.bladeFight.S;if(!me()||!B||e.repeat)return;
+ const KS={};addEventListener('keydown',e=>{if(window.__typing)return;KS[e.code]=1;const B=XT.bladeFight&&XT.bladeFight.S;if(!me()||!B||e.repeat)return;
   const a={Digit1:'swipe',KeyJ:'swipe',Digit2:'lunge',KeyK:'lunge',Digit3:'sweep',Space:'sweep'}[e.code];if(a){e.preventDefault();fightAtk(a)}},true);
  addEventListener('keyup',e=>{KS[e.code]=0});addEventListener('blur',()=>{for(const k in KS)KS[k]=0});
  document.addEventListener('mousedown',e=>{const B=XT.bladeFight&&XT.bladeFight.S;if(!me()||!B||B.st==='intro')return;if(!document.pointerLockElement)safe(()=>{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})},'lock');
