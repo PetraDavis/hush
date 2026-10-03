@@ -3255,7 +3255,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function myReport(){const RL=!!(window.__rlm&&__rlm.on),c=cam.position,B=XT.bladeFight&&XT.bladeFight.S;
   return{x:+(RL?c.x:iX(c.x)).toFixed(2),z:+(RL?c.z:iZ(c.z)).toFixed(2),y:+fy.toFixed(2),cy:+c.y.toFixed(2),yaw:+yaw.toFixed(3),pi:+pitch.toFixed(3),cr:crouch?1:0,
    hid:XT.hide&&XT.hide.hid?1:0,gh:gone()?1:0,tor:XT.torch&&XT.torch.on?1:0,ar:RL?'r':'h',gl:CD.mp.carrying&&CD.mp.inGlider()?1:0,nu:CD.mp.inNursery()?1:0,
-   inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],dm:MP.demon?1:0,hs:XT.hide&&XT.hide.hid||'',cl:window.__dmCeil?1:0,busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,ent:entered?1:0}}
+   inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],dm:MP.demon?1:0,hs:XT.hide&&XT.hide.hid||'',cl:window.__dmCeil?1:0,busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,nm:V.denied?1:0,ent:entered?1:0}}
  const isDm=id=>!!(MP.hm&&MP.hm.demon===id);
  const gone=()=>MP.ghost||!!(XT.bladeFight&&XT.bladeFight.S&&XT.bladeFight.S.dead);
  const alive=()=>{const L=[];if(MP.host){if(!gone()&&!MP.demon)L.push({id:MP.id,r:myReport()});P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))L.push({id,r:p.rep})})}return L};
@@ -3411,41 +3411,66 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  {const oc=XT.cut;XT.cut=function(dt){const r=oc.call(XT,dt);if(MP.active)safe(()=>frame(dt),'frame cut');return r}}
 
  // ---------- voice chat (peer-to-peer audio between everyone) ----------
- const V={ctx:null,stream:null,muted:false,denied:false,calls:new Map(),levels:new Map(),myLevel:0,an:null,buf:null};
- async function initMic(){if(V.ctx||FAKE)return;try{V.ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){return}
-  const res=()=>{if(V.ctx&&V.ctx.state==='suspended')V.ctx.resume().catch(()=>{})};addEventListener('pointerdown',res,true);addEventListener('keydown',res,true);
-  try{V.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false});
-   const src=V.ctx.createMediaStreamSource(V.stream);V.an=V.ctx.createAnalyser();V.an.fftSize=512;src.connect(V.an)}
-  catch(e){V.denied=true;V.muted=true;const d=V.ctx.createMediaStreamDestination();V.stream=d.stream;subtitle('No microphone: you can still hear everyone and play muted.',4000)}
-  setMute(V.muted);micHud()}
+ const V={ctx:null,stream:null,muted:false,denied:false,err:'',calls:new Map(),levels:new Map(),myLevel:0,an:null,buf:null,ready:null};
+ // the mic is asked for from the Host / Join tap (a user gesture, which Safari needs). Every step has its own try, so a meter that fails
+ // (Firefox throws when the mic's sample rate differs from the audio context) never turns a working mic into "denied".
+ const MERR={NotAllowedError:'Microphone blocked. Allow it for this site in the address bar, then tap here.',SecurityError:'Microphone blocked. Allow it for this site in the address bar, then tap here.',
+  NotFoundError:'No microphone found. Plug one in, then tap here.',NotReadableError:'The microphone is busy in another app. Close it, then tap here.',OverconstrainedError:'The microphone could not start. Tap here to try again.',
+  nomd:'This browser cannot use the microphone here (it needs https). You can still hear everyone.'};
+ let gestHooked=false;
+ function unlockAudio(){if(V.ctx&&V.ctx.state!=='running')V.ctx.resume().catch(()=>{});V.calls.forEach(r=>{if(r.el&&r.el.paused&&r.el.srcObject)r.el.play().catch(()=>{})})}
+ function initMic(){if(FAKE)return Promise.resolve();if(V.ready)return V.ready;
+  if(!gestHooked){gestHooked=true;['pointerdown','keydown','touchend','click'].forEach(k=>addEventListener(k,unlockAudio,true))}
+  if(!V.ctx)try{V.ctx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){V.ctx=null}
+  const md=navigator.mediaDevices;let gp=null;
+  // getUserMedia starts right here, still inside the tap
+  if(md&&md.getUserMedia)try{gp=md.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false})}catch(e){gp=Promise.reject(e)}
+  V.ready=(async()=>{let st=null;
+   if(!gp){V.err='nomd'}else try{st=await gp;V.err=''}catch(e){V.err=(e&&e.name)||'NotAllowedError';console.warn('[Hush mp] mic',e)}
+   if(st){if(V.stream&&V.denied)safe(()=>V.stream.getTracks().forEach(t=>t.stop()));V.stream=st;V.denied=false;
+    if(V.ctx)try{const src=V.ctx.createMediaStreamSource(st);V.an=V.ctx.createAnalyser();V.an.fftSize=512;src.connect(V.an)}catch(e){V.an=null;console.warn('[Hush mp] mic meter',e)}
+    // a mic granted after a call went out with the silent stream: swap the real track into every open call
+    V.calls.forEach(r=>safe(()=>{const pc=r.call&&r.call.peerConnection;if(!pc)return;const t=st.getAudioTracks()[0];pc.getSenders().forEach(s=>{if(s.track&&s.track.kind==='audio'||!s.track)s.replaceTrack(t)})},'swap'))}
+   else{V.denied=true;if(!V.stream&&V.ctx)try{V.stream=V.ctx.createMediaStreamDestination().stream}catch(e){}
+    subtitle((MERR[V.err]||MERR.NotAllowedError).replace(/ Tap here.*$| then tap here\./,'.')+' You can still hear everyone.',5000)}
+   setMute(V.muted);micHud();callMissing()})();return V.ready}
+ function retryMic(){if(!V.denied||V.err==='nomd')return;V.ready=null;initMic()}
  function setMute(m){V.muted=V.denied?true:m;if(V.stream)V.stream.getAudioTracks().forEach(t=>t.enabled=!V.muted);micHud()}
- function hookCall(id,call){const old=V.calls.get(id);if(old&&old.call!==call){try{old.call.close()}catch(e){}cleanCall(id)}const rec={call,id};V.calls.set(id,rec);
-  call.on('stream',rs=>safe(()=>{if(rec.src)return;const el=new Audio();el.srcObject=rs;el.muted=true;el.play().catch(()=>{});rec.el=el;const c=V.ctx;
-   rec.src=c.createMediaStreamSource(rs);rec.flt=c.createBiquadFilter();rec.flt.type='lowpass';rec.flt.frequency.value=18000;rec.g=c.createGain();rec.g.gain.value=1;rec.an=c.createAnalyser();rec.an.fftSize=512;
-   rec.src.connect(rec.flt).connect(rec.g).connect(c.destination);rec.src.connect(rec.an)},'stream'));
-  call.on('close',()=>cleanCall(id));call.on('error',()=>cleanCall(id))}
- function cleanCall(id){const r=V.calls.get(id);if(!r)return;V.calls.delete(id);safe(()=>{r.src&&r.src.disconnect();r.g&&r.g.disconnect();if(r.el){r.el.srcObject=null}})}
- function callMissing(){if(FAKE||!peer||!V.stream||!peer.call)return;const mine=me();if(!mine)return;
+ // remote voices play through a real (unmuted, playsinline) audio element: works the same in Chrome, Firefox and Safari, even with a suspended audio context.
+ // WebAudio only listens to it for the speaking ring.
+ function hookCall(id,call){const old=V.calls.get(id);if(old&&old.call!==call){try{old.call.close()}catch(e){}cleanCall(id)}const rec={call,id,t0:performance.now()};V.calls.set(id,rec);
+  call.on('stream',rs=>safe(()=>{if(rec.el)return;const el=document.createElement('audio');el.setAttribute('playsinline','');el.playsInline=true;el.autoplay=true;el.srcObject=rs;el.hidden=true;document.body.appendChild(el);rec.el=el;rec.ok=true;
+   el.play().catch(()=>{rec.blocked=true});el.addEventListener('playing',()=>{rec.blocked=false});
+   if(V.ctx)try{rec.src=V.ctx.createMediaStreamSource(rs);rec.an=V.ctx.createAnalyser();rec.an.fftSize=512;rec.src.connect(rec.an)}catch(e){rec.src=null;rec.an=null}micHud()},'stream'));
+  call.on('close',()=>{if(V.calls.get(id)===rec)cleanCall(id)});call.on('error',()=>{if(V.calls.get(id)===rec)cleanCall(id)})}
+ function cleanCall(id){const r=V.calls.get(id);if(!r)return;V.calls.delete(id);safe(()=>{r.src&&r.src.disconnect();if(r.el){r.el.pause();r.el.srcObject=null;r.el.remove()}})}
+ // the newer player calls the older one; retried until a voice actually arrives
+ function callMissing(){if(FAKE||!peer||!peer.call||!MP.active)return;const mine=me();if(!mine)return;const now=performance.now();
+  V.calls.forEach((r,id)=>{if(!r.ok&&now-r.t0>15000){safe(()=>r.call.close());cleanCall(id)}});
+  if(!V.stream)return;
   roster.forEach(p=>{if(p.id===MP.id||p.join>mine.join||V.calls.has(p.id))return;safe(()=>{const c=peer.call(p.id,V.stream);if(c)hookCall(p.id,c)},'call')})}
- function onCall(call){safe(()=>{if(!V.stream){initMic().then(()=>safe(()=>{call.answer(V.stream);hookCall(call.peer,call)}))}else{call.answer(V.stream);hookCall(call.peer,call)}},'answer')}
+ function onCall(call){safe(()=>{const go=()=>safe(()=>{call.answer(V.stream||undefined);hookCall(call.peer,call)},'answer');if(V.stream)go();else{const w=V.ready||initMic();Promise.race([w,new Promise(r=>setTimeout(r,8000))]).then(go)}},'answer')}
  const rms=an=>{if(!an)return 0;const b=new Float32Array(an.fftSize);an.getFloatTimeDomainData(b);let s=0;for(let i=0;i<b.length;i++)s+=b[i]*b[i];return Math.sqrt(s/b.length)};
  const floorOf=(y,ar)=>ar==='r'?9:y>-1.45?1:y>-4?0:-1;
- function voiceTick(){if(!V.ctx)return;V.myLevel=V.muted?0:rms(V.an);
+ function voiceTick(){V.myLevel=V.muted?0:rms(V.an);
   const L={x:cam.position.x,y:cam.position.y,z:cam.position.z},myF=floorOf(MP.ghost?cam.position.y-1.6:fy,(window.__rlm&&__rlm.on)?'r':'h');
-  V.calls.forEach((r,id)=>{V.levels.set(id,rms(r.an));if(!r.g)return;const a=AV.get(id),c=a&&a.cur;let g=1,muf=false;
+  V.calls.forEach((r,id)=>{V.levels.set(id,rms(r.an));if(!r.el)return;const a=AV.get(id),c=a&&a.cur;let g=1;
    if(c){const x=c.ar==='r'?c.x:mX(c.x),z=c.ar==='r'?c.z:mZ(c.z),d=Math.hypot(x-L.x,c.cy-L.y,z-L.z);
-    // gentle falloff: full within 6 m, never under 40%, slightly muffled through floors
-    g=d<=6?1:Math.max(.4,1-(d-6)*.075);muf=floorOf(c.cy-1.6,c.ar)!==myF;if(muf)g=Math.max(.4,g*.85)}
-   if(MP.hm){g=1;muf=false}// Hunt: everyone at full volume, no position clue
-   if(!isFinite(g))g=1;const t=V.ctx.currentTime;r.g.gain.setTargetAtTime(g*(window.__voiceVol!=null?__voiceVol:1)*(muted?0:Math.min(1.25,VOL/.8)),t,.15);r.flt.frequency.setTargetAtTime(muf?1100:18000,t,.2)})}
- addEventListener('keydown',e=>{if(e.code!=='KeyM'||e.repeat||!MP.active)return;if(V.denied){subtitle('No microphone permission: you are muted.',2000);return}setMute(!V.muted);subtitle(V.muted?'Microphone muted':'Microphone on',1200)});
- // HUD: mic + players
+    // gentle falloff: full within 6 m, never under 40%, a little quieter through floors
+    g=d<=6?1:Math.max(.4,1-(d-6)*.075);if(floorOf(c.cy-1.6,c.ar)!==myF)g=Math.max(.4,g*.75)}
+   if(MP.hm)g=1;// Hunt: everyone at full volume, no position clue
+   if(!isFinite(g))g=1;const v=g*(window.__voiceVol!=null?__voiceVol:1)*(muted?0:Math.min(1.25,VOL/.8));r.el.volume=Math.max(0,Math.min(1,v));r.el.muted=v<=0})}
+ addEventListener('keydown',e=>{if(e.code!=='KeyM'||e.repeat||!MP.active)return;if(V.denied){retryMic();subtitle(MERR[V.err]||'No microphone: you are muted.',2500);return}setMute(!V.muted);subtitle(V.muted?'Microphone muted':'Microphone on',1200)});
+ // HUD: mic + players, each with a voice status
  const micEl=document.createElement('div');micEl.id='mpMic';micEl.hidden=true;document.body.appendChild(micEl);
- micEl.addEventListener('click',e=>{e.stopPropagation();if(!V.denied)setMute(!V.muted)});
+ micEl.addEventListener('click',e=>{e.stopPropagation();unlockAudio();if(V.denied)retryMic();else setMute(!V.muted)});
+ function vStat(p,self){if(self)return V.denied?['no','no mic']:V.muted?['mu','muted']:['ok',''];const a=AV.get(p.id),r=V.calls.get(p.id),nm=a&&a.last&&a.last.nm;
+  if(r&&r.ok)return r.blocked?['no','tap to hear']:nm?['mu','no mic']:['ok','voice'];return r?['wt','connecting voice']:['no','no voice']}
  function micHud(){if(!MP.active){micEl.hidden=true;return}micEl.hidden=false;const on=!V.muted,spk=on&&V.myLevel>.03;
   micEl.innerHTML='<span class="mic'+(on?'':' off')+(spk?' spk':'')+'" title="Microphone (M)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>'+(on?'':'<path d="M4 4l16 16"/>')+'</svg>'+(window.__touchMode?'':'<em>M</em>')+'</span>'+
-   '<ul>'+roster.slice().sort((a,b)=>a.slot-b.slot).map(p=>{const self=p.id===MP.id,a=AV.get(p.id),gh=self?MP.ghost:!!(a&&a.last&&a.last.gh),sp=self?spk:V.levels.get(p.id)>.03;
-    return '<li class="'+(gh?'gh':'')+(sp?' sp':'')+'"><i style="background:'+COL[p.slot%4]+'"></i>'+esc(p.name)+(self?' (you)':'')+(gh?' &middot; ghost':'')+'</li>'}).join('')+'</ul>'}
+   (V.denied&&V.err?'<p class="merr" role="status">'+esc(MERR[V.err]||MERR.NotAllowedError)+'</p>':'')+
+   '<ul>'+roster.slice().sort((a,b)=>a.slot-b.slot).map(p=>{const self=p.id===MP.id,a=AV.get(p.id),gh=self?MP.ghost:!!(a&&a.last&&a.last.gh),sp=self?spk:V.levels.get(p.id)>.03,vs=vStat(p,self);
+    return '<li class="'+(gh?'gh':'')+(sp?' sp':'')+'"><i style="background:'+COL[p.slot%4]+'"></i>'+esc(p.name)+(self?' (you)':'')+(gh?' &middot; ghost':'')+(vs[1]?' <s class="v '+vs[0]+'">'+vs[1]+'</s>':'')+'</li>'}).join('')+'</ul>'}
 
  // ---------- messages ----------
  function clientHandle(m){if(MP.active&&!MP.host)lastHostMsg=performance.now();switch(m.t){
@@ -3515,7 +3540,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    if(Object.keys(intents).length){send({t:'i',f:intents});intents={}}
    if(!reconnecting&&lastHostMsg&&performance.now()-lastHostMsg>lim(hostConn&&hostConn.open,7000,20000))hostLost()}
   if(MP.pendingEnd&&!MP.ended)runPending();
-  if(tickN%2===0){safe(voiceTick,'voice');}if(tickN%3===0)safe(micHud,'mic');if(tickN%10===0&&MP.ghost)ghostHud()}
+  if(tickN%2===0){safe(voiceTick,'voice');}if(tickN%40===7)safe(callMissing,'recall');if(tickN%3===0)safe(micHud,'mic');if(tickN%10===0&&MP.ghost)ghostHud()}
  let rosterT=0;function bcastRoster(force){const now=performance.now();if(!force&&now-rosterT<1000)return;rosterT=now;bcast({t:'roster',roster,diff:XT.diffKey(),mode:MP.mode,hu:huntUnlocked()?1:0})}
  function hostTick(){const now=performance.now();
   for(const k in AWAY)if(now-AWAY[k].t>HOLD){const a=AWAY[k];delete AWAY[k];bcast({t:'note',txt:'('+a.name+' did not come back.)',ms:3000});subtitle('('+a.name+' did not come back.)',3000);if(a.dm&&MP.hm)safe(()=>MP.onDemonGone&&MP.onDemonGone(),'dmgone');checkAllDead()}
@@ -3657,7 +3682,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 #mpMic{position:fixed;z-index:3;left:16px;top:calc(env(safe-area-inset-top,0px) + 12px);font-family:var(--ui);font-size:.66rem;color:var(--dim);letter-spacing:.04em;max-width:calc(50% - 40px)}
 body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;gap:4px;background:var(--panel);border:1px solid #2c2d33;border-radius:999px;padding:3px 8px;cursor:pointer;color:var(--fg)}
 #mpMic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}#mpMic .mic.off{color:#d06060}#mpMic .mic.spk{color:#9fe0a0;box-shadow:0 0 0 2px rgba(120,220,140,.45)}#mpMic em{font-style:normal;opacity:.6}
-#mpMic ul{list-style:none;margin:6px 0 0;padding:0;pointer-events:none}#mpMic li{display:flex;align-items:center;gap:5px;padding:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000}#mpMic li i{width:7px;height:7px;border-radius:50%;flex:none}#mpMic li.sp{color:#d8f0d0}#mpMic li.gh{opacity:.55}
+#mpMic ul{list-style:none;margin:6px 0 0;padding:0;pointer-events:none}#mpMic li{display:flex;align-items:center;gap:5px;padding:1px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px #000}#mpMic li i{width:7px;height:7px;border-radius:50%;flex:none}#mpMic li.sp{color:#d8f0d0}#mpMic li.gh{opacity:.55}#mpMic s.v{text-decoration:none;font-size:.6rem;opacity:.85}#mpMic s.ok{color:#9fe0a0}#mpMic s.mu{color:#d8c08a}#mpMic s.wt{color:#a8b0c0}#mpMic s.no{color:#e08080}#mpMic .merr{margin:6px 0 0;padding:4px 8px;max-width:16rem;white-space:normal;background:rgba(40,10,10,.85);border:1px solid #7a3030;border-radius:6px;color:#f0d0c8;cursor:pointer;font-size:.66rem;line-height:1.35}
 #mpVote{position:fixed;z-index:3;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 48px);font-family:var(--ui);font-size:.8rem;color:var(--fg);background:var(--panel);border:1px solid #c9a45c;border-radius:6px;padding:.35rem .8rem;pointer-events:none;max-width:calc(100% - 32px);text-align:center}
 #mpGhost{position:fixed;z-index:3;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 18%);font-family:var(--ui);font-size:.8rem;color:#cfd8e8;background:rgba(20,26,40,.7);border:1px solid #4a5a7a;border-radius:6px;padding:.4rem .9rem;text-align:center;pointer-events:none;max-width:calc(100% - 32px)}#mpGhost b{letter-spacing:.2em;text-transform:uppercase;color:#9fb4e0}
 #mpEnd{position:fixed;inset:0;z-index:11;background:rgba(4,3,5,.92);display:flex;align-items:center;justify-content:center;padding:16px;text-align:center}#mpEnd .in{max-width:26rem;display:flex;flex-direction:column;gap:1rem;font-family:var(--display);color:var(--fg)}#mpEnd p{margin:0;font-size:1.2rem}
