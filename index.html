@@ -3982,6 +3982,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
 #hEnd .tag{font-family:var(--ui);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:#c9a45c;margin:0}#hEnd h1{font-family:var(--display);font-weight:400;font-size:2.1rem;margin:0}#hEnd p.txt{font-family:var(--display);color:#bfb6a8;font-size:1.05rem;line-height:1.5;margin:0}
 #hEnd button{align-self:center;font:600 .85rem var(--ui);color:#f0e6e0;background:#3a0e10;border:1px solid #6a2024;border-radius:6px;padding:.6rem 1.4rem;cursor:pointer}`;document.head.appendChild(css);
  const hud=document.createElement('div');hud.id='hHud';hud.hidden=true;document.body.appendChild(hud);
+ // the demon's panel sits just below the clock (#hud), wherever the clock is, so it never covers it
+ setInterval(()=>safe(()=>{if(hud.hidden)return;const c=document.getElementById('hud');let t='';if(c&&!c.hidden&&getComputedStyle(c).display!=='none'){const r=c.getBoundingClientRect(),h=hud.getBoundingClientRect();if(r.height&&r.bottom>0&&r.left<h.right&&r.right>h.left)t=Math.round(r.bottom+6)+'px'}if(hud.style.top!==t)hud.style.top=t},'hudPos'),150);
  const fxEl=document.createElement('div');fxEl.id='hFx';document.body.appendChild(fxEl);
  const hitEl=document.createElement('div');hitEl.id='hHit';document.body.appendChild(hitEl);
  const left=k=>Math.max(0,Math.ceil((ST.cd[k]||0)-now()));
@@ -4146,7 +4148,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    // place her upstairs, in the guest room, once the arrival is over
    if(!ST.placed){ST.noCut+=dt;if(ST.noCut>1){ST.placed=true;safe(()=>{const x=mX(1.8),z=mZ(6.95);fy=0;vy=0;cam.position.set(x,1.6,z);yaw=0;pitch=0;if(blocked(x,z))STR.unstick()},'place')}}
    // on the ceiling: the eye rises to just under it
-   const tgt=ST.ceil?Math.max(0,Math.min(1.25,ceilAt(cam.position.x,cam.position.z)-.35-(fy+1.6))):0;ST.lift+=(tgt-ST.lift)*Math.min(1,dt*5);if(Math.abs(ST.lift)<.002)ST.lift=0;
+   const tgt=ST.ceil?Math.max(0,Math.min(2.3,ceilAt(cam.position.x,cam.position.z)-(crouch?.5:.35)-(fy+eyeH))):0;ST.lift+=(tgt-ST.lift)*Math.min(1,dt*5);if(Math.abs(ST.lift)<.002)ST.lift=0;
    window.__camLift=ST.lift;window.__dmCeil=ST.ceil&&ST.lift>.3;
    if(!window.__cut&&!paused){const s=nearSpot(),d=s?null:nearDoor();if(s||d){hint.hidden=false;hint.textContent='[E] '+(s?'Open: '+s.lbl.replace(/^(Hide|Squeeze) /,'').replace(/^(in|under|behind|between) the /,''):d.open?'Close the door':'Open the door')}}
    safe(()=>xray(dt),'xray')}
@@ -4222,7 +4224,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    if(N.dead){N.deadT+=dt;a.g.rotation.x=-Math.min(1,N.deadT*2.2)*Math.PI/2;a.g.position.y=N.h+.12;return}
    N.ph=(N.ph||0)+dt*(mv>2.4?11:7.5)*(mv>.05?1:0);const sw=mv>.05?Math.sin(N.ph)*(mv>2.4?.7:.45):0;a.legs[0].rotation.x=sw;a.legs[1].rotation.x=-sw;
    let l=-sw*.7,r=sw*.7;if(N.act)l=r=.9+Math.sin(performance.now()/300)*.12;if(N.armed){r=N.slashT>0?.3+2.1*N.slashT/.35:1.1}if(N.stag>0)l=r=2.6;a.arms[0].rotation.x=l;a.arms[1].rotation.x=r;
-   a.head.rotation.y=N.mode==='idle'&&!N.act?Math.sin(performance.now()/1300)*.6:0;if(N.blade)N.blade.visible=N.armed}
+   a.head.rotation.y=N.alertT>0?Math.sin(performance.now()/420)*.95:N.mode==='idle'&&!N.act?Math.sin(performance.now()/1300)*.6:0;if(N.blade)N.blade.visible=N.armed}
   // ---------- getting around ----------
   function goTo(p,tol,cb,keep){const q=NAV.path(N.x,N.z,N.h,p.x,p.z,p.h,tol||.8);N.path=q;N.pi=0;N.goal={p,tol:tol||.8};N.arrive=cb||null;N.stuck=0;if(!keep)N.replan=0;return !!q}
   function stop(){N.path=null;N.goal=null;N.arrive=null}
@@ -4240,7 +4242,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   const dm=()=>({x:cam.position.x,z:cam.position.z,h:fy});
   const dDist=()=>{const d=dm();return Math.hypot(d.x-N.x,d.z-N.z)};
   function sees(){if(N.hideS||N.dead)return false;const d=dm(),dist=Math.hypot(d.x-N.x,d.z-N.z),pp=P();if(Math.abs(d.h-N.h)>1.3)return false;
-   const rng=pp.sight*(ST.ceil?.45:1);if(dist>rng)return false;const fx=-Math.sin(N.yaw),fz=-Math.cos(N.yaw),dot=((d.x-N.x)*fx+(d.z-N.z)*fz)/Math.max(dist,1e-3);
+   if(ST.ceil)return false;// on the ceiling she never sees you; she can only hear you (see ceilNoise)
+   const rng=pp.sight;if(dist>rng)return false;const fx=-Math.sin(N.yaw),fz=-Math.cos(N.yaw),dot=((d.x-N.x)*fx+(d.z-N.z)*fz)/Math.max(dist,1e-3);
    if(dot<-.1&&dist>2.2)return false;return losClear(N.x,N.z,d.x,d.z,Math.min(d.h,N.h))}
   function say(t,ms){if(dDist()<11&&performance.now()-N.said>2500){N.said=performance.now();subtitle(t,ms||2200)}}
   // something frightening at p: she runs (after her reaction time), unless she is armed and it is close
@@ -4288,17 +4291,31 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    let bx=d.x-N.x,bz=d.z-N.z;const L=Math.hypot(bx,bz)||1;bx/=L;bz/=L;for(let i=0;i<8;i++){const nx=cam.position.x+bx*.1,nz=cam.position.z+bz*.1;if(blocked(nx,nz))break;cam.position.x=nx;cam.position.z=nz}
    const left=P().cuts-N.cuts;if(left<=0){subtitle('(The blade goes through you.)',2500);setTimeout(()=>end('secret'),900);return}
    subtitle('The katana bites. '+(left>1?left+' more cuts and you are finished.':'One more cut and you are finished.'),2600)}
+  // ---------- noise from the ceiling: crouched = silent, walking = she stops and looks around, sprinting = she runs and hides ----------
+  let cLast=null;
+  function ceilGait(dt){const p=cam.position,l=cLast;cLast={x:p.x,z:p.z};if(!ST.ceil||!l||dt<=0)return null;const v=Math.hypot(p.x-l.x,p.z-l.z)/dt;if(v<.25||v>12)return null;
+   if(crouch)return 'crouch';return keys.ShiftLeft||keys.ShiftRight?'sprint':'walk'}
+  function ceilNoise(g){if(!g||g==='crouch'||N.dead||N.hideS)return;const d=dDist(),pp=P();if(d>pp.hear||Math.abs(fy-N.h)>2.5)return;
+   if(g==='sprint'){N.alertT=0;alarm(dm(),d<5?1.1:.9);return}
+   if(N.mode==='flee'||N.mode==='fight'||N.alarm)return;const d0=dm();if(!(N.alertT>0))say(['(The sitter stops dead and looks around.)','"...Hello?"','(She goes still, listening. Something creaked overhead.)'][Math.floor(Math.random()*3)]);
+   N.alertT=rnd(2.5,4);N.alertP={x:d0.x,z:d0.z}}
   // ---------- per frame ----------
   function update(dt){if(!N.on||N.ended)return;const pp=P();N.inv=N.inv;N.slashCd=Math.max(0,N.slashCd-dt);N.slashT=Math.max(0,N.slashT-dt);N.stag=Math.max(0,(N.stag||0)-dt);N.fear=Math.max(0,N.fear-dt*.01);
    if(C().EV&&C().EV.next<60)C().EV.next=60;// the house's own events are for a human sitter
    if(N.dead){pose(dt,0);return}
+   N.gait=ceilGait(dt);
    // senses (five times a second)
    N.sense-=dt;if(N.sense<=0){N.sense=.2;const s=sees();if(s){N.lastSeen=dm();const close=dDist();
      if(N.armed&&XT.hour()>=24){if(N.mode!=='fight'&&!N.hideS){N.mode='fight';stop();N.act=null;N.task=null;say('(The sitter raises the sword.)')}}
      else if(N.mode!=='flee'&&N.mode!=='hide'&&!(N.mode==='task'&&close>3.5))alarm(N.lastSeen,close<3?1.4:1)}
-    else if(N.mode==='fight'&&N.lastSeen&&dDist()>9){N.mode='idle'}}
+    else if(N.mode==='fight'&&N.lastSeen&&dDist()>9){N.mode='idle'}
+    ceilNoise(N.gait)}
    if(N.alarm){N.alarm.t-=dt;if(N.alarm.t<=0){const a=N.alarm;N.alarm=null;if(N.mode!=='hide'){if(N.mode!=='flee')say(['(The sitter gasps.)','"Who\'s there?"','(Quick footsteps. She is running.)'][Math.floor(Math.random()*3)]);flee(a.p)}}}
    let mv=0;
+   // alert: she pauses whatever she was doing, turns toward the sound and looks around, then carries on
+   if(N.alertT>0){if(N.dead||N.hideS||N.mode==='flee'||N.mode==='fight'||N.alarm)N.alertT=0;else{N.alertT-=dt;
+     if(N.alertP){const ty=Math.atan2(-(N.alertP.x-N.x),-(N.alertP.z-N.z));let dy=ty-N.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));N.yaw+=dy*Math.min(1,dt*3)}
+     pose(dt,0);return}}
    if(N.mode==='hide'){N.hideT-=dt*(1+2*C().noise);const d=dDist();
     // listening: she stays put while you are close
     if(N.hideT<=0&&d>4.5)unhide();
@@ -4337,7 +4354,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    body();const p=at('door');N.x=p.x;N.z=p.z;N.h=p.h;N.yaw=Math.PI;N.on=true;N.idleT=0;safe(()=>MP.onHunt(),'onHunt');
    setTimeout(()=>subtitle('The sitter has let herself in. Stalk her, scare her away from the baby. After midnight, hunt her. (No other babysitter is coming.)',6000),3000)}
   function end(id){if(N.ended)return;N.ended=true;MP.ended=true;safe(()=>MP.huntEnd(id==='death'?'death':id==='secret'?'secret':'dawn'),'end')}
-  function hud(){if(!N.on)return'';const pp=P();let s=N.dead?'down':N.hideS?'hidden':N.mode==='flee'?'running':N.armed?'armed with the katana':N.mode==='quest'?'searching the house':N.act?'with the baby':'';
+  function hud(){if(!N.on)return'';const pp=P();let s=N.dead?'down':N.hideS?'hidden':N.mode==='flee'?'running':N.alertT>0?'listening':N.armed?'armed with the katana':N.mode==='quest'?'searching the house':N.act?'with the baby':'';
    return '<br>Sitter'+(s?': '+s:'')+(N.hits&&!N.dead?' <span class="w">(wounded)</span>':'')+(N.armed?'<br><span class="w">Her blade: '+(pp.cuts-N.cuts)+' more cuts kill you</span>':'')}
   const reps=()=>N.on&&!N.dead?[['npc',{x:iX(N.x),z:iZ(N.z),y:N.h,hid:N.hideS?1:0,cr:0}]]:[];
   XT.onUpdate(dt=>{if(!MP.sp)return;safe(()=>update(dt),'npc')});
