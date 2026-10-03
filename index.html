@@ -1765,7 +1765,7 @@ const STR=(function(){const C=CARE.dbg;
     else if(r.anc)o.position[a]=W(a,r.anc[a])+(r.p[a]-r.anc[a]);else o.position[a]=W(a,r.p[a])}}
   for(const r of srecs){const q=r.q;for(const a of['x','z']){const lo=a+'0',hi=a+'1',s=r.sp[a];if(s){q[lo]=eW(s.e0,a);q[hi]=eW(s.e1,a)}else{const c=(q.r[lo]+q.r[hi])/2,h=(q.r[hi]-q.r[lo])/2,wc=r.anc?W(a,r.anc[a])+(c-r.anc[a]):W(a,c);q[lo]=wc-h;q[hi]=wc+h}}}}
  let nc=null;
- function cfg(){const t=TRAP.cfg;if(t){nc=null;return t}const k=1+1.5*C.fx.stretch;if(k<1.002){nc=null;return{bx:0,bz:0,sx:0,sz:0,k:1}}
+ function cfg(){const t=TRAP.cfg||window.__arenaCfg;if(t){nc=null;return t}const k=1+1.5*C.fx.stretch;if(k<1.002){nc=null;return{bx:0,bz:0,sx:0,sz:0,k:1}}
   if(!nc){const B=C.babyP;nc={bx:B.x,bz:B.z,sx:Math.sign(RP.x-B.x)||1,sz:Math.sign(RP.z-B.z)||1}}return Object.assign({k},nc)}
  function unstick(){const x=cam.position.x,z=cam.position.z;for(let d=.1;d<=2;d+=.1)for(let i=0;i<16;i++){const a=i*Math.PI/8,nx=x+Math.cos(a)*d,nz=z+Math.sin(a)*d;if(!blocked(nx,nz)){cam.position.x=nx;cam.position.z=nz;return}}}
  function apply(){if(RLM.on)return;const c=cfg();if(c.k===MAP.k&&c.bx===MAP.bx&&c.bz===MAP.bz&&c.sx===MAP.sx&&c.sz===MAP.sz)return;
@@ -3037,6 +3037,11 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
      if(t>9.6&&!st.win){st.win=1;g.visible=true;g.scale.setScalar(1);g.rotation.set(0,0,0);g.position.copy(winP);XT.demon.force='crawl';if(GL)GL.intensity=.6;
       sfx(3200,.8,.4,.7,'highpass');sfx(600,1,.3,.4,'bandpass');safe(()=>XT.demonSfx.hiss(winP.x,winP.z,1.3),'hiss')}
      if(st.win){const end=PF.clone().addScaledVector(fwd,2.7),k=sm((t-9.8)/3.4);g.position.lerpVectors(winP,end,k);g.position.y=stopP.y;XT.demon.force=k<.6?'crawl':'walk';g.lookAt(cam.position.x,g.position.y,cam.position.z)}
+     // the room makes space: the far walls slide outward with a rumble (about double the floor, a little more for every extra player)
+     if(t>10){if(!st.ar){st.ar=1;sfx(38,1,.9,2.6,'lowpass');sfx(70,1,.6,2.2,'lowpass');sfx(160,2,.18,2.4,'bandpass');
+       const n=S.MP?Math.max(1,safe(()=>__mp.roster().length,'n')||1):1,A=Math.min(2.6,2+.2*(n-1));st.KA=(-29.5+Math.sqrt(870.25-40*(16.5-56*A)))/20}
+      const k=1+(st.KA-1)*sm((t-10)/2.5);if(!window.__arenaCfg||Math.abs(window.__arenaCfg.k-k)>.002){window.__arenaCfg={bx:1.5,bz:.5,sx:1,sz:-1,k};safe(()=>window.__str.apply(),'arena')}
+      if(t<12.5)S.shake=Math.max(S.shake,.12)}
      if(vm.visible){S.T=t;sword()}
      if(t>=13.4){S.st='ready';S.rdyT=0;S.T=0;S.stT=1.6;bf.hidden=false;if(!S.spec){introEl.innerHTML=introHtml();introEl.hidden=false}else S.rdy=true;document.getElementById('cutSkip').hidden=true;const b=document.getElementById('cutBars');if(b)b.hidden=true;
       if(S.spec)subtitle('(You have no sword. You can only watch them fight her.)',4000);drawHud(S)}
@@ -3060,7 +3065,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
      sword();if(f>4.6&&!st.f1){st.f1=1;const fd=document.getElementById('xfade');if(fd){fd.hidden=false;fd.textContent='Dawn.';requestAnimationFrame(()=>fd.classList.add('on'))}}
      return f>6}
     safe(()=>fight(dt),'fight');safe(sword,'sword');return false},
-   end(){const won=S.st==='finish';FS=null;window.__fightMv=false;if(TEL)TEL.g.visible=false;IN.l=IN.r=IN.f=IN.b=IN.run=0;introEl.hidden=true;bf.hidden=true;cueEl.hidden=true;IN.blk=false;vm.visible=false;scene.remove(vm);ash.forEach(m=>scene.remove(m));XT.demon.force=null;g.scale.setScalar(1);if(GL)GL.intensity=0;
+   end(){const won=S.st==='finish';FS=null;if(window.__arenaCfg){window.__arenaCfg=null;safe(()=>window.__str.apply(),'arena0')}window.__fightMv=false;if(TEL)TEL.g.visible=false;IN.l=IN.r=IN.f=IN.b=IN.run=0;introEl.hidden=true;bf.hidden=true;cueEl.hidden=true;IN.blk=false;vm.visible=false;scene.remove(vm);ash.forEach(m=>scene.remove(m));XT.demon.force=null;g.scale.setScalar(1);if(GL)GL.intensity=0;
     hpEl.parentNode.hidden=false;bfQ('.help').hidden=false;
     if(won){g.visible=false;XT.ending('secret')}else{XT.ending('death',{h:'Taken.',p:'The sword was not enough. She was faster than you.'})}}};
   XT.cutUI(true);document.getElementById('cutSkip').hidden=true;XT.playCut(c)}
