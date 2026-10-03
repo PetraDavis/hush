@@ -793,9 +793,10 @@ const SND=(function(){let last=null,acc=0,prevDoors=null,prevSw=null,prevLight=n
  function send(node){ensure();if(echoIn)node.connect(echoIn)}
  // --- footsteps ---
  function surface(){if(window.__rlm&&__rlm.on)return'stone';if(inBase())return'concrete';const x=RP.x,z=RP.z;
-  if(fy>-1.45){if(x>4&&x<5.4)return'carpet';if(x>5.4&&x<9&&z<.5)return'tile';return x>-4&&x<4&&z>-3.5&&z<3.5&&Math.hypot(x,z+.3)<1.5?'carpet':'wood'}
+  // upstairs, matched to the floor meshes: hall runner, bathroom tiles (x 6-9.6, z -3.5-.5), the nursery and parents' rugs
+  if(fy>-1.45){if(x>4.55&&x<5.45&&z>-3.25&&z<6.85)return'carpet';if(x>=6&&x<9.6&&z>-3.5&&z<.5)return'tile';if(Math.abs(x)<1.5&&z>-1.85&&z<1.25)return'carpet';if(Math.abs(x-8.9)<1.3&&Math.abs(z-3)<1.1)return'carpet';return'wood'}
   if(fy>-2.85&&x>0&&x<4&&z>3.5&&z<5.5)return'wood';if(z>9.5||x<-4||x>8.4||z<-3.5)return'grass';if(x>2.8&&x<6.8&&z>6.5)return'marble';if(x>4.2&&x<8.4)return'tile';if(x<-1.8&&z>4.2)return'tile';
-  if(Math.hypot((x+1.6)/1.6,(z-.2)/1.2)<1)return'carpet';return'wood'}
+  if(Math.abs(x+1.6)<1.66&&Math.abs(z-.2)<1.28)return'carpet';return'wood'}
  function step(kind,loud){const t0=AC.currentTime,g=loud?1.6:1,r=.9+Math.random()*.2;
   if(kind==='wood'){burst(t0,140*r,1.2,.1*g,.09,'lowpass');burst(t0+.005,900*r,2,.02*g,.05,'bandpass')}
   else if(kind==='carpet'){burst(t0,110*r,.8,.06*g,.1,'lowpass')}
@@ -1167,7 +1168,7 @@ function update(dt,t){
  if(ended&&!endSet){endSet=true;endEl.querySelector('p').textContent='Bottles: '+stats.feeds+', diapers: '+stats.changes+', naps: '+stats.naps+', playtime: '+stats.plays+'. Reload the page to play again.'}}
 let calm=false;try{calm=localStorage.getItem('reduceFlash')==='1'}catch(e){}window.__getCalm=()=>calm;window.__setCalm=v=>{calm=v;try{localStorage.setItem('reduceFlash',calm?'1':'0')}catch(e){}if(typeof flTxt==='function')flTxt()};
 const flEl=document.getElementById('flashOpt');const flTxt=()=>{if(flEl)flEl.textContent='F: reduce flashing ('+(calm?'on':'off')+')'};flTxt();
-addEventListener('keydown',e=>{if(e.code==='KeyF'&&!e.repeat){calm=!calm;try{localStorage.setItem('reduceFlash',calm?'1':'0')}catch(err){}flTxt();subtitle(calm?'Reduce flashing: on':'Reduce flashing: off',1500)}});
+addEventListener('keydown',e=>{if(e.code==='KeyF'&&!e.repeat&&!(window.__xt&&__xt.bladeFight&&__xt.bladeFight.S)){calm=!calm;try{localStorage.setItem('reduceFlash',calm?'1':'0')}catch(err){}flTxt();subtitle(calm?'Reduce flashing: on':'Reduce flashing: off',1500)}});
 // loud baby: switched-on lights stutter (surge, drop out) - at most ~2.5 on/off changes per second per light; reduce-flashing swaps in a slow dimming pulse
 let ft=0;function flicker(dt){ft+=dt;const a=sat((noise-.15)/.65);allL.forEach((l,i)=>{const u=l.userData;if(!(u.base>0)||l.intensity<=0)return;if(a<.01){u.fs=1;return}
  if(calm){l.intensity*=1-.4*a*(.5+.5*Math.sin(ft*1.3+i*1.7));return}
@@ -1666,13 +1667,18 @@ const STR=(function(){const C=CARE.dbg;
  const eR=(e,a)=>e.m?e.m.position[a]+e.off:e.c,eW=(e,a)=>e.m?W(a,e.m.position[a])+e.off:W(a,e.c);
  const recs=[],free=[],bx=new THREE.Box3();
  scene.updateMatrixWorld(true);
+ // flat floor-like pieces; a smaller one lying on a bigger one is a rug or runner, not a floor
+ const flats=[];scene.children.forEach(o=>{if(ex.has(o)||o.userData.noMap||!o.isMesh||!o.geometry||o.userData.span||o.userData.wall||Math.abs(o.rotation.x)>.01||Math.abs(o.rotation.z)>.01||(o.material&&o.material.visible===false))return;
+  const sy=Math.sin(o.rotation.y),cy=Math.cos(o.rotation.y),sw=Math.abs(cy)<.05;if(!(Math.abs(sy)<.05||sw))return;o.geometry.computeBoundingBox();const g=o.geometry.boundingBox,lx=(g.max.x-g.min.x)*o.scale.x,ly=(g.max.y-g.min.y)*o.scale.y,lz=(g.max.z-g.min.z)*o.scale.z,EX=sw?lz:lx,EZ=sw?lx:lz;
+  if(ly<=.12&&Math.min(EX,EZ)>=.4)flats.push({o,x0:o.position.x-EX/2,x1:o.position.x+EX/2,z0:o.position.z-EZ/2,z1:o.position.z+EZ/2,y:o.position.y,a:EX*EZ})});
+ const rug=o=>{const f=flats.find(q=>q.o===o);return !!f&&flats.some(q=>q!==f&&q.a>f.a*1.25&&f.y-q.y>.02&&f.y-q.y<.15&&f.x0>=q.x0-.01&&f.x1<=q.x1+.01&&f.z0>=q.z0-.01&&f.z1<=q.z1+.01)};
  scene.children.forEach(o=>{if(ex.has(o)||o.userData.noMap||o.isInstancedMesh||o.isCamera)return;
   const u=o.userData,r={o,p:{x:o.position.x,z:o.position.z},sc:o.scale.clone(),sp:{}};recs.push(r);
   if(u.ancd){r.anc={x:r.p.x+u.ancd.dx,z:r.p.z+u.ancd.dz};return}
   if(u.rail){r.rail=1;return}
   if(o.isMesh&&o.geometry&&Math.abs(o.rotation.x)<.01&&Math.abs(o.rotation.z)<.01){const sy=Math.sin(o.rotation.y),cy=Math.cos(o.rotation.y),sw=Math.abs(cy)<.05;
    if(Math.abs(sy)<.05||sw){o.geometry.computeBoundingBox();const g=o.geometry.boundingBox,lx=(g.max.x-g.min.x)*o.scale.x,ly=(g.max.y-g.min.y)*o.scale.y,lz=(g.max.z-g.min.z)*o.scale.z,EX=sw?lz:lx,EZ=sw?lx:lz;
-    let axes=u.span||u.wall||'';if(!axes&&o.material&&o.material.visible!==false){if(ly<=.12&&Math.min(EX,EZ)>=.4&&(Math.min(EX,EZ)>=1.5||Math.max(EX,EZ)>=4))axes='xz';else if(EX>=2&&EZ<=.25)axes='x';else if(EZ>=2&&EX<=.25)axes='z'}
+    let axes=u.span||u.wall||'';if(!axes&&o.material&&o.material.visible!==false){if(ly<=.12&&Math.min(EX,EZ)>=.4&&(Math.min(EX,EZ)>=1.5||Math.max(EX,EZ)>=4))axes=!rug(o)?'xz':Math.max(EX,EZ)>=4?(EX>EZ?'x':'z'):'';else if(ly<=.4&&EX>=2&&EZ<=.25)axes='x';else if(ly<=.4&&EZ>=2&&EX<=.25)axes='z'}
     for(const a of axes){const ext=a==='x'?EX:EZ;if(ext<.05)continue;const c=r.p[a],pv=r.p[P(a)];r.sp[a]={e0:holeEnd(a,c-ext/2,pv,o.position.y),e1:holeEnd(a,c+ext/2,pv,o.position.y),la:(a==='x')!==sw?'x':'z'}}
     if(axes)return}}
   // furniture & props: pieces that touch are clustered and move as one rigid piece
@@ -1723,7 +1729,8 @@ XT.snap=function(){if(busyWorld()||!entered)return lastSnap||{clockT};
  const C=CARE.dbg,sx=seated?seated.px:cam.position.x,sz=seated?seated.pz:cam.position.z,sy=seated?seated.pfy:fy;
  const s={v:2,clockT,pos:{x:iX(sx),z:iZ(sz),y:sy,yaw,pitch},entered,noteSeen,nineDone,basementEntered,
   N:Object.assign({},C.N),noise:C.noise,bottle:C.bottle,hasKey,fpOpen,basementOpen,shelf:BSM.slide>0,clue:!!BSM.clue,
-  doors:doors.map(d=>!!d.open),sw:switches.map(q=>!!q.get()),light:!!lightOn,ext:{}};
+  doors:doors.map(d=>!!d.open),sw:switches.map(q=>!!q.get()),light:!!lightOn,ext:{},
+  baby:safe(()=>{const m=C.mp;return{c:m.carrying?1:0,seat:m.inSeat?m.seatAt:null,a:C.asleep?1:0,nap:+(m.napT||0).toFixed(1)}},'baby')||null};
  for(const k in XT.parts)safe(()=>{s.ext[k]=XT.parts[k].save()},'save '+k);
  lastSnap=s;return s};
 XT.restore=function(s){if(!s||!s.pos)return;
@@ -1735,6 +1742,8 @@ XT.restore=function(s){if(!s||!s.pos)return;
  safe(()=>{(s.sw||[]).forEach((v,i)=>{const q=switches[i];if(q&&q.get()!==v)q.set(v)});if(typeof s.light==='boolean'&&s.light!==lightOn)setLight(s.light)},'lights');
  safe(()=>{if(s.shelf&&!(BSM.slide>0)){const o=inter.find(m=>{try{return m.userData.i.label==='Push shelf'}catch(e){return false}});if(o)o.userData.i.act()}},'shelf');
  for(const k in XT.parts)if(s.ext&&s.ext[k]!==undefined)safe(()=>XT.parts[k].load(s.ext[k]),'load '+k);
+ // where she was (older saves have no baby field: she stays in the crib)
+ if(s.baby)safe(()=>{const C=CARE.dbg,m=C.mp,b=s.baby;C.asleep=!!b.a;m.napT=+b.nap||0;if(b.c){m.inSeat=false;m.carrying=true;m.inArms()}else if(b.seat!=null){m.carrying=false;m.seatAt=b.seat;m.inSeat=true;m.toSeat()}},'baby');
  lastSnap=s;XT.restored=true;
  setTimeout(()=>safe(()=>subtitle('You pick up where you left off. '+fmtTime(18+clockT/HOUR_SEC)+'.',3500)),1700)};
 // save when the tab is hidden or closed, so Continue is never far behind
