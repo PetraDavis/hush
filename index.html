@@ -76,7 +76,7 @@ body:has(#title:not([hidden])) #cross{display:none}
 </div><div id="tfade" hidden></div><div id="tset" hidden><h2>Settings</h2><label>Master volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Voice chat <input id="sVoice" type="range" min="0" max="1.5" step="0.05"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><label>Invert Y <input id="sInvY" type="checkbox"></label><label>Graphics <select id="sQ"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><button id="tsetClose" type="button">Done</button></div>
 <button id="skipB" type="button" hidden>Skip hour [T]</button><div id="blurE"></div><div id="cross"></div><div id="hint" hidden>[E] Door</div><div id="msg">It's locked.</div><div id="sub" hidden></div><div id="hud" hidden></div><div id="need" hidden><svg viewBox="0 0 24 24" aria-hidden="true"></svg><span></span></div><div id="mon" hidden><div class="hd">BABY MONITOR<b id="monL"></b></div><div class="bars"></div><div id="monT">quiet</div></div><div id="prog" hidden><div><b></b></div><span></span></div><div id="dead" hidden><div class="box"><p class="brand">HUSH</p><h1>You shouldn't have checked.</h1><p>It was waiting for you.</p><button id="restart" type="button">Restart</button></div></div><div id="fade" hidden></div><div id="tbc" hidden><p class="brand">HUSH</p><h1>To be continued...</h1><button id="tbcR" type="button">Restart</button></div><div id="end" hidden><div class="box"><p class="brand">HUSH</p><h1>The parents are home.</h1><p>End of the prototype. Reload the page to play again.</p></div></div>
 <div id="note" hidden><div class="paper"><p class="hd">Thank you for coming on such short notice!</p>
-<ul><li>Feed her around 7 PM, 10 PM, 1 AM and 4 AM, or whenever she gets hungry. Bottles are in the fridge. Warm one in the bottle warmer on the counter, never the microwave.</li>
+<ul><li>Feed Lilith around 7 PM, 10 PM, 1 AM and 4 AM, or whenever she gets hungry. Bottles are in the fridge. Warm one in the bottle warmer on the counter, never the microwave.</li>
 <li>Burp her after every bottle or she'll fuss.</li>
 <li>Change her when she needs it. Diapers and wipes are on the changing table in the upstairs bathroom.</li>
 <li>She gets bored easily. Her toys are in the nursery.</li>
@@ -92,8 +92,12 @@ body:has(#title:not([hidden])) #cross{display:none}
 <script>try{if(new URLSearchParams(location.search).get('reset')==='1'){const ks=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(/^hush/i.test(k)||k==='reduceFlash'))ks.push(k)}ks.forEach(k=>localStorage.removeItem(k));history.replaceState(null,'',location.pathname+location.hash);alert('Hush: saved data cleared ('+ks.length+' items).')}}catch(e){}</script>
 <script>/* v75: startup breadcrumbs. Each startup and Start step writes its name to localStorage first, so after a hard freeze the next load can say where it stopped. ?safe=1 is safe mode. */
 (function(){const K='hushBC',OK={title:1,play:1,'':1};let prev=null;try{prev=JSON.parse(localStorage.getItem(K)||'null')}catch(e){}
+ // v76: Firefox commits localStorage writes only when the task ends, so a crumb written by a task that hangs is lost; sessionStorage and the URL hash are extra copies
+ try{const ss=JSON.parse(sessionStorage.getItem(K)||'null');if(ss&&ss.t&&(!prev||ss.t>prev.t))prev=ss}catch(e){}
+ try{const hm=/[#&]bc=([^&~]*)~(\d+)/.exec(location.hash);if(hm){const hs={s:decodeURIComponent(hm[1]),t:+hm[2],v:'v76'};if(!prev||hs.t>prev.t)prev=hs;history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
+ const mirror=(s,j)=>{try{sessionStorage.setItem(K,j)}catch(e){}try{const h=location.hash;if(!h||/^#bc=/.test(h))history.replaceState(null,'',location.pathname+location.search+(OK[s]?'':'#bc='+encodeURIComponent(s)+'~'+Date.now()))}catch(e){}};
  window.__lastFreeze=prev&&prev.s&&!OK[prev.s]?prev:null;const log=window.__bcLog=[];
- window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();localStorage.setItem(K,JSON.stringify({s,t:Date.now(),v:'v75',safe:!!window.__safe}))}catch(e){}};
+ window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();const j=JSON.stringify({s,t:Date.now(),v:'v76',safe:!!window.__safe});mirror(s,j);localStorage.setItem(K,j)}catch(e){}};
  let sf=false;try{sf=new URLSearchParams(location.search).get('safe')==='1'}catch(e){}window.__safe=sf;
  // a small "Preparing..." bar used while Start runs its steps
  window.__prep=txt=>{let g=null;try{g=document.createElement('div');g.setAttribute('role','status');g.style.cssText='position:fixed;left:0;right:0;bottom:12%;z-index:21;display:flex;flex-direction:column;gap:.7rem;align-items:center;color:#cfc4b4;font:.9rem system-ui,-apple-system,sans-serif;pointer-events:none;padding:0 16px';
@@ -750,7 +754,7 @@ const BSM=(function(){const sat=v=>Math.max(0,Math.min(1,v));const G=new THREE.G
   const p=new THREE.Mesh(new THREE.PlaneGeometry(.4,.5),m);p.position.set(3.42,F+1.72,6.63);scene.add(p);box(.48,.58,.03,gold,3.42,F+1.72,6.6)}
  {const tp=new THREE.Mesh(new THREE.PlaneGeometry(.15,.2),canvasMat(48,64,q=>{q.fillStyle='#ece2cc';q.beginPath();q.moveTo(0,0);q.lineTo(48,0);q.lineTo(48,50);for(let x=48;x>=0;x-=6)q.lineTo(x,56+Math.random()*8);q.fill();q.fillStyle='rgba(40,30,30,.55)';for(let r=0;r<6;r++)q.fillRect(4,6+r*8,36-(r*7)%14,2)}));
   tp.rotation.set(-Math.PI/2,0,.5);tp.position.set(7.0,.778,4.95);scene.add(tp);
-  const h=new THREE.Mesh(BG(.25,.08,.25),hitM);h.position.set(7.0,.8,4.95);scene.add(h);use(h,'Torn page',()=>openDoc('<p class="hd">A page torn from a diary. Her mother\'s handwriting.</p><p>...only a few more weeks. She cries more every night now and I can feel the house listening. I have never been happier.</p><p>D says the sitter must not know until it is done. Keep her quiet until midnight, then let her cry. When the house is still we go down to the room below, and we give her back to the ones who</p><p>(The rest is torn away.)</p><p class="close">[E] or [Esc] to put it down</p>'))}
+  const h=new THREE.Mesh(BG(.25,.08,.25),hitM);h.position.set(7.0,.8,4.95);scene.add(h);use(h,'Torn page',()=>openDoc('<p class="hd">A page torn from a diary. Her mother\'s handwriting.</p><p>...only a few more weeks. Lilith cries more every night now and I can feel the house listening. I have never been happier.</p><p>D says the sitter must not know until it is done. Keep her quiet until midnight, then let her cry. When the house is still we go down to the room below, and we give her back to the ones who</p><p>(The rest is torn away.)</p><p class="close">[E] or [Esc] to put it down</p>'))}
  let scrT2=30,draftMsg=0,pilotT=0;
  function update(dt,t){clk+=dt;const o=BO(),lx=cam.position.x-o.x,lz=cam.position.z-o.z,ib=inBase();
   if(ib&&lz<-4.4&&!basementEntered){basementEntered=true;subtitle('The air down here is cold, and smells of candle wax.',4000)}
@@ -1195,7 +1199,7 @@ function whisper(g){const t0=AC.currentTime,n=3+Math.floor(Math.random()*4),pan=
  for(let i=0;i<n;i++){const st=t0+i*(.16+Math.random()*.14),d=.1+Math.random()*.16,src=AC.createBufferSource(),len=Math.floor(AC.sampleRate*d),bf=AC.createBuffer(1,len,AC.sampleRate),c=bf.getChannelData(0);for(let k=0;k<len;k++)c[k]=Math.random()*2-1;src.buffer=bf;
   const f=AC.createBiquadFilter();f.type='bandpass';f.Q.value=5;f.frequency.setValueAtTime(1400+Math.random()*1600,st);f.frequency.linearRampToValueAtTime(900+Math.random()*1400,st+d);const e=AC.createGain();e.gain.setValueAtTime(0,st);e.gain.linearRampToValueAtTime(g,st+d*.3);e.gain.linearRampToValueAtTime(0,st+d);src.connect(f).connect(e).connect(out);src.start(st);src.stop(st+d+.05)}}
 function render(){renderFrame()}
-function renderFrame(){const RL=window.__rlm&&__rlm.on,sc=RL?__rlm.scene:scene,gl=RL?0:fx.glitch;if(RL){scene.updateMatrixWorld();cam.updateMatrixWorld(true)}if(gl>.01){renderer.getDrawingBufferSize(v2);if(rtG.width!==v2.x||rtG.height!==v2.y)rtG.setSize(v2.x,v2.y);renderer.setRenderTarget(rtG);renderer.render(sc,cam);renderer.setRenderTarget(null);pMat.uniforms.amt.value=gl;pMat.uniforms.red.value=fx.red;pMat.uniforms.tm.value=performance.now()/1000;renderer.render(pScene,pCam)}else renderer.render(sc,cam)}
+function renderFrame(){const RL=window.__rlm&&__rlm.on,sc=RL?__rlm.scene:scene,gl=RL||window.__safe?0:fx.glitch;if(RL){scene.updateMatrixWorld();cam.updateMatrixWorld(true)}if(gl>.01){renderer.getDrawingBufferSize(v2);if(rtG.width!==v2.x||rtG.height!==v2.y)rtG.setSize(v2.x,v2.y);renderer.setRenderTarget(rtG);renderer.render(sc,cam);renderer.setRenderTarget(null);pMat.uniforms.amt.value=gl;pMat.uniforms.red.value=fx.red;pMat.uniforms.tm.value=performance.now()/1000;renderer.render(pScene,pCam)}else renderer.render(sc,cam)}
 let whT=4;function warp(dx,dz){return[dx,dz]}
 // ---- per-frame update ----
 function update(dt,t){
@@ -1603,11 +1607,14 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){overlay.hi
 window.__pause={get paused(){return paused},set:v=>{if(!v)started=true;overlay.hidden=!v;setPaused(v)}};
 // v71: Safari refuses a re-lock shortly after losing it; if the lock fails, keep the 'Click to resume' overlay instead of leaving an unlocked, stuck view
 const clearKeys=()=>{for(const k in keys)keys[k]=false};window.__clearKeys=clearKeys;
-const relockFail=()=>{if(started&&!document.pointerLockElement&&!window.__touchMode&&!ended&&!window.__dead&&!window.__tbc){clearKeys();overlay.hidden=false;setPaused(true);ovH.textContent='Paused';ovP.textContent='Click to resume'}};
+const relockFail=()=>{if(started&&!document.pointerLockElement&&!window.__touchMode&&!ended&&!window.__dead&&!window.__tbc){if(window.__noLock||(window.__lockFails=(window.__lockFails||0)+1)>=2){if(!window.__noLock){window.__noLock=1;try{window.__logErr&&__logErr('pointer lock unavailable: drag to look')}catch(e){}}overlay.hidden=true;setPaused(false);subtitle('Mouse look: hold the left mouse button and drag.',4000);return}clearKeys();overlay.hidden=false;setPaused(true);ovH.textContent='Paused';ovP.textContent='Click to resume'}};
 overlay.onclick=()=>{started=true;clearKeys();if(window.__typing){const ci=document.getElementById('chatIn');if(!ci||ci.hidden)window.__typing=false}setPaused(false);overlay.hidden=true;let p=null;try{p=renderer.domElement.requestPointerLock()}catch(e){}if(p&&p.catch)p.catch(()=>setTimeout(relockFail,50));else setTimeout(()=>{if(!document.pointerLockElement)relockFail()},700)};
 document.addEventListener('pointerlockerror',()=>setTimeout(relockFail,50));
 document.addEventListener('visibilitychange',clearKeys);document.addEventListener('pointerlockchange',clearKeys);
 document.addEventListener('pointerlockchange',()=>{if(!document.pointerLockElement&&!ended&&!window.__dead&&!window.__tbc){overlay.hidden=false;setPaused(true);if(noteOpen)openNote(false)}});
+document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement){window.__lockFails=0;window.__noLock=0}});
+// v76: without pointer lock (blocked or failing), drag with the left button on the game to look
+document.addEventListener('mousemove',e=>{if(document.pointerLockElement)return;if(!started||paused||window.__touchMode||!(e.buttons&1)||e.target!==renderer.domElement)return;yaw-=(e.movementX||0)*.0044*SENS;pitch=Math.max(-1.4,Math.min(1.4,pitch-(e.movementY||0)*.0044*SENS*(window.__invY?-1:1)))});
 document.addEventListener('mousemove',e=>{if(document.pointerLockElement!==renderer.domElement)return;yaw-=e.movementX*.0022*SENS;pitch=Math.max(-1.4,Math.min(1.4,pitch-e.movementY*.0022*SENS*(window.__invY?-1:1)))});
 addEventListener('keydown',e=>{if(paused)return;keys[e.code]=true;if(e.code==='Escape'&&noteOpen)openNote(false);if(e.code==='KeyE'&&!e.repeat)interact();if(e.code==='Space'){e.preventDefault();if(!seated&&grounded&&!CARE.busy()&&!(window.__mp&&__mp.ghost)){vy=4.3;grounded=false;CARE.jump()}}});addEventListener('keyup',e=>keys[e.code]=false);addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
 renderer.domElement.addEventListener('mousedown',()=>{if(document.pointerLockElement)interact()});
@@ -1683,7 +1690,7 @@ if(!basementOpen&&bAng<=0){bDoor.position.x=mX(6.65);if(rattle>0){rattle-=dt;bDo
 doors.forEach(d=>{const tg=d.open?1.45*d.dir:0;if(d.sp&&(Math.abs(tg-d.pv.rotation.y)<.02||d.open!==d.spO))d.sp=0;d.pv.rotation.y+=(tg-d.pv.rotation.y)*Math.min(1,dt*(d.sp||5));const sw=Math.abs(d.pv.rotation.y)>.3;
  // a door closing on you (E in the doorway, a slam) stays passable until you step clear, so it can never lock you inside its slab
  if(!sw&&d.solid.off&&d.solid.x0!==undefined&&!seated){d.solid.off=false;if(ov(d.solid,cam.position.x,cam.position.z,R)&&d.solid.y1>fy+.36&&d.solid.y0<fy+PH())d.solid.off=true}else d.solid.off=sw});
-{const o=noteOpen||CARE.busy()||(window.__mp&&(__mp.ghost||__mp.demon))?null:seated?{label:'Stand up'}:(document.pointerLockElement||window.__touchMode)?(target()||CARE.free()):null;hint.hidden=!o;if(o)hint.textContent='[E] '+o.label}
+{const o=noteOpen||CARE.busy()||(window.__mp&&(__mp.ghost||__mp.demon))?null:seated?{label:'Stand up'}:(document.pointerLockElement||window.__touchMode||window.__noLock)?(target()||CARE.free()):null;hint.hidden=!o;if(o)hint.textContent='[E] '+o.label}
 CARE.update(dt,t);atmos(dt,t);VFX.update(dt,t);SND.update(dt,t);BSM.update(dt,t);HUNT.update(dt);try{MUS.update(dt)}catch(e){console.error(e)}CARE.post(dt);TRAP.update(dt);RLM.update(dt);if(!TRAP.on&&!RLM.on)DEMON.update(dt);DEMON.pre();CARE.render();DEMON.post();try{window.__xt&&__xt.update(dt)}catch(e){if(__loopErr++<20)console.error('[Hush] ext error:',e)}requestAnimationFrame(loop)}
 // ===== title screen: the parents' note on the dining table by candlelight; the menu is written on the note =====
 const TITLE=(function(){const el=document.getElementById('title'),setEl=document.getElementById('tset');
@@ -1704,7 +1711,7 @@ const TITLE=(function(){const el=document.getElementById('title'),setEl=document
  cyl_(.025,.025,.13,new THREE.MeshPhongMaterial({color:0xf4f4f8,transparent:true,opacity:.8}),-.28,.065,.2).rotation.z=Math.PI/2;
  renderer.shadowMap.enabled=!window.__safe;
  // --- the note ---
- const RULES=['If someone knocks on the door, do not answer it.','If you hear footsteps in our bedroom, do not check it out.','If you hear whispering, don\'t answer. It stops.','If something scratches at the basement door, leave it be.','Keep her quiet. Whatever happens, keep her quiet.'];
+ const RULES=['If someone knocks on the door, do not answer it.','If you hear footsteps in our bedroom, do not check it out.','If you hear whispering, don\'t answer. It stops.','If something scratches at the basement door, leave it be.','Keep Lilith quiet. Whatever happens, keep her quiet.'];
  const OPT=[{k:'start',t:'Start',y:1020},{k:'cont',t:'Continue',y:1090},{k:'set',t:'Settings',y:1160},{k:'diff',get t(){return 'Difficulty: '+(window.__xt?__xt.diffName():'Normal')},y:1230},{k:'night',get t(){return 'Night: '+(window.__xt&&__xt.night||1)},get hide(){return !(window.__xt&&__xt.nightsUnlocked&&__xt.nightsUnlocked()>1)},y:1020,x:560},{k:'gfx',get t(){const q=window.__set&&__set.q||'medium';return 'Graphics: '+q[0].toUpperCase()+q.slice(1)+(window.__safe?' (safe)':'')},y:1160,x:560},{k:'mp',t:'Play together',get hide(){return !(window.__mp&&__mp.available)},y:1300},{k:'hunt',t:'Hunt',get hide(){return !(window.huntUnlocked&&huntUnlocked())},y:1090,x:640}];
  let hsV=false,hsT=-1e9;const hasSave=()=>{const n=performance.now();if(n-hsT>1000){hsT=n;try{const v=localStorage.getItem('hushSave');hsV=!!v&&v.charAt(0)==='{'}catch(e){hsV=false}}return hsV};
  let hov=null,idle=0,idleAt=10+Math.random()*10,ph=0,pt=0,drips=[],on=true,T=0,lastDraw=0,dirty=true;
@@ -1736,12 +1743,13 @@ const TITLE=(function(){const el=document.getElementById('title'),setEl=document
   for(const o of OPT)if(!o.hide&&v>o.y-70&&v<o.y+22&&u>(o.x||150)-20&&u<(o.x||150)+20+(o.w||200))return(o.k==='cont'&&!hasSave())?null:o.k;return null}
  function whisper(){if(!AC||muted)return;const t0=AC.currentTime;burst(t0,2400+Math.random()*800,3,.035,.5,'bandpass');burst(t0+.12,4200+Math.random()*900,4,.02,.35,'bandpass')}
  el.addEventListener('mousemove',e=>{if(!on)return;const k=pick(e);if(k!==hov){hov=k;dirty=true;el.style.cursor=k?'pointer':'default';if(k)whisper()}});
- el.addEventListener('pointerdown',()=>{initAudio();if(AC&&AC.state==='suspended')AC.resume()});
- el.addEventListener('click',e=>{if(!on||!setEl.hidden)return;const k=pick(e);if(k)window.__lastClick={k:'title '+k,t:performance.now()};if(k==='start'||k==='cont')begin(k==='cont');else if(k==='set')openSet(true);else if(k==='diff'){try{__xt.cycleDiff()}catch(err){}dirty=true}else if(k==='night'){try{__xt.cycleNight()}catch(err){console.error(err)}dirty=true}else if(k==='gfx'){try{if(!window.__safe){const Q=['low','medium','high'];__set.choose(Q[(Q.indexOf(__set.q)+1)%3])}}catch(err){console.error(err)}dirty=true}else if(k==='mp'){try{__mp.openLobby()}catch(err){console.error(err)}}else if(k==='hunt'){try{__xt.huntSP.start()}catch(err){console.error(err)}}});
+ el.addEventListener('pointerdown',e=>{let k=null;try{k=on&&setEl.hidden?pick(e):null}catch(_){}const st=k==='start'||k==='cont',bc=n=>{try{st&&window.__bc&&__bc(n)}catch(_){}};bc('start: pressed');
+  setTimeout(()=>{bc('start: audio');initAudio();if(AC&&AC.state==='suspended')try{AC.resume()}catch(_){}bc('start: audio ready')},0)});
+ el.addEventListener('click',e=>{if(!on||!setEl.hidden)return;const k=pick(e);if(k)window.__lastClick={k:'title '+k,t:performance.now()};if(k==='start'||k==='cont'){if(begin.q)return;begin.q=1;try{window.__bc&&__bc('start: lock')}catch(_){}el.style.pointerEvents='none';try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(_){}begin.locked=1;const c=k==='cont';requestAnimationFrame(()=>setTimeout(()=>{begin.q=0;begin(c)},0))}else if(k==='set')openSet(true);else if(k==='diff'){try{__xt.cycleDiff()}catch(err){}dirty=true}else if(k==='night'){try{__xt.cycleNight()}catch(err){console.error(err)}dirty=true}else if(k==='gfx'){try{if(!window.__safe){const Q=['low','medium','high'];__set.choose(Q[(Q.indexOf(__set.q)+1)%3])}}catch(err){console.error(err)}dirty=true}else if(k==='mp'){try{__mp.openLobby()}catch(err){console.error(err)}}else if(k==='hunt'){try{__xt.huntSP.start()}catch(err){console.error(err)}}});
  function openSet(v){setEl.hidden=!v}
  document.getElementById('tsetClose').onclick=()=>openSet(false);
  function begin(cont){if(window.__warmGate&&__warmGate(()=>begin(cont)))return;on=false;window.__phase='play';const bc=n=>{try{window.__bc&&__bc(n)}catch(e){}};bc('start: clicked');el.style.pointerEvents='none';
-  bc('start: pointer lock');try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}
+  if(!begin.locked&&!document.pointerLockElement){bc('start: pointer lock');try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}}begin.locked=0;
   // v75: Start runs as small steps, each in its own task with the bar showing, and each one leaves a breadcrumb first
   const P=window.__prep?__prep('Preparing the night...'):{set(){},done(){}};const f=document.getElementById('tfade');
   const steps=[
@@ -1750,7 +1758,7 @@ const TITLE=(function(){const el=document.getElementById('title'),setEl=document
    ['start: wait for fade',null],
    ['start: show house',()=>{el.hidden=true;started=true;overlay.hidden=true;setPaused(false);resumeClamp=3;setTimeout(()=>{try{if(!document.pointerLockElement)relockFail()}catch(e){}},900)}],
    ['start: intro cutscene',()=>{if(!cont&&window.__xt)try{__xt.intro()}catch(err){console.error('[Hush] intro failed',err);window.__cut=null}}],
-   ['start: first frames',()=>{let n=0;const fr=()=>{bc('play: frame '+(++n));if(n<5)requestAnimationFrame(fr);else{P.done();setTimeout(()=>bc('play'),4000)}};requestAnimationFrame(fr);
+   ['start: first frames',()=>{let n=0;const fr=()=>{bc('play: frame '+(++n));if(n<5)requestAnimationFrame(fr);else{P.done();let good=0,lt=0,slow=0;const w=t=>{if(lt&&!document.hidden){const g=t-lt;if(g<1000)good+=g;else{good=0;slow++;bc('play: slow frame '+(g/1000).toFixed(1)+' s')}}lt=document.hidden?0:t;if(good>=10000)bc('play');else requestAnimationFrame(w)};requestAnimationFrame(w)}};requestAnimationFrame(fr);
      setTimeout(()=>{f.classList.remove('on');setTimeout(()=>f.hidden=true,1600)},200)}]];
   let i=0;const t0=performance.now();const next=()=>{if(i>=steps.length)return;const [n,fn]=steps[i++];bc(n);P.set(100*i/steps.length);
    if(!fn){setTimeout(next,Math.max(0,1300-(performance.now()-t0)));return}try{fn()}catch(e){console.error('[Hush] '+n,e)}setTimeout(next,0)};
@@ -1932,7 +1940,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  XT.place(g,PX,PY,PZ);
  const hb=new THREE.Mesh(BG(.35,.45,.4),hitM);XT.place(hb,PX-.1,PY,PZ);
  const CALLS=[
-  {h:19.25,who:'mom',lines:[['mom',"Hi, it's us! Just checking in. Did she settle?",3.2],['mom',"Remember what the note says. Keep her quiet. Whatever happens.",3.6],['dad',"(in the background) Tell her about the door.",2.4],['mom',"...Never mind. We'll be home by six.",2.6]]},
+  {h:19.25,who:'mom',lines:[['mom',"Hi, it's us! Just checking in. Did Lilith settle?",3.2],['mom',"Remember what the note says. Keep her quiet. Whatever happens.",3.6],['dad',"(in the background) Tell her about the door.",2.4],['mom',"...Never mind. We'll be home by six.",2.6]]},
   {h:21.2,who:'dad',lines:[['dad',"It's her father. Is she crying?",2.4],['dad',"No? Good. Good. Not yet.",2.2],['dad',"We're with friends tonight. Old friends. They are all so excited to meet her.",4],['dad',"(The line clicks dead.)",1.2]]},
   {h:22.9,who:'stranger',lines:[['stranger',"(Static. Then a woman, very far away.)",2.2],['stranger',"Is this the Hale house? Is my baby there?",3],['stranger',"...Oh. No. I'm sorry. Wrong year.",2.6]]},
   {h:24.5,who:'child',lines:[['child',"(A small voice, breathing close to the receiver.)",2.4],['child',"Can I come up? It's so dark down here.",2.8],['child',"She keeps calling me. Every time she cries, I can hear her.",3.6],['child',"She sounds just like me.",2.2]]},
@@ -2634,7 +2642,19 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  if(card)new MutationObserver(()=>{if(card.hidden||card.dataset.night)return;card.dataset.night=1;safe(()=>{const id=XT.endings&&XT.endings.done,n=XT.night,tag=card.querySelector('.tag');if(tag)tag.innerHTML='Night '+n+' &middot; '+tag.innerHTML;
    const good=id==='parents'||id==='dawn',back=card.querySelector('#xBack');
    if(good&&n===3){const p=document.createElement('p');p.className='txt';p.textContent='You made it through all three nights.';back.parentNode.insertBefore(p,back)}
-   if(good&&n<3){const b=document.createElement('button');b.type='button';b.id='xNext';b.textContent='Night '+(n+1);b.onclick=()=>{XT.ls.set('hushNightSel',n+1);try{clearSave()}catch(e){}location.reload()};back.parentNode.insertBefore(b,back);setTimeout(()=>{try{b.focus()}catch(e){}},80)}})}).observe(card,{attributes:true,attributeFilter:['hidden']});
+   if(good&&n<3)goBack(card,back,n)})}).observe(card,{attributes:true,attributeFilter:['hidden']});
+ // v76: Petra: three nights in all; after night 1 and 2 the game asks whether you go back. In multiplayer the host chooses; the others return to the lobby.
+ const HANDF="'Caveat','Segoe Print','Bradley Hand',cursive";
+ function goBack(card,back,n){const MP=window.__mp,mp=!!(MP&&MP.active),host=mp&&MP.host;const N=Math.min(3,n+1);
+  const st=document.createElement('style');st.textContent='#xend{overflow-y:auto;-webkit-overflow-scrolling:touch}@media (max-height:560px){#xGo p{font-size:1.25rem!important}#xGo{margin:.5rem auto!important;padding:.6rem 1rem!important}}#xGo{margin:1rem auto;max-width:min(24rem,calc(100vw - 32px));box-sizing:border-box;background:#efe6cf;color:#2a1c14;border-radius:3px;padding:1rem 1.2rem;transform:rotate(-1deg);box-shadow:0 6px 24px rgba(0,0,0,.6);font-family:'+HANDF+';text-align:center}#xGo p{font-size:1.6rem;line-height:1.25;margin:0 0 .8rem}#xGo .r{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}#xGo button{font:700 1.35rem '+HANDF+';color:#2a1c14;background:none;border:0;border-bottom:2px solid #8a2020;padding:.35rem .6rem;min-height:44px;cursor:pointer;touch-action:manipulation}#xGo button:focus-visible{outline:2px solid #8a2020}';document.head.appendChild(st);
+  const w=document.createElement('div');w.id='xGo';w.setAttribute('role','group');w.setAttribute('aria-label','Go back tomorrow night?');
+  const p=document.createElement('p');p.textContent='They want you back tomorrow night. Will you go back?';w.appendChild(p);const r=document.createElement('div');r.className='r';w.appendChild(r);
+  if(mp&&!host){const s=document.createElement('p');s.style.fontSize='1.1rem';s.textContent='The host chooses. You can wait in the lobby.';w.appendChild(s)}
+  else{const go=document.createElement('button');go.type='button';go.textContent='Go back (Night '+N+')';const no=document.createElement('button');no.type='button';no.textContent='Not tonight';r.appendChild(go);r.appendChild(no);
+   go.onclick=e=>{e.stopPropagation();XT.unlockNight(N);XT.ls.set('hushNightSel',N);try{clearSave()}catch(_){}if(mp){MP.backToLobby();return}try{sessionStorage.setItem('hushAutoStart','1')}catch(_){}location.reload()};
+   no.onclick=e=>{e.stopPropagation();XT.unlockNight(N);XT.ls.set('hushNightSel',N);try{clearSave()}catch(_){}if(mp){MP.backToLobby();return}location.reload()};
+   setTimeout(()=>{try{go.focus()}catch(_){}},80)}
+  back.hidden=!(mp&&!host);back.parentNode.insertBefore(w,back);['click','pointerdown','mousedown'].forEach(k=>w.addEventListener(k,e=>e.stopPropagation()))}
  // ---- the night 3 finale: the Order gathers in the garden with candles, and the thing in the doorway shows itself ----
  const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
  const sm=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
@@ -3159,7 +3179,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 #hBtn{font-family:var(--ui);font-size:.8rem;letter-spacing:.06em;color:var(--fg);background:#1a1716;border:1px solid #3a332c;border-radius:6px;padding:.5rem 1.1rem;cursor:pointer;align-self:center}#hBtn:hover,#hBtn:focus-visible{border-color:var(--accent);outline:none}`;document.head.appendChild(css);
  const K=k=>'<kbd>'+k+'</kbd>';
  const HTML=`<div class="pn" role="dialog" aria-modal="true" aria-labelledby="helpT"><h2 id="helpT">How to play</h2>
-<p class="lead">You are babysitting the baby: M &amp; D's infant daughter. Her parents are out for the night. Whenever the game says "she" or "her", it means the baby.</p>
+<p class="lead">You are babysitting the baby: M &amp; D's infant daughter, Lilith. Her parents are out for the night. Whenever the game says "she" or "her", it means Lilith.</p>
 <h3>Your goal</h3><p>Keep the baby quiet and cared for until 6 AM, when her parents come home.</p>
 <div class="cols"><div>
 <h3>Controls</h3><dl>
@@ -3915,7 +3935,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  const touch=(()=>{try{return matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>1&&/Mac|iP/.test(navigator.platform||'')}catch(e){return false}})();
  const small=Math.min(screen.width||999,screen.height||999)<700;
  const QS={low:{pr:.8,prMax:1,sh:false,far:45,fog:.055,pts:5},medium:{pr:1,prMax:1,sh:true,soft:false,map:512,far:90,fog:0,pts:6},high:{pr:1.5,prMax:1.5,sh:true,soft:true,map:0,far:160,fog:0,pts:14}};
- let q=ls.get('hushQ');if(window.__safe){q='low';QS.low=Object.assign({},QS.low,{pr:1,prMax:1})}const qSaved=window.__safe||!!QS[q];if(!qSaved)q=touch&&small?'low':'medium';
+ let q=ls.get('hushQ');if(window.__safe){q='low';QS.low=Object.assign({},QS.low,{pr:1,prMax:1,pts:4})}const qSaved=window.__safe||!!QS[q];if(!qSaved)q=touch&&small?'low':'medium';
  // v72: guess the GPU before anything compiles, so a later slow-frame step-down never changes shader-baked state (shadow type) and never re-warms
  if(!qSaved&&q==='high')try{const ua=navigator.userAgent,gl=renderer.getContext(),x=gl.getExtension('WEBGL_debug_renderer_info'),g=String(x?gl.getParameter(x.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER));
   if(/Safari\//.test(ua)&&!/Chrome|Chromium|Edg\//.test(ua)||/Intel|SwiftShader|llvmpipe|Software|Mali|Adreno|PowerVR/i.test(g))q='medium'}catch(e){}
@@ -3951,17 +3971,21 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  const PADK={PointLight:1,SpotLight:1,DirectionalLight:1,HemisphereLight:1},padT=new Map();let padGrow=0;
  function mkPad(t,sh){const L=t==='PointLight'?new THREE.PointLight(0,0,.001):t==='SpotLight'?new THREE.SpotLight(0,0,.001):t==='DirectionalLight'?new THREE.DirectionalLight(0,0):new THREE.HemisphereLight(0,0,0);
   L.position.set(0,-900,0);L.userData.__pad=1;if(sh){L.castShadow=true;L.shadow.mapSize.set(1,1);const c=L.shadow.camera;if(c.isOrthographicCamera){c.left=c.bottom=-.001;c.right=c.top=.001}c.near=.001;c.far=.002;c.updateProjectionMatrix()}if(L.target)L.target.position.set(0,-901,0);return L}
- function pad(sc){let P=padT.get(sc);if(!P){P={T:{},pool:{},g:new THREE.Group()};P.g.name='__lightPad';P.g.userData.__pad=1;sc.add(P.g);padT.set(sc,P)}
+ function pad(sc){try{if(sc===scene)clampPts()}catch(e){}let P=padT.get(sc);if(!P){P={T:{},pool:{},g:new THREE.Group()};P.g.name='__lightPad';P.g.userData.__pad=1;sc.add(P.g);padT.set(sc,P)}
   const n={};sc.traverseVisible(o=>{if(o.isLight&&!o.userData.__pad&&PADK[o.type]){const k=o.type+(o.castShadow?'S':'');n[k]=(n[k]||0)+1}});
   for(const k in n)if(n[k]>(P.T[k]||0)){if(P.T[k]!==undefined&&window.__phase==='play'&&padGrow++<5)try{window.__logErr&&__logErr('lights grew '+k+' '+P.T[k]+'->'+n[k])}catch(e){}P.T[k]=n[k]}
   for(const k in P.T){const want=P.T[k]-(n[k]||0),pl=P.pool[k]||(P.pool[k]=[]);while(pl.length<want){const sh=k.endsWith('S'),L=mkPad(sh?k.slice(0,-1):k,sh);pl.push(L);P.g.add(L);if(L.target)P.g.add(L.target)}pl.forEach((L,i)=>L.visible=i<want)}}
  SET.pad=pad;
+ // v76: the house's shaders hold a fixed number of point-light slots; the nearest lit ones get them and the rest are switched off (the budget re-picks every 250 ms)
+ const PCAP=window.__safe?4:q==='high'?14:6;SET.pcap=PCAP;const cv=new THREE.Vector3(),lv=new THREE.Vector3();
+ function clampPts(){const on=[];scene.traverseVisible(o=>{if(o.isPointLight&&!o.castShadow&&!o.userData.__pad)on.push(o)});if(on.length<=PCAP)return;cam.getWorldPosition(cv);
+  on.map(l=>{l.getWorldPosition(lv);return{l,s:(l.intensity>.01?0:100)+lv.distanceTo(cv)}}).sort((a,b)=>a.s-b.s).slice(PCAP).forEach(e=>{e.l.visible=false;e.l.userData.__cull=1})}
  renderer.render=function(sc,c){try{if(sc&&sc.isScene)pad(sc)}catch(e){}if(SAFE&&sc&&sc.isScene)try{const n=performance.now();if(n-SAFE.t>2000){SAFE.t=n;safeSwap(sc)}safeSync()}catch(e){}const f=QS[q].fog;if(f&&sc===scene&&sc.fog&&sc.fog.density!==undefined){const d=sc.fog.density;sc.fog.density=Math.max(d,f);try{R0(sc,c)}finally{sc.fog.density=d}}else R0(sc,c)};
  // light budget: only the nearest N point lights in the house are live. The count never changes, so no shaders recompile.
  let pts=[],lastPick=0,lastCol=0;const wp=new THREE.Vector3();
  function collect(){pts=[];scene.traverse(o=>{if(o.isPointLight&&!o.userData.__pad){let p=o.parent,onCam=false;while(p){if(p===cam)onCam=true;p=p.parent}if(!onCam)pts.push(o)}})}
  function budget(){const now=performance.now();if(now-lastCol>4000){lastCol=now;collect()}if(now-lastPick<250)return;lastPick=now;
-  const K=Math.min(QS[q].pts,pts.length);if(K>=pts.length){pts.forEach(l=>{if(l.userData.__cull){l.visible=true;l.userData.__cull=0}});return}
+  const K=Math.min(QS[q].pts,PCAP,pts.length);if(K>=pts.length){pts.forEach(l=>{if(l.userData.__cull){l.visible=true;l.userData.__cull=0}});return}
   const cp=cam.position,sc=pts.map(l=>{l.getWorldPosition(wp);const d=wp.distanceTo(cp);return{l,s:(l.intensity>0.01?0:100)+d}}).sort((a,b)=>a.s-b.s);
   sc.forEach((e,i)=>{const on=i<K;if(e.l.visible!==on){e.l.visible=on;e.l.userData.__cull=on?0:1}})}
  setInterval(()=>{try{budget()}catch(e){}},120);SET.cull=()=>{lastPick=0;lastCol=0;budget()};
@@ -4048,11 +4072,156 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
 })();
 </script>
 
+<script type="text/x-hush">
+// ===== v76: cheap house rendering for laptops =====
+// At Start, every static mesh (never moved, hidden or swapped so far) is merged per material and per 4 m cell into one draw call.
+// The originals stay in the scene for raycasts and game logic, on layer 1 (cameras and shadow cameras only draw layer 0).
+// Each house frame compares every merged original and its parents with a snapshot; anything that moved, hid, changed material
+// or left the scene is put back as its own mesh at once and its cell is rebuilt, so doors, pickups and effects behave as before.
+// Shadow maps redraw every frame on fast machines and every 2nd-4th frame on slow ones. ?merge=0 turns the merge off.
+// Also: a rolling performance log (localStorage hushPerf), ?fps=1 counter, and the WARN_DESKTOP notice.
+(function(){'use strict';
+ const QP=(()=>{try{return new URLSearchParams(location.search)}catch(e){return new URLSearchParams()}})();
+ const OFF=QP.get('merge')==='0';
+ const MR=window.__mrg={merged:false,recs:0,chunks:0,unmerged:0,ms:0,calls:0,shadowEvery:1};
+ const CELL=+(QP.get("cell")||6),FLOOR=3;
+ const TEX=['map','alphaMap','envMap','lightMap','aoMap','bumpMap','normalMap','emissiveMap','specularMap','displacementMap'];
+ const sig=m=>[m.type,m.color&&m.color.getHex(),m.emissive&&m.emissive.getHex(),m.emissiveIntensity,m.specular&&m.specular.getHex(),m.shininess,m.flatShading,m.side,m.fog,m.opacity,m.transparent,m.visible,m.vertexColors,m.wireframe,m.depthWrite,m.depthTest,m.colorWrite,m.alphaTest,m.polygonOffset,m.blending,m.toneMapped].join('|');
+ // untextured materials that look the same share one merged draw (the merged mesh draws with its own copy); each original is watched for changes
+ const sigNC=m=>{const c=m.color;if(!c)return sig(m);const h=c.getHex();c.setHex(0xffffff);const r=sig(m);c.setHex(h);return r};
+ // untextured materials that differ only in colour share one draw: the colour moves into a vertex colour attribute (same shading: diffuse x vertex colour)
+ const matKey=m=>TEX.some(k=>m[k])||m.vertexColors||!m.color?m.uuid:'s:'+sigNC(m);let MW=new Map();
+ let RECS=[],NODES=[],CH=new Map();const dirtyCh=new Set();
+ const DUMMY=new THREE.Layers();
+ function excluded(){const s=new Set();const add=o=>{if(o&&o.isObject3D)s.add(o)};
+  try{add(cam)}catch(e){}try{doors.forEach(d=>add(d.pv))}catch(e){}try{add(bDoor)}catch(e){}try{curtainsAll.forEach(add)}catch(e){}
+  add(window.mobile);add(window.rocker);add(window.__glider);try{(window.__cribBaby||[]).forEach(add)}catch(e){}return s}
+ function okMesh(o){if(!o.isMesh||o.isSkinnedMesh||o.isInstancedMesh||o.children.length||!o.visible||o.layers.mask!==1||o.frustumCulled===false||o.renderOrder)return false;
+  if(o.onBeforeRender!==THREE.Object3D.prototype.onBeforeRender)return false;
+  const m=o.material;if(!m||Array.isArray(m)||!m.visible||m.side===THREE.DoubleSide||m.transparent||m.isShaderMaterial||m.isRawShaderMaterial||m.isPointsMaterial)return false;
+  const g=o.geometry;if(!g||!g.isBufferGeometry||!g.attributes.position||!g.attributes.normal)return false;
+  if(g.morphAttributes&&Object.keys(g.morphAttributes).length)return false;if(g.drawRange.start!==0||g.drawRange.count!==Infinity)return false;
+  for(const k in g.attributes){if(k!=='position'&&k!=='normal'&&k!=='uv')return false;if(g.attributes[k].isInterleavedBufferAttribute)return false}
+  return true}
+ const snap=o=>({o,px:o.position.x,py:o.position.y,pz:o.position.z,qx:o.quaternion.x,qy:o.quaternion.y,qz:o.quaternion.z,qw:o.quaternion.w,sx:o.scale.x,sy:o.scale.y,sz:o.scale.z,v:o.visible,m:o.material,g:o.geometry,p:o.parent,recs:[]});
+ function changed(n){const o=n.o;
+  if(o.position.x!==n.px||o.position.y!==n.py||o.position.z!==n.pz||o.quaternion.x!==n.qx||o.quaternion.y!==n.qy||o.quaternion.z!==n.qz||o.quaternion.w!==n.qw||o.scale.x!==n.sx||o.scale.y!==n.sy||o.scale.z!==n.sz||o.visible!==n.v||o.parent!==n.p||o.geometry!==n.g)return true;
+  if(o.material!==n.m){const a=o.material,b=n.m;// Safe mode swaps Phong for its Lambert twin: not a real change
+   if(a&&b&&(a.userData&&a.userData.__orig===b||b.userData&&b.userData.__orig===a)){n.m=a;return false}return true}
+  return false}
+ const _p=new THREE.Vector3(),_n=new THREE.Vector3(),_nm=new THREE.Matrix3();
+ function build(c){let nv=0,ni=0;const hasUV=c.recs.some(r=>r.o.geometry.attributes.uv);
+  c.recs.forEach(r=>{const g=r.o.geometry,n=g.attributes.position.count;nv+=n;ni+=g.index?g.index.count:n});
+  const VC=c.key.startsWith('s:'),C=VC?new Float32Array(nv*3):null,P=new Float32Array(nv*3),N=new Float32Array(nv*3),U=hasUV?new Float32Array(nv*2):null,I=nv>65535?new Uint32Array(ni):new Uint16Array(ni);let vo=0,io=0;
+  c.recs.forEach(r=>{const o=r.o,g=o.geometry,pa=g.attributes.position,na=g.attributes.normal,ua=g.attributes.uv,n=pa.count,M=o.matrixWorld;_nm.getNormalMatrix(M);const flip=M.determinant()<0;
+   for(let i=0;i<n;i++){_p.fromBufferAttribute(pa,i).applyMatrix4(M);P[(vo+i)*3]=_p.x;P[(vo+i)*3+1]=_p.y;P[(vo+i)*3+2]=_p.z;
+    _n.fromBufferAttribute(na,i).applyMatrix3(_nm).normalize();N[(vo+i)*3]=_n.x;N[(vo+i)*3+1]=_n.y;N[(vo+i)*3+2]=_n.z;
+    if(U&&ua){U[(vo+i)*2]=ua.getX(i);U[(vo+i)*2+1]=ua.getY(i)}
+    if(C){const k=r.o.material.color;C[(vo+i)*3]=k.r;C[(vo+i)*3+1]=k.g;C[(vo+i)*3+2]=k.b}}
+   const ix=g.index,cnt=ix?ix.count:n;for(let k=0;k<cnt;k+=3){const a=ix?ix.getX(k):k,b=ix?ix.getX(k+1):k+1,d=ix?ix.getX(k+2):k+2;
+    I[io++]=vo+a;if(flip){I[io++]=vo+d;I[io++]=vo+b}else{I[io++]=vo+b;I[io++]=vo+d}}
+   vo+=n});
+  const G=new THREE.BufferGeometry();G.setAttribute('position',new THREE.BufferAttribute(P,3));G.setAttribute('normal',new THREE.BufferAttribute(N,3));if(U)G.setAttribute('uv',new THREE.BufferAttribute(U,2));
+  if(C)G.setAttribute('color',new THREE.BufferAttribute(C,3));G.setIndex(new THREE.BufferAttribute(I,1));G.computeBoundingSphere();return G}
+ function unmerge(r){if(!r.on)return;r.on=false;const o=r.o;o.userData.__dyn=1;o.layers.mask=r.mask;o.matrixAutoUpdate=r.mau;if(r.mau)o.updateMatrix();o.matrixWorldNeedsUpdate=true;r.c.recs.splice(r.c.recs.indexOf(r),1);dirtyCh.add(r.c);MR.unmerged++}
+ function rebuild(c){const old=c.mesh.geometry;if(!c.recs.length){c.mesh.parent&&c.mesh.parent.remove(c.mesh);c.dead=true}else c.mesh.geometry=build(c);old.dispose()}
+ let gen=0,pend=new Map(),EXS=null;const recOf=new WeakMap(),nodeOf=new Map();
+ function collect(){const cand=[];
+  // walk down from the scene; a subtree under an excluded, hidden, matrix-managed or light object is left alone
+  (function walk(o,okUp){for(const ch of o.children){if(ch.userData&&(ch.userData.__pad||ch.userData.__merged))continue;
+   const ok=okUp&&!EXS.has(ch)&&ch.visible&&ch.matrixAutoUpdate&&!ch.isLight&&!ch.isCamera&&!ch.isPoints&&!ch.isLine&&!ch.isSprite&&!(ch.userData&&ch.userData.__dyn);
+   if(ok&&!recOf.has(ch)&&okMesh(ch))cand.push(ch);if(ch.children.length)walk(ch,ok)}})(scene,true);return cand}
+ function mergeList(cand,late){ // late merges (during play) keep each material as is, so no new shader is ever built mid-game
+ gen++;const G=new Map(),T=[];
+  cand.forEach(o=>{const m=o.material,g=o.geometry;if(!g.boundingSphere)g.computeBoundingSphere();
+   const s=o.getWorldScale(_n),rad=g.boundingSphere.radius*Math.max(s.x,s.y,s.z);
+   if(o.castShadow&&rad<.12)o.castShadow=false; // tiny props: no shadow (keeps the shadow passes small)
+   _p.copy(g.boundingSphere.center).applyMatrix4(o.matrixWorld);
+   const base=(late?m.uuid:matKey(m))+'|'+(o.castShadow?1:0)+(o.receiveShadow?1:0)+'|g'+gen+'|',cell=Math.floor(_p.x/CELL)+','+Math.floor(_p.y/FLOOR)+','+Math.floor(_p.z/CELL);
+   T.push([o,base,cell]);G.set(base+cell,(G.get(base+cell)||0)+1)});
+  // a mesh alone in its cell joins its material's house-wide group instead
+  T.forEach(([o,base,cell])=>{const key=G.get(base+cell)>1?base+cell:base+'*',m=o.material;
+   let c=CH.get(key);if(!c){c={key,m,cast:o.castShadow,recv:o.receiveShadow,recs:[]};CH.set(key,c)}
+   c.recs.push({o,c,on:true,mask:o.layers.mask,mau:o.matrixAutoUpdate})});
+  let made=0;CH.forEach(c=>{if(c.mesh||c.dead||!c.key.includes('|g'+gen+'|'))return;if(c.recs.length<2){c.dead=true;c.recs=[];return} // a lone mesh gains nothing
+   const own=c.key.startsWith('s:');let mm=c.m;if(own){mm=c.m.clone();mm.userData={};mm.color.setHex(0xffffff);mm.vertexColors=true;mm.name='__mergedVC'}const mesh=new THREE.Mesh(build(c),mm);if(own)c.recs.forEach(r=>{let w=MW.get(r.o.material);if(!w){w={m:r.o.material,s:sig(r.o.material),recs:[]};MW.set(r.o.material,w)}w.recs.push(r)});mesh.castShadow=c.cast;mesh.receiveShadow=c.recv;mesh.matrixAutoUpdate=false;mesh.raycast=()=>{};mesh.name='__merged';mesh.userData.__merged=1;c.mesh=mesh;scene.add(mesh);made++;
+   c.recs.forEach(r=>{const o=r.o;o.layers.mask=2;o.matrixAutoUpdate=false;recOf.set(o,r);RECS.push(r);
+    for(let a=o;a&&a!==scene;a=a.parent){let n=nodeOf.get(a);if(!n){n=snap(a);nodeOf.set(a,n);NODES.push(n)}n.recs.push(r)}})});
+  MR.recs=RECS.filter(r=>r.on).length;MR.chunks=[...CH.values()].filter(c=>!c.dead&&c.mesh).length;
+  if(made&&window.__safe)try{window.__set&&__set.safeSwap&&__set.safeSwap(scene)}catch(e){} // Safe mode: the new merged meshes get their Lambert twin before they are drawn
+  return made}
+ function merge(){if(MR.merged||OFF)return;MR.merged=true;const t0=performance.now();
+  try{if(typeof started!=='undefined'&&started&&window.__bc)__bc('start: merge house')}catch(e){}
+  scene.updateMatrixWorld(true);EXS=excluded();mergeList(collect());MR.ms=Math.round(performance.now()-t0);
+  try{window.__logErr&&__logErr('merged '+MR.recs+' meshes into '+MR.chunks+' in '+MR.ms+'ms')}catch(e){}
+  // props shown later (night props, pickups put down) are merged once they have stayed still for two scans in a row
+  setInterval(()=>{try{if(!started)return;const t=performance.now(),now=new Map();collect().forEach(o=>{const n=snap(o);n.wq=o.matrixWorld.elements.join();const q=pend.get(o);if(q&&!changed(q)&&q.wq===n.wq)now.set(o,null);else now.set(o,n)});
+   const ready=[];now.forEach((n,o)=>{if(n===null)ready.push(o)});pend=new Map();now.forEach((n,o)=>{if(n)pend.set(o,n)});
+   if(ready.length>=2){scene.updateMatrixWorld();const k=mergeList(ready,true);MR.late=(MR.late||0)+ready.length;MR.lateMs=Math.round(performance.now()-t)}}catch(e){console.error('[Hush] late merge',e)}},4000)}
+ MR.merge=merge;MR.dbg={okMesh,EXS:()=>EXS,recOf,CH};
+ // raycasts still see the originals on layer 1
+ {const ro=THREE.Raycaster.prototype.intersectObject,rs=THREE.Raycaster.prototype.intersectObjects;
+  THREE.Raycaster.prototype.intersectObject=function(){this.layers.mask|=2;return ro.apply(this,arguments)};
+  THREE.Raycaster.prototype.intersectObjects=function(){this.layers.mask|=2;return rs.apply(this,arguments)}}
+ function check(){MW.forEach((w,m)=>{if(sig(m)!==w.s){w.recs.forEach(unmerge);MW.delete(m)}});for(let i=0;i<NODES.length;i++){const n=NODES[i];if(n.recs.length&&changed(n)){n.recs.forEach(unmerge);n.recs=[]}}
+  if(dirtyCh.size){dirtyCh.forEach(c=>{if(!c.dead)rebuild(c)});dirtyCh.clear();
+   NODES=NODES.filter(n=>{n.recs=n.recs.filter(r=>r.on);if(n.recs.length)return true;nodeOf.delete(n.o);return false});MR.recs=RECS.filter(r=>r.on).length}}
+ // fog hides anything beyond about 2.6/density; merged cells past that are skipped (only fogged materials)
+ const _c=new THREE.Vector3();
+ function distCull(){const f=scene.fog;if(!f||f.density===undefined||f.density<=0)return;const lim=2.6/Math.max(f.density,.01),cp=cam.getWorldPosition(_c);
+  CH.forEach(c=>{if(c.dead||!c.mesh||c.m.fog===false)return;const bs=c.mesh.geometry.boundingSphere;c.mesh.visible=bs.center.distanceTo(cp)-bs.radius<lim})}
+ // frame timing (for the shadow rate, the log and the counter)
+ let ft=[],lt=0,frameAvg=16;const perf={sum:0,max:0,n:0};
+ const tick=t=>{if(lt&&!document.hidden){const g=t-lt;ft.push(g);if(ft.length>30)ft.shift();frameAvg=ft.reduce((a,b)=>a+b,0)/ft.length;perf.sum+=g;perf.n++;if(g>perf.max)perf.max=g}lt=document.hidden?0:t;requestAnimationFrame(tick)};requestAnimationFrame(tick);
+ let shN=0;
+ const R1=renderer.render.bind(renderer);
+ renderer.render=function(sc,c){
+  if(sc===scene&&!MR.merged&&typeof started!=='undefined'&&started)try{merge()}catch(e){console.error('[Hush] merge',e)}
+  // normally the merge runs on the title, once the house has warmed, and its few new shader programs (vertex colours) are compiled there
+  if(!MR.merged&&!OFF&&!MR.sched&&window.__loadT&&__loadT.warm){MR.sched=1;setTimeout(()=>{if(MR.merged)return;try{merge();const t=performance.now(),p0=renderer.info.programs.length;renderer.compile(scene,cam);MR.compileMs=Math.round(performance.now()-t);MR.newPrograms=renderer.info.programs.length-p0}catch(e){console.error('[Hush] merge',e)}},400)}
+  if(sc===scene&&MR.merged){try{check();distCull()}catch(e){console.error('[Hush] merge check',e)}
+   const ev=frameAvg>60?4:frameAvg>30?3:frameAvg>22?2:1;MR.shadowEvery=ev;renderer.shadowMap.autoUpdate=false;
+   if(renderer.getRenderTarget()===null){renderer.shadowMap.needsUpdate=(shN++%ev)===0}else renderer.shadowMap.needsUpdate=true}
+  else if(MR.merged){renderer.shadowMap.needsUpdate=true}
+  R1(sc,c);if(sc===scene)MR.calls=renderer.info.render.calls;if(renderer.getRenderTarget()===null&&sc&&sc.isScene)try{clockTone()}catch(e){}};
+ // the clock (#hud, top right) turns white over dark scenes and black over light ones; twice a second the pixels just drawn behind it are read (no extra render)
+ const ckS=document.createElement('style');ckS.textContent='#hud{color:#f4efe6!important;text-shadow:0 0 2px #000,0 0 4px #000,0 1px 2px #000}#hud.onLight{color:#111!important;text-shadow:0 0 2px #fff,0 0 4px #fff}';document.head.appendChild(ckS);
+ let ckT=0,ckBuf=null;
+ function clockTone(){const now=performance.now();if(now-ckT<500)return;ckT=now;const el=document.getElementById('hud');if(!el||el.offsetParent===null&&getComputedStyle(el).position!=='fixed')return;
+  const r=el.getBoundingClientRect();if(!r.width||!r.height)return;const cv=renderer.domElement,k=cv.width/cv.clientWidth,gl=renderer.getContext();
+  const x=Math.max(0,Math.floor(r.left*k)),w=Math.max(1,Math.min(cv.width-x,Math.ceil(r.width*k))),h=Math.max(1,Math.min(cv.height,Math.ceil(r.height*k))),y=Math.max(0,cv.height-Math.ceil(r.bottom*k));
+  const sx=Math.max(1,Math.floor(w/16)),sy=Math.max(1,Math.floor(h/4)),n=w*h*4;if(!ckBuf||ckBuf.length<n)ckBuf=new Uint8Array(n);gl.readPixels(x,y,w,h,gl.RGBA,gl.UNSIGNED_BYTE,ckBuf);
+  let L=0,c=0;for(let j=0;j<h;j+=sy)for(let i=0;i<w;i+=sx){const o=(j*w+i)*4;L+=.2126*ckBuf[o]+.7152*ckBuf[o+1]+.0722*ckBuf[o+2];c++}L/=c||1;
+  const light=el.classList.contains('onLight');if(!light&&L>150)el.classList.add('onLight');else if(light&&L<110)el.classList.remove('onLight');MR.clockL=Math.round(L)}
+ // rolling performance log: every 2 s, average and worst frame plus the stage; read back on the next load
+ let prevPerf=null;try{prevPerf=JSON.parse(localStorage.getItem('hushPerf')||'null')}catch(e){}window.__lastPerf=prevPerf;
+ setInterval(()=>{if(!perf.n)return;const rec={avg:Math.round(perf.sum/perf.n),max:Math.round(perf.max),n:perf.n,stage:window.__phase||'?',calls:MR.calls,t:Date.now(),v:'v76',safe:!!window.__safe};perf.sum=perf.max=perf.n=0;
+  try{localStorage.setItem('hushPerf',JSON.stringify(rec))}catch(e){}},2000);
+ // ?fps=1: a small counter
+ if(QP.get('fps')==='1'){const d=document.createElement('div');d.id='fpsC';d.style.cssText='position:fixed;left:8px;top:8px;z-index:2147483646;font:11px/1.3 ui-monospace,Menlo,Consolas,monospace;color:#bfe8a0;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:3px;pointer-events:none;white-space:pre';document.body.appendChild(d);
+  setInterval(()=>{d.textContent=Math.round(1000/Math.max(1,frameAvg))+' fps  '+frameAvg.toFixed(0)+' ms\n'+MR.calls+' calls'+(MR.merged?'  merged '+MR.recs+'/'+MR.chunks:'')+'  sh 1/'+MR.shadowEvery},500)}
+ // render-scale cap on computers (non-touch): at most about 1280x720 pixels drawn, scaled up by CSS; Safe mode draws at half that scale. Phones and tablets are unchanged.
+ try{const touchDev=navigator.maxTouchPoints>0||matchMedia('(pointer: coarse)').matches;
+  if(!touchDev){const spr=renderer.setPixelRatio.bind(renderer);let want=renderer.getPixelRatio();
+   const cap=r=>{const k=Math.sqrt(1280*720/Math.max(1,innerWidth*innerHeight));return Math.max(.25,Math.min(r,k)*(window.__safe?.5:1))};
+   renderer.setPixelRatio=function(r){want=r;spr(cap(r))};spr(cap(want));renderer.setSize(innerWidth,innerHeight);
+   addEventListener('resize',()=>{const c=cap(want);if(Math.abs(c-renderer.getPixelRatio())>1e-3){spr(c);renderer.setSize(innerWidth,innerHeight)}});MR.prCap=()=>renderer.getPixelRatio()}}catch(e){}
+ // WARN_DESKTOP: Petra's fallback notice for computer (non-touch) players, dismissible and remembered
+ const WARN_DESKTOP=true;
+ try{const touch=(()=>{try{return navigator.maxTouchPoints>0||matchMedia('(pointer: coarse)').matches}catch(e){return false}})();let seen=false;try{seen=localStorage.getItem('hushWarnDesk')==='1'}catch(e){}
+  const tl=document.getElementById('title');
+  if(WARN_DESKTOP&&!touch&&!seen&&tl){const w=document.createElement('div');w.id='tWarnDesk';w.setAttribute('role','note');w.style.cssText='position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:6;width:min(30rem,calc(100% - 32px));box-sizing:border-box;font:.8rem/1.4 system-ui,-apple-system,sans-serif;color:#f0d6d0;background:rgba(40,8,8,.9);border:1px solid #7a2a2a;border-radius:6px;padding:.5rem 2.4rem .5rem .8rem';
+   w.textContent='If you are attempting to play on a computer, switch to a touchscreen (phones or ipads) because it will freeze.';
+   const x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label','Dismiss');x.style.cssText='position:absolute;right:2px;top:2px;min-width:36px;min-height:32px;background:none;border:0;color:#f0d6d0;font:1.1rem system-ui,sans-serif;cursor:pointer';
+   x.onclick=e=>{e.stopPropagation();w.remove();try{localStorage.setItem('hushWarnDesk','1')}catch(_){}};w.appendChild(x);
+   ['click','mousedown','pointerdown','mousemove'].forEach(k=>w.addEventListener(k,e=>e.stopPropagation()));tl.appendChild(w)}}catch(e){}
+})();
+</script>
 <script type="text/x-hush">(function(){const btn=document.getElementById('ovBug'),msg=document.getElementById('bugMsg');if(!btn)return;
-function report(){const L=['Hush bug report','Version: v75','Time: '+new Date().toISOString()];
+function report(){const L=['Hush bug report','Version: v76','Time: '+new Date().toISOString()];
  try{const p=cam.getWorldPosition(new THREE.Vector3());L.push('Position: '+[p.x,p.y,p.z].map(v=>v.toFixed(2)).join(', '))}catch(e){L.push('Position: ?')}
  const m=window.__mp;let mode='Single-player',n=1;try{if(m&&m.active){mode=m.mode==='hunt'?'Hunt':'Co-op';n=m.roster().length;if(m.demon)mode+=' (demon)';else if(m.ghost)mode+=' (ghost)'}}catch(e){}
- L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Safe mode: '+(window.__safe?'on':'off'));try{const F=window.__lastFreeze;L.push('Last session froze at: '+(F?F.s+' ('+new Date(F.t).toISOString()+(F.safe?', safe mode':'')+')':'(no)'));const B=window.__bcLog||[];L.push('Steps this session: '+B.slice(-12).join(' | '))}catch(e){}try{if(m&&m.active&&m.voiceDiag)L.push(m.voiceDiag())}catch(e){}L.push('Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
+ L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Safe mode: '+(window.__safe?'on':'off'));try{const F=window.__lastFreeze;L.push('Last session froze at: '+(F?F.s+' ('+new Date(F.t).toISOString()+(F.safe?', safe mode':'')+')':'(no)'));const LP=window.__lastPerf;L.push('Last session speed: '+(LP?LP.avg+' ms/frame avg, '+LP.max+' ms worst, '+LP.calls+' draw calls, stage '+LP.stage+(LP.avg>500?' (very slow)':''):'(no record)'));try{const M=window.__mrg;if(M)L.push('This session: '+M.calls+' draw calls, merged '+M.recs+' meshes into '+M.chunks+', shadows 1/'+M.shadowEvery)}catch(_){}const B=window.__bcLog||[];L.push('Steps this session: '+B.slice(-12).join(' | '))}catch(e){}try{if(m&&m.active&&m.voiceDiag)L.push(m.voiceDiag())}catch(e){}L.push('Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
 function done(){msg.hidden=false;clearTimeout(done.t);done.t=setTimeout(()=>msg.hidden=true,4000)}
 function fallback(t){const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove();done()}
 btn.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();const t=report();window.__lastReport=t;
@@ -4066,6 +4235,7 @@ btn.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();const t=
  // v75: where the last session froze, and a Safe mode link
  const sm=document.createElement('div');sm.id='tSafe';sm.style.cssText='position:absolute;left:14px;bottom:14px;z-index:5;max-width:min(26rem,calc(100% - 28px));font:.75rem/1.4 system-ui,sans-serif;color:#cfc4b4;display:flex;flex-direction:column;gap:.35rem;align-items:flex-start';
  const LF=window.__lastFreeze;if(LF){const d=document.createElement('div');d.style.cssText='background:rgba(40,8,8,.85);border:1px solid #7a2a2a;border-radius:6px;padding:.4rem .7rem;color:#f0d6d0';d.textContent='Last time the game froze at: '+LF.s+'. Use Report a bug to send this, or try Safe mode.';sm.appendChild(d)}
+ const LP=window.__lastPerf;if(LP&&LP.avg>500){const d=document.createElement('div');d.id='tSlow';d.style.cssText='background:rgba(40,8,8,.85);border:1px solid #7a2a2a;border-radius:6px;padding:.4rem .7rem;color:#f0d6d0';d.textContent='Last time the game ran very slowly ('+(LP.avg/1000).toFixed(1)+' s per frame, during '+LP.stage+'). Use Report a bug to send this, or try Safe mode.';sm.appendChild(d)}
  const a=document.createElement('a');const sp=new URLSearchParams(location.search);if(window.__safe){sp.delete('safe');a.textContent='Safe mode is on - back to normal mode'}else{sp.set('safe','1');a.textContent='Safe mode'}
  a.href=location.pathname+(sp.toString()?'?'+sp:'');a.style.cssText='color:#cfc4b4;background:rgba(22,22,28,.85);border:1px solid #3a3a44;border-radius:6px;padding:.4rem .9rem;text-decoration:none;font-weight:600;letter-spacing:.06em';a.title='Low quality, no shadows, simple materials';sm.appendChild(a);
  ['click','mousedown','pointerdown','mousemove'].forEach(k=>sm.addEventListener(k,e=>e.stopPropagation()));tl.appendChild(sm)}}
@@ -4537,6 +4707,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // the gate stays only as a fallback (Start before loading finished); it can never wait more than 2 s
  let done=false,gate=null,waiters=[];
  function finish(){if(done)return;done=true;if(gate){gate.done();gate=null}const w=waiters;waiters=[];w.forEach(f=>{try{f()}catch(e){console.error(e)}})}
+ try{if(sessionStorage.getItem('hushAutoStart')==='1'){sessionStorage.removeItem('hushAutoStart');const go=()=>{if(!done){setTimeout(go,200);return}setTimeout(()=>{try{if(TITLE.on)TITLE.begin(false)}catch(e){console.error(e)}},600)};setTimeout(go,200)}}catch(e){}
  window.__warmGate=cb=>{if(done)return false;waiters.push(cb);if(!gate){gate=window.__prep?__prep('Preparing the house...'):null;gate&&gate.set(50);setTimeout(finish,2000)}window.__phase="preparing";return true};
  const fade0=fade;
  let i=0;
