@@ -94,10 +94,10 @@ body:has(#title:not([hidden])) #cross{display:none}
 (function(){const K='hushBC',OK={title:1,play:1,'':1};let prev=null;try{prev=JSON.parse(localStorage.getItem(K)||'null')}catch(e){}
  // v76: Firefox commits localStorage writes only when the task ends, so a crumb written by a task that hangs is lost; sessionStorage and the URL hash are extra copies
  try{const ss=JSON.parse(sessionStorage.getItem(K)||'null');if(ss&&ss.t&&(!prev||ss.t>prev.t))prev=ss}catch(e){}
- try{const hm=/[#&]bc=([^&~]*)~(\d+)/.exec(location.hash);if(hm){const hs={s:decodeURIComponent(hm[1]),t:+hm[2],v:'v76'};if(!prev||hs.t>prev.t)prev=hs;history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
+ try{const hm=/[#&]bc=([^&~]*)~(\d+)/.exec(location.hash);if(hm){const hs={s:decodeURIComponent(hm[1]),t:+hm[2],v:'v77'};if(!prev||hs.t>prev.t)prev=hs;history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
  const mirror=(s,j)=>{try{sessionStorage.setItem(K,j)}catch(e){}try{const h=location.hash;if(!h||/^#bc=/.test(h))history.replaceState(null,'',location.pathname+location.search+(OK[s]?'':'#bc='+encodeURIComponent(s)+'~'+Date.now()))}catch(e){}};
  window.__lastFreeze=prev&&prev.s&&!OK[prev.s]?prev:null;const log=window.__bcLog=[];
- window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();const j=JSON.stringify({s,t:Date.now(),v:'v76',safe:!!window.__safe});mirror(s,j);localStorage.setItem(K,j)}catch(e){}};
+ window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();const j=JSON.stringify({s,t:Date.now(),v:'v77',safe:!!window.__safe});mirror(s,j);localStorage.setItem(K,j)}catch(e){}};
  let sf=false;try{sf=new URLSearchParams(location.search).get('safe')==='1'}catch(e){}window.__safe=sf;
  // a small "Preparing..." bar used while Start runs its steps
  window.__prep=txt=>{let g=null;try{g=document.createElement('div');g.setAttribute('role','status');g.style.cssText='position:fixed;left:0;right:0;bottom:12%;z-index:21;display:flex;flex-direction:column;gap:.7rem;align-items:center;color:#cfc4b4;font:.9rem system-ui,-apple-system,sans-serif;pointer-events:none;padding:0 16px';
@@ -2103,7 +2103,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   cult:["Welcome home.","They wrap you in the third robe. It fits. The Order of the Low Door has a new sister, and the Deep has its gift, and nobody ever asks the sitter's name again."]};
  function showCard(id,extra){const [h,p]=TXT[id];const g=got();if(document.pointerLockElement)document.exitPointerLock();
   card.innerHTML='<div class="in"><p class="brand">HUSH</p><p class="tag">Ending '+(ORDER.indexOf(id)+1)+' of '+ORDER.length+' &middot; '+NAMES[id]+'</p><h1>'+(extra&&extra.h&&id==='death'?extra.h:h)+'</h1><p class="txt">'+(extra&&extra.p&&id==='death'?extra.p+' ':'')+p+'</p>'+
-   '<div class="roll"><div><b>Hush</b>A night of babysitting<b>Made with</b>Three.js r128<br>The Web Audio API (every sound is generated)<b>Difficulty</b>'+(XT.diffName?XT.diffName():'Normal')+'<b>Night</b>'+(XT.night||1)+'<b>Notes found</b>'+(XT.notes?XT.notes.found.length:0)+' of '+(XT.notes?XT.notes.avail().length:7)+'<b>Calls answered</b>'+(XT.phone?XT.phone.answered:0)+'<b>Thank you</b>for keeping her quiet.<br>Mostly.</div></div>'+
+   '<div class="roll"><div><b>Created by Petra Davis</b>Thanks to my beta tester, Sloane!<b>Hush</b>A night of babysitting<b>Made with</b>Three.js r128<br>The Web Audio API (every sound is generated)<b>Difficulty</b>'+(XT.diffName?XT.diffName():'Normal')+'<b>Night</b>'+(XT.night||1)+'<b>Notes found</b>'+(XT.notes?XT.notes.found.length:0)+' of '+(XT.notes?XT.notes.avail().length:7)+'<b>Calls answered</b>'+(XT.phone?XT.phone.answered:0)+'<b>Thank you</b>for keeping her quiet.<br>Mostly.</div></div>'+
    '<p class="found">Endings found '+g.length+'/'+ORDER.length+': '+ORDER.map(k=>g.includes(k)?NAMES[k]:'???').join(' &middot; ')+'</p><button type="button" id="xBack">Back to the title</button></div>';
   card.hidden=false;fade.hidden=true;fade.classList.remove('on');card.querySelector('#xBack').onclick=()=>{try{clearSave()}catch(e){}location.reload()};setTimeout(()=>{try{card.querySelector('#xBack').focus()}catch(e){}},50);if(AC)setTimeout(()=>{try{AC.suspend()}catch(e){}},2500)}
  XT.ending=function(id,extra){if(done)return true;if(!NAMES[id])return false;done=id;
@@ -3223,6 +3223,21 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // a button on the pause screen, beside the journal
  const box_=overlay.querySelector('.box'),b=document.createElement('button');b.id='hBtn';b.type='button';b.textContent='How to play';box_.appendChild(b);
  b.addEventListener('click',e=>{e.stopPropagation();XT.help.open()});
+ // v77: Petra: "when you press esc there should be a option to go to the home screen". Quit to title, with a confirm; a reload is the clean reset (all state, audio, pointer lock)
+ {const qb=document.createElement('button');qb.id='qBtn';qb.type='button';qb.textContent='Quit to title';box_.appendChild(qb);
+  const cf=document.createElement('div');cf.id='qCf';cf.hidden=true;cf.innerHTML='<p>Leave the night? Progress since your last save will be lost.</p><button type="button" id="qYes">Leave</button> <button type="button" id="qNo">Stay</button>';box_.appendChild(cf);
+  const st=document.createElement('style');st.textContent='#qBtn,#qCf button{font-family:var(--ui);font-size:.8rem;letter-spacing:.06em;color:var(--fg);background:#1a1716;border:1px solid #3a332c;border-radius:6px;padding:.5rem 1.1rem;cursor:pointer;min-height:44px;touch-action:manipulation}#qBtn{align-self:center;margin-top:.4rem}#qBtn:hover,#qBtn:focus-visible,#qCf button:hover,#qCf button:focus-visible{border-color:var(--accent);outline:none}#qCf{margin-top:.6rem}#qCf p{margin:.2rem 0 .6rem}#qYes{border-color:#7a3a30!important}';document.head.appendChild(st);
+  const sync=()=>{qb.hidden=!started||!cf.hidden};const show=v=>{cf.hidden=!v;sync();if(v)setTimeout(()=>{try{cf.querySelector('#qNo').focus({preventScroll:true})}catch(e){}},30);else try{qb.focus({preventScroll:true})}catch(e){}};
+  new MutationObserver(()=>{if(overlay.hidden)cf.hidden=true;sync()}).observe(overlay,{attributes:true,attributeFilter:['hidden']});sync();
+  [qb,cf].forEach(el=>['click','pointerdown','touchstart','touchend'].forEach(k=>el.addEventListener(k,e=>e.stopPropagation())));
+  qb.addEventListener('click',()=>show(true));cf.querySelector('#qNo').addEventListener('click',()=>show(false));
+  cf.querySelector('#qYes').addEventListener('click',()=>{window.__quitting=true;try{window.__bc&&__bc('quit to title')}catch(e){}
+   safe(()=>{if(document.pointerLockElement)document.exitPointerLock()},'unlock');
+   safe(()=>{if(window.__mp&&__mp.quit)__mp.quit()},'mp');
+   safe(()=>{if(AC){AC.suspend();AC.close()}},'audio');
+   try{sessionStorage.removeItem('hushAutoStart')}catch(e){}
+   setTimeout(()=>location.href=location.pathname+location.search,150)});
+  addEventListener('keydown',e=>{if(e.code==='Escape'&&!cf.hidden&&!overlay.hidden){e.stopPropagation();show(false)}},true)}
 })();
 </script>
 <script type="text/x-hush">try{document.getElementById("ldB").style.width="78%"}catch(e){}</script>
@@ -3758,6 +3773,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    c.on('data',d=>{if(d&&d.t==='welcome')clearTimeout(to);safe(()=>clientHandle(d),'msg')});
    c.on('close',()=>{if(hostConn===c)hostLost()});c.on('error',()=>{})});
   peer.on('call',onCall);
+  // v77: after a host hand-off this player may be the new host, so the others reconnect straight to this peer
+  peer.on('connection',c=>{let n=0;const q=[],buf=d=>{if(q)q.push(d)};c.on('data',buf);const go=()=>{if(MP.active&&MP.host){hostAccept(c);const m=q.splice(0);m.forEach(d=>safe(()=>c.emit('data',d)));return}if(++n<16&&MP.active)setTimeout(go,250);else safe(()=>c.close())};go()});
   peer.on('error',e=>{if(peer!==my)return;const t=e&&e.type;if(!MP.active){clearTimeout(to);clearTimeout(cTo);teardown(true);fail(netErr(t));if(LR.n>0&&LR.code===code&&(t==='peer-unavailable'||t==='network'||t==='server-error')){LR.n--;busy('Waiting for the host to reopen the lobby...');setTimeout(()=>{if(tok===cTok&&!MP.active&&!peer)joinGame(code)},2500)}}else if(reconnecting&&t==='peer-unavailable'){}else console.warn('[Hush mp] peer error',t)});
   peer.on('disconnected',()=>{safe(()=>{if(peer&&peer===my&&!peer.destroyed)peer.reconnect()})})}
  // the host left: the next player in join order takes over, or the session ends cleanly
@@ -3880,6 +3897,8 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
   let n=0;const iv=setInterval(()=>{if(go()||++n>40)clearInterval(iv)},250)}
  function rjSave(code){try{localStorage.setItem('hushRejoin',JSON.stringify({code,t:Date.now()}))}catch(e){}}
  function rjClear(){try{localStorage.removeItem('hushRejoin')}catch(e){}}
+ // v77: quit to title from the pause menu. Leaving closes every connection: a guest just leaves; if the host leaves, the others hand off to the next player in join order (hostLost)
+ MP.quit=()=>{rjClear();try{localStorage.removeItem('hushLobby')}catch(e){}MP.leaving=true;if(MP.active||peer)teardown(false);MP.leaving=true};
  MP.rjClear=rjClear;
  function autoRejoin(){if(/[#&]join=/.test(location.hash))return;let r=null;try{r=JSON.parse(localStorage.getItem('hushRejoin')||'null')}catch(e){}if(!r||!r.code||Date.now()-r.t>HOLD){rjClear();return}
   loadPeer();let n=0;const iv=setInterval(()=>{if(MP.active){clearInterval(iv);return}if(MP.available&&peerOK()){clearInterval(iv);MP.openLobby();codeIn.value=r.code;lobbyStatus('Rejoining '+r.code+'...');joinGame(r.code)}else if(++n>40)clearInterval(iv)},250)}
@@ -4195,7 +4214,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   const light=el.classList.contains('onLight');if(!light&&L>150)el.classList.add('onLight');else if(light&&L<110)el.classList.remove('onLight');MR.clockL=Math.round(L)}
  // rolling performance log: every 2 s, average and worst frame plus the stage; read back on the next load
  let prevPerf=null;try{prevPerf=JSON.parse(localStorage.getItem('hushPerf')||'null')}catch(e){}window.__lastPerf=prevPerf;
- setInterval(()=>{if(!perf.n)return;const rec={avg:Math.round(perf.sum/perf.n),max:Math.round(perf.max),n:perf.n,stage:window.__phase||'?',calls:MR.calls,t:Date.now(),v:'v76',safe:!!window.__safe};perf.sum=perf.max=perf.n=0;
+ setInterval(()=>{if(!perf.n)return;const rec={avg:Math.round(perf.sum/perf.n),max:Math.round(perf.max),n:perf.n,stage:window.__phase||'?',calls:MR.calls,t:Date.now(),v:'v77',safe:!!window.__safe};perf.sum=perf.max=perf.n=0;
   try{localStorage.setItem('hushPerf',JSON.stringify(rec))}catch(e){}},2000);
  // ?fps=1: a small counter
  if(QP.get('fps')==='1'){const d=document.createElement('div');d.id='fpsC';d.style.cssText='position:fixed;left:8px;top:8px;z-index:2147483646;font:11px/1.3 ui-monospace,Menlo,Consolas,monospace;color:#bfe8a0;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:3px;pointer-events:none;white-space:pre';document.body.appendChild(d);
@@ -4210,15 +4229,15 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  const WARN_DESKTOP=true;
  try{const touch=(()=>{try{return navigator.maxTouchPoints>0||matchMedia('(pointer: coarse)').matches}catch(e){return false}})();let seen=false;try{seen=localStorage.getItem('hushWarnDesk')==='1'}catch(e){}
   const tl=document.getElementById('title');
-  if(WARN_DESKTOP&&!touch&&!seen&&tl){const w=document.createElement('div');w.id='tWarnDesk';w.setAttribute('role','note');w.style.cssText='position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:6;width:min(30rem,calc(100% - 32px));box-sizing:border-box;font:.8rem/1.4 system-ui,-apple-system,sans-serif;color:#f0d6d0;background:rgba(40,8,8,.9);border:1px solid #7a2a2a;border-radius:6px;padding:.5rem 2.4rem .5rem .8rem';
-   w.textContent='If you are attempting to play on a computer, switch to a touchscreen (phones or ipads) because it will freeze.';
+  if(WARN_DESKTOP&&!touch&&!seen&&tl){const w=document.createElement('div');w.id='tWarnDesk';w.setAttribute('role','note');w.style.cssText='position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:6;width:min(30rem,calc(100% - 32px));box-sizing:border-box;max-height:calc(100vh - 28px);overflow:auto;font:.8rem/1.4 system-ui,-apple-system,sans-serif;color:#f0d6d0;background:rgba(40,8,8,.9);border:1px solid #7a2a2a;border-radius:6px;padding:.5rem 2.4rem .5rem .8rem';
+   w.textContent='If you are on a computer, perhaps switch to a touchscreen device like a phone or iPad, because it may or may not freeze. You can play on this, but be aware that if it freezes, switch the graphics quality to Low or switch to a touchscreen.';
    const x=document.createElement('button');x.type='button';x.textContent='×';x.setAttribute('aria-label','Dismiss');x.style.cssText='position:absolute;right:2px;top:2px;min-width:36px;min-height:32px;background:none;border:0;color:#f0d6d0;font:1.1rem system-ui,sans-serif;cursor:pointer';
    x.onclick=e=>{e.stopPropagation();w.remove();try{localStorage.setItem('hushWarnDesk','1')}catch(_){}};w.appendChild(x);
    ['click','mousedown','pointerdown','mousemove'].forEach(k=>w.addEventListener(k,e=>e.stopPropagation()));tl.appendChild(w)}}catch(e){}
 })();
 </script>
 <script type="text/x-hush">(function(){const btn=document.getElementById('ovBug'),msg=document.getElementById('bugMsg');if(!btn)return;
-function report(){const L=['Hush bug report','Version: v76','Time: '+new Date().toISOString()];
+function report(){const L=['Hush bug report','Version: v77','Time: '+new Date().toISOString()];
  try{const p=cam.getWorldPosition(new THREE.Vector3());L.push('Position: '+[p.x,p.y,p.z].map(v=>v.toFixed(2)).join(', '))}catch(e){L.push('Position: ?')}
  const m=window.__mp;let mode='Single-player',n=1;try{if(m&&m.active){mode=m.mode==='hunt'?'Hunt':'Co-op';n=m.roster().length;if(m.demon)mode+=' (demon)';else if(m.ghost)mode+=' (ghost)'}}catch(e){}
  L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Safe mode: '+(window.__safe?'on':'off'));try{const F=window.__lastFreeze;L.push('Last session froze at: '+(F?F.s+' ('+new Date(F.t).toISOString()+(F.safe?', safe mode':'')+')':'(no)'));const LP=window.__lastPerf;L.push('Last session speed: '+(LP?LP.avg+' ms/frame avg, '+LP.max+' ms worst, '+LP.calls+' draw calls, stage '+LP.stage+(LP.avg>500?' (very slow)':''):'(no record)'));try{const M=window.__mrg;if(M)L.push('This session: '+M.calls+' draw calls, merged '+M.recs+' meshes into '+M.chunks+', shadows 1/'+M.shadowEvery)}catch(_){}const B=window.__bcLog||[];L.push('Steps this session: '+B.slice(-12).join(' | '))}catch(e){}try{if(m&&m.active&&m.voiceDiag)L.push(m.voiceDiag())}catch(e){}L.push('Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
