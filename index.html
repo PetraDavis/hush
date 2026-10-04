@@ -1591,13 +1591,13 @@ const MUS=(function(){let bus=null,calmG,tenG,chG,duckG,padF,pads=[],strs=[],dis
  return{update,duck,stinger,get lvl(){return{c:+lvl.c.toFixed(2),t:+lvl.t.toFixed(2),h:+lvl.h.toFixed(2)}}}})();
 window.__mus=MUS;
 // ===== exterior: fence + trees around the house =====
-(function(){const {out,E}=window.__ext;const pm=E(0x3a3530);const segs=[[-15,-12,24,-12],[-15,20,24,20],[24,-12,24,20],[-15,12,-15,20]];let n=0;segs.forEach(([a,b,c,d])=>n+=Math.ceil(Math.hypot(c-a,d-b)/.6));
+(function(){const {out,E}=window.__ext;const pm=E(0x3a3530);/* v79: the old front run along z 20 sat on Larch Road; the yard now ends at the hedge */const segs=[[-15,-12,24,-12],[24,-12,24,17.4],[-15,12,-15,17.4]];let n=0;segs.forEach(([a,b,c,d])=>n+=Math.ceil(Math.hypot(c-a,d-b)/.6));
 const im=new THREE.InstancedMesh(BG(.08,1,.12),pm,n);const o=new THREE.Object3D();let k=0;segs.forEach(([a,b,c,d])=>{const L=Math.hypot(c-a,d-b),m=Math.ceil(L/.6);for(let i=0;i<m;i++){o.position.set(a+(c-a)*i/m,-2.4,b+(d-b)*i/m);o.rotation.y=a==c?0:Math.PI/2;o.updateMatrix();im.setMatrixAt(k++,o.matrix)}
 const r=new THREE.Mesh(BG(.06,.08,L),pm);r.position.set((a+c)/2,-2.05,(b+d)/2);r.rotation.y=a==c?0:Math.PI/2;out.add(r)});out.add(im);
 const tg=new THREE.CylinderGeometry(.14,.2,1.6,5),cg=new THREE.ConeGeometry(1.1,1.4,6),tm=E(0x2a2018),cm=E(0x16241c);
 [[18,-4,1.3],[20,6,1.1],[17,14,1.5],[13,17,1.2],[-6,15,1.4],[10,-9,1.2],[0,-9,1],[-9,12,1.1],[21,-9,1.3],[-10,-10,1.2]].forEach(([x,z,s])=>{const t=new THREE.Mesh(tg,tm);t.scale.setScalar(s);t.position.set(x,-2.9+.8*s,z);out.add(t);for(let j=0;j<3;j++){const c=new THREE.Mesh(cg,cm);c.scale.setScalar(s*(1-j*.22));c.position.set(x,-2.9+(1.8+j*.8)*s,z);out.add(c)}});
 const sg=new THREE.OctahedronGeometry(.12,0),sm=new THREE.MeshBasicMaterial({color:0x9aa4c0,fog:false});for(let i=0;i<120;i++){const a=Math.random()*Math.PI*2,e=.15+Math.random()*1.2,s=new THREE.Mesh(sg,sm);s.position.set(4+Math.cos(a)*Math.cos(e)*62,Math.sin(e)*62,4+Math.sin(a)*Math.cos(e)*62);out.add(s)}
-const h2=new THREE.Mesh(BG(6,4,5),E(0x14161e));h2.position.set(34,-.9,22);out.add(h2)})();
+const h2=new THREE.Mesh(BG(6,4,5),E(0x14161e));h2.position.set(34,-.9,31);out.add(h2)})();
 
 // controls
 const keys={};const overlay=document.getElementById('overlay'),msg=document.getElementById('msg'),hint=document.getElementById('hint');
@@ -1830,7 +1830,8 @@ const STR=(function(){const C=CARE.dbg;
     else if(r.anc)o.position[a]=W(a,r.anc[a])+(r.p[a]-r.anc[a]);else o.position[a]=W(a,r.p[a])}}
   for(const r of srecs){const q=r.q;for(const a of['x','z']){const lo=a+'0',hi=a+'1',s=r.sp[a];if(s){q[lo]=eW(s.e0,a);q[hi]=eW(s.e1,a)}else{const c=(q.r[lo]+q.r[hi])/2,h=(q.r[hi]-q.r[lo])/2,wc=r.anc?W(a,r.anc[a])+(c-r.anc[a]):W(a,c);q[lo]=wc-h;q[hi]=wc+h}}}}
  let nc=null;
- function cfg(){const t=TRAP.cfg||window.__arenaCfg;if(t){nc=null;return t}const k=1+1.5*C.fx.stretch;if(k<1.002){nc=null;return{bx:0,bz:0,sx:0,sz:0,k:1}}
+ function cfg(){const t=TRAP.cfg||window.__arenaCfg;if(t){nc=null;return t}const k=window.__outside&&__outside()?1:1+1.5*C.fx.stretch;if(k<1.002){// v79: never outdoors (the street is not part of the stretch)
+ nc=null;return{bx:0,bz:0,sx:0,sz:0,k:1}}
   if(!nc){const B=C.babyP;nc={bx:B.x,bz:B.z,sx:Math.sign(RP.x-B.x)||1,sz:Math.sign(RP.z-B.z)||1}}return Object.assign({k},nc)}
  function unstick(){const x=cam.position.x,z=cam.position.z;for(let d=.1;d<=2;d+=.1)for(let i=0;i<16;i++){const a=i*Math.PI/8,nx=x+Math.cos(a)*d,nz=z+Math.sin(a)*d;if(!blocked(nx,nz)){cam.position.x=nx;cam.position.z=nz;return}}}
  function apply(){if(RLM.on)return;const c=cfg();if(c.k===MAP.k&&c.bx===MAP.bx&&c.bz===MAP.bz&&c.sx===MAP.sx&&c.sz===MAP.sz)return;
@@ -3252,10 +3253,14 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 (function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush out] '+(t||''),e)}};
  const R0=18.9,R1=24.3,FAR=25.0,LN=[20.25,22.95],XL=-8,XR=12,V=20,SPAN=[-48,56];
  const OUT={};window.__out=OUT;
+ // v79: the house stretch (far from the baby) moved the hedge and yard but not the street, gate or walls, and a remap put the hedge's gap back; outdoors the stretch is off and the gap is re-cut every frame
+ window.__outside=()=>!(window.__rlm&&__rlm.on)&&iZ(cam.position.z)>9.8&&fy<-2&&fy>-3.5;let hA=null,hB=null;
  // the hedge gets a real gap where the gate is
- safe(()=>{const h=solids.find(s=>s.x0===-8&&s.x1===12&&s.z0===17.4);if(h){const r=Object.assign({},h,{x0:5.4});h.x1=4.2;solids.push(r)}},'hedge');
+ safe(()=>{const h=solids.find(s=>s.x0===-8&&s.x1===12&&s.z0===17.4);if(h){const r=Object.assign({},h,{x0:5.4});delete r.r;h.x1=4.2;solids.push(r);hA=h;hB=r}},'hedge');
  // the gate: E (or a tap) opens and shuts it
  const G=XT.props.gate,gs={x0:4.2,x1:5.4,z0:17.7,z1:17.9,y0:F-1,y1:F+1.2};solids.push(gs);OUT.gate={open:false};
+ // v79: the bars are thin and the centre ray went between them, so the gate could not be used; a solid invisible panel takes the aim (it swings with the gate)
+ {const hp=new THREE.Mesh(new THREE.BoxGeometry(1.15,1.1,.3),hitM);hp.position.set(.575,.5,0);G.add(hp)}
  addInter(G,'Garden gate',()=>{OUT.gate.open=!OUT.gate.open});
  // sidewalks, the road, a far fence; walls nobody sees keep you on this stretch of street
  const pav=M(0x55545a),curb=M(0x77767c),dash=new THREE.MeshBasicMaterial({color:0x8a8470});
@@ -3263,7 +3268,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  flat(140,R1-R0,new THREE.MeshPhongMaterial({color:0x1a1a1e}),2,F-.04,(R0+R1)/2);
  box(140,.12,R0-18.2,pav,2,F+.0,(18.2+R0)/2);box(140,.12,1.3,pav,2,F+.0,R1+.65);box(140,.14,.12,curb,2,F+.01,R0);box(140,.14,.12,curb,2,F+.01,R1);
  for(let x=-60;x<64;x+=3)flat(1.4,.1,dash,x,F-.035,(R0+R1)/2);
- for(let x=-60;x<64;x+=2.2){box(.08,1.1,.08,M(0x2a2622),x,F+.55,26.1)}box(140,.06,.05,M(0x2a2622),2,F+1.0,26.1);box(140,.06,.05,M(0x2a2622),2,F+.5,26.1);
+ // v79: no far fence (Petra): the way across the road reads as open; the invisible walls still hold the street
+ safe(()=>{XT.props.road.visible=false},'oldroad');// the intro's narrow road strip lies under the new road
  [[-6,27.6],[0,28.4],[9,27.8]].forEach(([x,z])=>{box(5,3.2,4,M(0x1c1a20),x,F+1.6,z+2);box(.8,.7,.05,new THREE.MeshBasicMaterial({color:0x2a2418}),x-1,F+1.8,z-.03)});
  [-3,7].forEach(x=>{box(.12,4,.12,M(0x2a2a2e),x,F+2,18.55);box(.9,.08,.2,M(0x2a2a2e),x+.4,F+4,18.55);box(.3,.06,.18,new THREE.MeshBasicMaterial({color:0xffe0a0}),x+.75,F+3.95,18.55)});
  solids.push({x0:XL-1,x1:XL,z0:18,z1:27,y0:F-1,y1:F+5},{x0:XR,x1:XR+1,z0:18,z1:27,y0:F-1,y1:F+5},{x0:XL-1,x1:XR+1,z0:26,z1:26.3,y0:F-1,y1:F+5});
@@ -3289,8 +3295,9 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function hit(){over=true;window.__noMove=1;horn();setTimeout(()=>{noise(.5,.9,500);flash('#fff',1,60);setTimeout(()=>flash('#000',1,250),120)},180);setTimeout(()=>finish('car'),1100)}
  XT.onUpdate(dt=>{
   // the gate swings
+  if(hA&&MAP.k===1){hA.x0=-8;hA.x1=4.2;hA.z0=hB.z0=17.4;hA.z1=hB.z1=18.2;hB.x0=5.4;hB.x1=12}
   if(!window.__cut){const tg=OUT.gate.open?-1.5:0;G.rotation.y+=(tg-G.rotation.y)*Math.min(1,dt*6);gs.off=G.rotation.y<-.35}
-  const p=me(),out=p.z>9.7;
+  const p=me(),out=__outside();
   if(window.__cut||(window.__rlm&&__rlm.on)){if(T.on)T.on=false;if(eng)eng.g.gain.value=0;return}
   if(!T.on){T.next-=dt;if(T.next<=0&&out&&XT.live()){spawn();T.next=6+Math.random()*4}}
   else{T.next-=dt;T.x+=T.dir*V*dt;car.position.x=T.x;
