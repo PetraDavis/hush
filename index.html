@@ -3225,7 +3225,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  b.addEventListener('click',e=>{e.stopPropagation();XT.help.open()});
  // v77: Petra: "when you press esc there should be a option to go to the home screen". Quit to title, with a confirm; a reload is the clean reset (all state, audio, pointer lock)
  {const qb=document.createElement('button');qb.id='qBtn';qb.type='button';qb.textContent='Quit to title';box_.appendChild(qb);
-  const cf=document.createElement('div');cf.id='qCf';cf.hidden=true;cf.innerHTML='<p>Leave the night? Progress since your last save will be lost.</p><button type="button" id="qYes">Leave</button> <button type="button" id="qNo">Stay</button>';box_.appendChild(cf);
+  const cf=document.createElement('div');cf.id='qCf';cf.hidden=true;cf.innerHTML='<p>Leave the night? Your progress will be saved.</p><button type="button" id="qYes">Leave</button> <button type="button" id="qNo">Stay</button>';box_.appendChild(cf);
   const st=document.createElement('style');st.textContent='#qBtn,#qCf button{font-family:var(--ui);font-size:.8rem;letter-spacing:.06em;color:var(--fg);background:#1a1716;border:1px solid #3a332c;border-radius:6px;padding:.5rem 1.1rem;cursor:pointer;min-height:44px;touch-action:manipulation}#qBtn{align-self:center;margin-top:.4rem}#qBtn:hover,#qBtn:focus-visible,#qCf button:hover,#qCf button:focus-visible{border-color:var(--accent);outline:none}#qCf{margin-top:.6rem}#qCf p{margin:.2rem 0 .6rem}#qYes{border-color:#7a3a30!important}';document.head.appendChild(st);
   const sync=()=>{qb.hidden=!started||!cf.hidden};const show=v=>{cf.hidden=!v;sync();if(v)setTimeout(()=>{try{cf.querySelector('#qNo').focus({preventScroll:true})}catch(e){}},30);else try{qb.focus({preventScroll:true})}catch(e){}};
   new MutationObserver(()=>{if(overlay.hidden)cf.hidden=true;sync()}).observe(overlay,{attributes:true,attributeFilter:['hidden']});sync();
@@ -3759,7 +3759,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
     if(MP.started){const t=rj?'('+p.name+' is back.)':'('+p.name+' joined.)';bcast({t:'note',txt:t,ms:2500},c.peer);subtitle(t,2500)}if(rj&&P.get(c.peer))P.get(c.peer).rep=null;return}
    if(!conns.has(c.peer)){if(c.open&&c._tok&&AWAY[c._tok]&&MP.started)H({t:'hello',tok:c._tok,name:''});if(!conns.has(c.peer))return}const pp=P.get(c.peer);if(pp)pp.seen=performance.now();hostHandle(c.peer,d)};c.on('data',H);
   c.on('close',()=>{if(conns.get(c.peer)===c)dropPlayer(c.peer)});c.on('error',()=>{})}
- function dropPlayer(id){if(id===MP.id)return;const p=roster.find(q=>q.id===id);
+ function dropPlayer(id){if(id===MP.id||MP.leaving)return;// v77: a leaving host must not tell the remaining guests that the others left (each would then crown itself)
+const p=roster.find(q=>q.id===id);
   if(p&&MP.started&&!MP.decided&&p.tok){const r=P.get(id)&&P.get(id).rep;AWAY[p.tok]={id,name:p.name,slot:p.slot,join:p.join,gh:r&&r.gh?1:p.gh?1:0,dm:isDm(id)?1:0,t:performance.now(),pos:r&&r.ar!=='r'?{x:r.x,z:r.z,y:r.y,yaw:r.yaw}:null}}conns.delete(id);P.delete(id);roster=roster.filter(q=>q.id!==id);cleanCall(id);
   if(MP.remoteHolder===id)holderSet('');Object.keys(held).forEach(k=>{if(held[k]===id)delete held[k]});
   syncAvatars();lobbyDraw();bcastRoster(true);micHud();if(p&&MP.started){const t=AWAY[p.tok]?'('+p.name+' lost the connection. Their place is kept for 2 minutes.)':'('+p.name+' left.)';subtitle(t,3000);bcast({t:'note',txt:t,ms:3000})}if(vote)checkVote();checkAllDead()}
