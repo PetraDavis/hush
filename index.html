@@ -19,6 +19,12 @@
 #ld .t{font-family:'Caveat','Segoe Print',cursive;font-size:2.2rem;letter-spacing:.12em;color:#8a2020}
 @media (prefers-reduced-motion:reduce){#ld .cd .fl,#ld .cd .gl{animation:none}#ld .ln p{animation:none}#ld .ln p:first-child{opacity:1}}
 </style><div id="ld" role="status" aria-label="Loading"><div class="t">Hush</div><div class="cd" aria-hidden="true"><div class="gl"></div><div class="wx"></div><div class="wk"></div><div class="fl"></div></div><div class="bar"><i id="ldB"></i></div><div class="ln"><p class="" style="animation-delay:0.0s"><b>Tip</b>Pick her up when she fusses. Held close, she cries more quietly.</p><p class="cr" style="animation-delay:4.5s">She stopped crying at 9:14. Nobody was holding her.</p><p class="" style="animation-delay:9.0s"><b>Tip</b>Noise carries. The quieter the house, the safer you are.</p><p class="cr" style="animation-delay:13.5s">Don&#x27;t answer if it calls you by name.</p><p class="" style="animation-delay:18.0s"><b>Tip</b>Closets, beds and the pantry are good places to hide. Hold Shift to hold your breath.</p><p class="cr" style="animation-delay:22.5s">The house is older than the street it stands on.</p><p class="" style="animation-delay:27.0s"><b>Tip</b>Batteries don&#x27;t last forever. Use the flashlight when you need it.</p><p class="cr" style="animation-delay:31.5s">Something below the floor is listening.</p><p class="" style="animation-delay:36.0s"><b>Tip</b>Read what people left behind. The parents didn&#x27;t tell you everything.</p><p class="cr" style="animation-delay:40.5s">Every sitter thought they would be the one who stayed.</p></div></div>
+<!-- v79.1: a photosensitivity warning on every launch, over the loader and before the title screen -->
+<div id="flashWarn" role="alertdialog" aria-modal="true" aria-labelledby="fwT" style="position:fixed;inset:0;z-index:2147483000;background:#060508;color:#e8dfcc;display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;text-align:center"><div style="max-width:30rem"><p id="fwT" style="font-size:1.05rem;line-height:1.5;margin:0 0 1.4rem">Warning: this game contains flashing lights and effects that may affect people with photosensitive epilepsy.</p><div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap"><button type="button" id="fwGo" style="font:600 .95rem inherit;padding:.65rem 1.4rem;border-radius:6px;border:1px solid #b8ac94;background:#e8dfcc;color:#140f0c;cursor:pointer">Continue</button><button type="button" id="fwCalm" style="font:600 .95rem inherit;padding:.65rem 1.4rem;border-radius:6px;border:1px solid #b8ac94;background:transparent;color:#e8dfcc;cursor:pointer">Reduce flashing</button></div></div></div>
+<script>(function(){var w=document.getElementById('flashWarn');function close(calm){if(calm){try{localStorage.setItem('reduceFlash','1')}catch(e){}try{if(window.__setCalm)window.__setCalm(true)}catch(e){}try{var c=document.getElementById('sCalm');if(c)c.checked=true}catch(e){}}w.remove();removeEventListener('keydown',key,true)}
+function key(e){if(!document.getElementById('flashWarn'))return;e.stopImmediatePropagation();if(e.key==='Enter'&&!(document.activeElement&&document.activeElement.id==='fwCalm')){e.preventDefault();close(false)}}
+addEventListener('keydown',key,true);['pointerdown','mousedown','click','touchstart'].forEach(function(t){w.addEventListener(t,function(e){e.stopPropagation()})});
+document.getElementById('fwGo').addEventListener('click',function(){close(false)});document.getElementById('fwCalm').addEventListener('click',function(){close(true)});setTimeout(function(){try{document.getElementById('fwGo').focus()}catch(e){}},0)})();</script>
 <!-- v72: fonts never block the first paint -->
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap" media="print" onload="this.media='all'">
@@ -1381,7 +1387,8 @@ const TRAP=(function(){const DM=DEMON.dbg,g=DM.g;let S=null;const deadEl=documen
   S={e,ex,P,ux:dx/L,uz:dz/L,sx:Math.abs(dx)>.3?Math.sign(dx):0,sz:Math.abs(dz)>.3?Math.sign(dz):0,K:1,t:0,D:L,u:L,G:5.5,stepT:0,out:0};{let G=0;while(G<5.5&&!blocked(cam.position.x-dx/L*(G+.1),cam.position.z-dz/L*(G+.1)))G+=.1;S.G=Math.max(2,G-.2)}
   if(AC){const t0=AC.currentTime;burst(t0,60,1,1,.7,'lowpass');burst(t0+.02,120,1,.7,.5,'lowpass')}subtitle('The door slams shut. Get to it. Now.',3500);return true}
  const doorW=()=>({x:mX(S.ex.x),z:mZ(S.ex.z)});
- function update(dt){if(!S)return;S.t+=dt;
+ function update(dt){if(!S)return;if(window.__mp&&__mp.active&&__mp.ghost&&!S.out){S=null;g.visible=false;return}// v79.1: a trap that was on you when you died ends there
+ S.t+=dt;
   if(S.out){S.K+=(1-S.K)*Math.min(1,dt*1.8);if(S.K<1.003){S.K=1;S=null}return}
   if(S.dead){S.lunge+=dt;const k=Math.min(1,S.lunge/.35);lunge(1.6-1.25*k*k);if(S.lunge>.9){S=null;gameOver()}return}
   // the floor between you and the exit keeps lengthening: the door is pushed away, fast at first, then slower.
@@ -1528,7 +1535,8 @@ const RLM=(function(){const sat=v=>Math.max(0,Math.min(1,v));
 window.__rlm=RLM;
 // ===== too loud for too long: after ~30 s at max noise the demon comes for you wherever you are =====
 const HUNT=(function(){let tm=0,warn=0,k=null;
- function update(dt){if(k!==null){k+=dt;if(k>1.15){k=-1;TRAP.gameOver('She was too loud.','It heard her. It came for you.')}return}
+ function update(dt){if(k!==null&&window.__mp&&__mp.active&&__mp.ghost){k=null;tm=0}// v79.1: a hunt already on its way when you died is called off
+ if(k!==null){k+=dt;if(k>1.15){k=-1;TRAP.gameOver('She was too loud.','It heard her. It came for you.')}return}
   if(window.__mp&&__mp.client)return;
   if(!entered||ended||window.__dead||window.__tbc||TRAP.on||RLM.on)return;const n=CARE.dbg.noise;if(n>=.97)tm+=dt;else tm=Math.max(0,tm-dt*2);
   if(tm>15&&!warn){warn=1;subtitle('(Something is coming. Quiet her down.)',4000);if((window.__mp&&__mp.active))try{__mp.subAll('(Something is coming. Quiet her down.)',4000)}catch(e){}}if(tm<8)warn=0;
@@ -2279,7 +2287,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   if(seated&&seated.hide){cam.position.x=seated.px;cam.position.z=seated.pz;fy=seated.pfy;vy=0;grounded=true;seated=null}
   yaw=s.yaw;pitch=0;if(!forced)sfx.in();
   // anything still searching sees you crawl out
-  if(S&&!S.found&&S.ph!=='leave'&&!forced){found('It was waiting right outside.')}}
+  if(S&&!S.found&&S.ph!=='leave'&&!forced&&!(window.__mp&&__mp.active&&__mp.ghost)){found('It was waiting right outside.')}}
  // E enters / leaves; movement keys and jumping don't pull you out by accident
  addEventListener('keydown',e=>{if(window.__typing||!hid||paused)return;
   if(e.code==='KeyE'){e.stopImmediatePropagation();if(!e.repeat)safe(()=>leave(false),'leave');return}
@@ -2311,6 +2319,8 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
    ['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyC','ControlLeft','ControlRight'].forEach(k=>keys[k]=false);
    if(hid.ward)wDoors.forEach(d=>{d.open=false;d.pv.rotation.y=.13*d.dir});
    if(!paused)hint.hidden=false,hint.textContent='[E] leave / hold [Shift] to hold your breath'}
+  // v79.1: a ghost is out of it: a prowl or search that was already coming for you when you died is called off (the v79 guards only stopped new ones starting)
+  if(window.__mp&&__mp.active&&__mp.ghost){prowl=null;if(S){S=null;g.visible=false}view.className='';bEl.hidden=true;return}
   if(!live){if(ended||window.__dead){view.className='';bEl.hidden=true}return}
   // breath
   const h=holding();if(h){B=Math.max(0,B-dt/(7+2*(XT.diff&&XT.diff().agg<1?1:0)));pant=Math.min(1,pant+dt*.25);if(B<=0){gasp=2.4;sfx.gasp();subtitle('(You gasp for air.)',1500);if(S&&!S.found)S.d+=.35;CARE.dbg.noise=Math.min(1,CARE.dbg.noise+.02)}}
@@ -3320,7 +3330,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const bot=new THREE.Group();bot.position.set(.04,-.05,.0);g.add(bot);cyl(.034,.038,.12,new THREE.MeshPhongMaterial({color:0x4a2e14,transparent:true,opacity:.88,shininess:80}),0,.06,0,10,bot);cyl(.014,.022,.03,M(0x4a2e14),0,.135,0,8,bot);cyl(.016,.016,.025,M(0xb89a6a),0,.16,0,8,bot);
   cyl(.022,.022,.08,M(0xe0dcd0),-.11,.04-.05,0,8,g);cyl(.02,.02,.06,M(0xa83a2a),.13,.03-.05,0,8,g);box(.08,.05,.03,M(0xe8e0c8),-.1,-.2,.0,g);
   for(let i=0;i<14;i++){const d=box(.006,.006,.006,M(0xe8e4dc),(Math.random()-.5)*.42,.285,(Math.random()-.5)*.12,g)}
-  XT.place(g,5.52,1.55,-2.75);
+  XT.place(g,6.12,1.55,-2.75);// x 6.12: the bathroom wall sits at 6.0 after the hall widening (+0.6), not 5.4
   hit(g,.46,.6,.3,0,0,.08,()=>tasting?'':'Taste the unlabeled bottle',()=>safe(taste,'taste'))}
  let tasting=0;
  function taste(){if(tasting||!XT.live())return;tasting=7;safe(()=>{if(AC&&!muted)burst(AC.currentTime,900,2,.05,.18,'bandpass')},'snd');tone(320,120,.6,.06,'sine');
@@ -3718,6 +3728,50 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   else if(m.k==='lights'){const L=[];scene.traverse(o=>{if(o.isPointLight&&o.intensity>.05&&o.visible){const w=o.getWorldPosition(new THREE.Vector3());if(Math.hypot(w.x-x,w.z-z)<5&&Math.abs(w.y-y)<3)L.push(o)}});
    const calm=window.__getCalm&&__getCalm(),base=L.map(l=>l.intensity);let t=0;const iv=setInterval(()=>{t+=.06;L.forEach((l,i)=>{l.intensity=calm?base[i]*(.55+.45*Math.cos(t*2.6)):base[i]*(Math.random()<.5?.08:1)});if(t>=1.3){clearInterval(iv);L.forEach((l,i)=>l.intensity=base[i])}},60)}}
 
+ // ---------- v79.1: ghosts possess things. Aim at a chair, toy, lamp, book, picture or pot and press E (or tap Possess): it rattles and falls for everyone,
+ // and the crash draws the demon to check it, which keeps her off the living for a little while. One possession per ghost every 8 s. ----------
+ const POS_CD=8,POS_OK=/^(Sit|Toys|Music box|Photo|Painting|Look at the photos|Move painting|Phone|Highchair|Baby seat|Purple rabbit|Bottle warmer|Pick up: .*|Read: .*|Read the ledger|Torn page)$/;
+ const POS_NAME=l=>/^Sit$/.test(l)?'chair':/Toys|rabbit|basketball|die|ornament/i.test(l)?'toy':/Photo|[Pp]ainting|photos/.test(l)?'picture frame':/Read|ledger|page/.test(l)?'book':/vase|onion|statue/i.test(l)?'pot':/Music box/.test(l)?'music box':/Phone/.test(l)?'phone':/Highchair/.test(l)?'highchair':/Baby seat/.test(l)?'baby seat':/warmer/.test(l)?'bottle warmer':'thing';
+ let POSL=null;const _pb=new THREE.Box3(),_ps=new THREE.Vector3();
+ // the same list in the same order on every peer (the house is built identically), so an index is enough to sync
+ function posList(){if(POSL)return POSL;POSL=[];const seen=new Set();
+  inter.forEach(m=>{let l='';try{l=m.userData.i.label}catch(e){}if(!POS_OK.test(l||''))return;let o=m.parent;if(!o||o===scene||o.type==='Scene')o=m;
+   if(seen.has(o))return;_pb.setFromObject(o);_pb.getSize(_ps);if(!isFinite(_ps.x)||Math.max(_ps.x,_ps.y,_ps.z)>1.6)return;seen.add(o);
+   POSL.push({o,n:POS_NAME(l),l})});return POSL}
+ const pRay=new THREE.Raycaster();let pAim=null,pReady=0;const pHost=new Map();
+ function posAim(){if(!MP.active||!MP.ghost)return null;const L=posList();pRay.setFromCamera({x:0,y:0},cam);pRay.far=window.__touchMode?7:6;
+  const ms=[];L.forEach((p,i)=>p.o.traverse(q=>{if(q.isMesh){q.userData.posI=i;ms.push(q)}}));const h=pRay.intersectObjects(ms,false)[0];return h?h.object.userData.posI:null}
+ const pEl=document.createElement('div');pEl.id='posP';pEl.hidden=true;document.body.appendChild(pEl);
+ {const c=document.createElement('style');c.textContent='#posP{position:fixed;z-index:3;left:50%;top:58%;transform:translateX(-50%);font:600 .74rem var(--ui);letter-spacing:.05em;color:#cfd8e8;background:rgba(20,26,40,.75);border:1px solid #4a5a7a;border-radius:6px;padding:.35rem .7rem;touch-action:manipulation;cursor:pointer}#posP.cd{opacity:.5}';document.head.appendChild(c)}
+ pEl.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();possess()});['click','mousedown'].forEach(k=>pEl.addEventListener(k,e=>e.stopPropagation()));
+ setInterval(()=>safe(()=>{pAim=MP.active&&MP.ghost&&!paused?posAim():null;if(pAim==null){pEl.hidden=true;return}const left=Math.ceil(pReady-performance.now()/1000);
+  pEl.hidden=false;pEl.className=left>0?'cd':'';pEl.textContent=(window.__touchMode?'':'[E] ')+'Possess the '+POSL[pAim].n+(left>0?' ('+left+'s)':'')},'posAim'),150);
+ addEventListener('keydown',e=>{if(window.__typing||!MP.active||!MP.ghost||paused||e.code!=='KeyE'||e.repeat)return;safe(possess,'possess')});
+ function possess(){if(!MP.active||!MP.ghost||pAim==null)return;const now=performance.now()/1000;if(pReady>now)return;pReady=now+POS_CD;const m={i:pAim,dir:Math.random()*Math.PI*2};
+  if(MP.host)hostPossess(MP.id,m);else send(Object.assign({t:'gp'},m))}
+ // host: only the dead, one every 8 s each; then everyone sees it, and the demon goes to look
+ function hostPossess(pid,m){const L=posList(),i=m.i|0;if(!L[i])return;const gh=pid===MP.id?MP.ghost:!!(P.get(pid)&&P.get(pid).rep&&P.get(pid).rep.gh);if(!gh)return;
+  const now=performance.now()/1000;if((pHost.get(pid)||0)>now+.5)return;pHost.set(pid,now+POS_CD);
+  const msg={t:'gpx',i,dir:+m.dir||0};bcast(msg);safe(()=>playPossess(msg),'gpx');
+  // the lure: she goes to check the noise, so sightings, prowls and the loud-baby hunt aimed at the living are held back for a while
+  safe(()=>{const D=DEMON.dbg;D.next=Math.max(D.next,0)+15;if(HUNT.t>0)HUNT.t=Math.max(0,HUNT.t-12);prowlT+=25;MP.lureT=performance.now()+15000},'lure')}
+ const pAnim=new Map();
+ function playPossess(m){const p=posList()[m.i];if(!p)return;const o=p.o;if(pAnim.has(o))return;const r0=o.rotation.clone(),p0=o.position.clone(),T0=performance.now();
+  pAnim.set(o,1);const ax=Math.cos(m.dir),az=Math.sin(m.dir);
+  const w=new THREE.Vector3();o.getWorldPosition(w);
+  // a rattle, a fall with a crash, a long still moment, and then it rights itself
+  const step=()=>{const t=(performance.now()-T0)/1000;
+   if(t<.9){o.rotation.set(r0.x+(Math.random()-.5)*.12,r0.y+(Math.random()-.5)*.12,r0.z+(Math.random()-.5)*.12);o.position.y=p0.y+Math.abs(Math.sin(t*40))*.015}
+   else if(t<1.25){const k=(t-.9)/.35,a=1.35*k*k;o.position.copy(p0);o.rotation.set(r0.x+ax*a,r0.y,r0.z+az*a);if(!o.userData.posC){o.userData.posC=1}}
+   else if(t<7){if(o.userData.posC===1){o.userData.posC=2;safe(()=>crash(w.x,w.z),'crash')}o.rotation.set(r0.x+ax*1.35,r0.y,r0.z+az*1.35)}
+   else if(t<8.5){const k=(t-7)/1.5,a=1.35*(1-k*k*(3-2*k));o.rotation.set(r0.x+ax*a,r0.y,r0.z+az*a)}
+   else{o.rotation.copy(r0);o.position.copy(p0);o.userData.posC=0;pAnim.delete(o);return}requestAnimationFrame(step)};step()}
+ function crash(x,z){const cp=cam.position,d=Math.hypot(x-cp.x,z-cp.z);if(d>18)return;const g0=1/(1+d*d*.05);
+  if(AC&&!muted){const t0=AC.currentTime+.01;burst(t0,180,1.2,.7*g0,.25,'lowpass');burst(t0+.02,1400,2,.18*g0,.12,'bandpass');burst(t0+.14,90,1,.35*g0,.2,'lowpass')}
+  // she answers it: a hiss there, a moment later
+  setTimeout(()=>safe(()=>{if(XT.demonSfx&&XT.demonSfx.hiss)XT.demonSfx.hiss(x,z,1.2)},'lurehiss'),1600);
+  if(!MP.ghost&&d<10)subtitle('(Something fell over. Heavy footsteps turn toward the sound.)',2600)}
+ MP.possessables=()=>posList().map((p,i)=>({i,n:p.n,l:p.l}));MP.possess=i=>{pAim=i;possess()};MP.posObj=i=>posList()[i]&&posList()[i].o;
  renderer.domElement.addEventListener('mousedown',()=>{if(MP.active&&MP.ghost&&document.pointerLockElement){gIdx++;gMode='follow';ghostHud()}});
 
  // ---------- endings: one decision, by the host, for everyone ----------
@@ -3887,6 +3941,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // ---------- messages ----------
  function clientHandle(m){if(MP.active&&!MP.host)lastHostMsg=performance.now();switch(m.t){
   case 'gfx':safe(()=>playScare(m),'gfx');break;
+  case 'gpx':safe(()=>playPossess(m),'gpx');break;
   case 'welcome':MP.id=m.pid;roster=m.roster;if(m.diff)MP.hostDiff=m.diff;if(m.night)MP.hostNight=m.night|0;if(m.mode)MP.mode=m.mode;MP.hostHu=!!m.hu;MP.code=m.code;MP.hostId=m.host;lastHostMsg=performance.now();reconnecting=false;syncAvatars();lobbyDraw();callMissing();
    if(m.started&&!MP.started){MP.rj=m.rj||null;startGame(m.cfg,true)}break;
   case 'hdm':if(MP.hm){MP.hm.demon=m.id;MP.demon=m.id===MP.id}break;
@@ -3932,6 +3987,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'endreq':if(['dawn','cult','secret','parents'].includes(m.id)&&!(MP.hm&&m.id==='cult')){decideEnd(m.id,m.extra);runPending()}break;
   case 'solve':hostSolve();break;
   case 'gs':safe(()=>hostScare(pid,m),'gs');break;
+  case 'gp':safe(()=>hostPossess(pid,m),'gp');break;
   case 'bslash':safe(()=>XT.bladeFight.remoteSlash(),'bslash');break;
   case 'bready':{const S=XT.bladeFight.S;if(S&&S.rdyIds)S.rdyIds.add(pid);break}
   case 'bhit':{const S=XT.bladeFight.S;if(S&&m.r==='parry'&&S.aid===m.aid&&(S.st==='strike'||S.st==='wind')){S.st='stag';S.stT=1.6}break}
