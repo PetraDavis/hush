@@ -90,14 +90,24 @@ body:has(#title:not([hidden])) #cross{display:none}
 <li>Keep her quiet. Whatever happens, keep her quiet.</li></ul>
 <p class="sig">We'll be home by 6 in the morning.<br>- M &amp; D</p><p class="close">[E] or [Esc] to put the note down</p></div></div>
 <script>try{if(new URLSearchParams(location.search).get('reset')==='1'){const ks=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&(/^hush/i.test(k)||k==='reduceFlash'))ks.push(k)}ks.forEach(k=>localStorage.removeItem(k));history.replaceState(null,'',location.pathname+location.hash);alert('Hush: saved data cleared ('+ks.length+' items).')}}catch(e){}</script>
+<script>/* v75: startup breadcrumbs. Each startup and Start step writes its name to localStorage first, so after a hard freeze the next load can say where it stopped. ?safe=1 is safe mode. */
+(function(){const K='hushBC',OK={title:1,play:1,'':1};let prev=null;try{prev=JSON.parse(localStorage.getItem(K)||'null')}catch(e){}
+ window.__lastFreeze=prev&&prev.s&&!OK[prev.s]?prev:null;const log=window.__bcLog=[];
+ window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();localStorage.setItem(K,JSON.stringify({s,t:Date.now(),v:'v75',safe:!!window.__safe}))}catch(e){}};
+ let sf=false;try{sf=new URLSearchParams(location.search).get('safe')==='1'}catch(e){}window.__safe=sf;
+ // a small "Preparing..." bar used while Start runs its steps
+ window.__prep=txt=>{let g=null;try{g=document.createElement('div');g.setAttribute('role','status');g.style.cssText='position:fixed;left:0;right:0;bottom:12%;z-index:21;display:flex;flex-direction:column;gap:.7rem;align-items:center;color:#cfc4b4;font:.9rem system-ui,-apple-system,sans-serif;pointer-events:none;padding:0 16px';
+  g.innerHTML='<div></div><div style="width:min(16rem,70vw);height:3px;background:#1e1a20;border-radius:2px;overflow:hidden"><i style="display:block;height:100%;width:5%;background:#8a2020;transition:width .25s"></i></div>';g.firstChild.textContent=txt;document.body.appendChild(g)}catch(e){}
+  return{set(p){try{g.lastChild.firstChild.style.width=Math.round(Math.max(5,Math.min(100,p)))+'%'}catch(e){}},done(){try{g&&g.remove()}catch(e){}g=null}}};
+ window.__bc('page load')})()</script>
 <script>(function(){const E=window.__errs=[];const add=m=>{E.push(new Date().toISOString().slice(11,19)+' '+String(m).slice(0,300));if(E.length>10)E.shift()};
 const ce=console.error;console.error=function(...a){try{add(a.map(x=>x&&x.stack||x).join(' '))}catch(e){}return ce.apply(this,a)};
 addEventListener('error',e=>{const res=!e.message;const m=res?'resource error: '+((e.target&&(e.target.src||e.target.href))||'?'):e.message+(e.filename?' @'+e.filename.split('/').pop()+':'+e.lineno:'');add(m);show(m,res)},true);
 addEventListener('unhandledrejection',e=>{const m='promise: '+(e.reason&&e.reason.message||e.reason);add(m);show(m)});
 // v69 safety net: an on-screen line for uncaught errors (always) and resource failures (?debug=1 only)
 let dbg=false;try{dbg=new URLSearchParams(location.search).get('debug')==='1'}catch(e){}let el=null,n=0;
-function show(m,quiet){if(quiet&&!dbg)return;try{n++;if(!el){el=document.createElement('div');el.id='errLine';el.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;font:12px/1.35 ui-monospace,Menlo,Consolas,monospace;color:#ffd6d6;background:rgba(40,0,0,.88);border:1px solid #a33;border-radius:4px;padding:4px 26px 4px 8px;pointer-events:auto;word-break:break-word;max-height:4.2em;overflow:hidden';
- const x=document.createElement('button');x.textContent='x';x.title='Hide';x.style.cssText='position:absolute;right:4px;top:2px;background:none;border:0;color:#ffd6d6;cursor:pointer;font:inherit';x.onclick=ev=>{ev.stopPropagation();el.hidden=true};el.appendChild(x);el.appendChild(document.createElement('span'));(document.body||document.documentElement).appendChild(el)}
+function show(m,quiet){if(quiet&&!dbg)return;try{n++;if(!el){el=document.createElement('div');el.id='errLine';el.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;font:12px/1.35 ui-monospace,Menlo,Consolas,monospace;color:#ffd6d6;background:rgba(40,0,0,.88);border:1px solid #a33;border-radius:4px;padding:4px 26px 4px 8px;pointer-events:none;word-break:break-word;max-height:4.2em;overflow:hidden';
+ const x=document.createElement('button');x.textContent='x';x.title='Hide';x.style.cssText='position:absolute;right:0;top:0;min-width:32px;min-height:28px;background:none;border:0;color:#ffd6d6;cursor:pointer;font:inherit;pointer-events:auto';x.onclick=ev=>{ev.stopPropagation();el.hidden=true};el.appendChild(x);el.appendChild(document.createElement('span'));(document.body||document.documentElement).appendChild(el)}
  el.hidden=false;el.lastChild.textContent='Hush error ('+n+'): '+String(m).slice(0,240)+' - screenshot this or use Report a bug'}catch(e){}}
 window.__showErr=show;window.__logErr=add;
 // v70 watchdog: a frame gap over 1s (page visible) is logged; over 3s it is shown on the error line
@@ -109,7 +119,7 @@ if(dbg)addEventListener('DOMContentLoaded',()=>show('debug on',false))})()</scri
 <script>/* v72: three.js loads without blocking the parser; the game scripts below are held as text/x-hush and run in order, one per task, once both three.js and the page are here */
 (function(){let three=false,dom=document.readyState!=='loading',go=false;const bar=w=>{try{document.getElementById("ldB").style.width=w+"%"}catch(e){}};
  function run(){if(go||!three||!dom)return;go=true;const L=[].slice.call(document.querySelectorAll('script[type="text/x-hush"]'));let i=0;
-  const step=()=>{if(i>=L.length)return;const k=i,o=L[i++];try{const n=document.createElement('script');n.textContent=o.textContent;o.parentNode.replaceChild(n,o)}catch(e){try{__showErr('boot script '+k+': '+(e&&e.message||e))}catch(_){}}setTimeout(step,0)};step()}
+  const step=()=>{if(i>=L.length)return;const k=i,o=L[i++];try{window.__bc&&__bc('boot script '+k)}catch(_){}try{const n=document.createElement('script');n.textContent=o.textContent;o.parentNode.replaceChild(n,o)}catch(e){try{__showErr('boot script '+k+': '+(e&&e.message||e))}catch(_){}}setTimeout(step,0)};step()}
  /* errors inside a held script go to the window error line and do not stop the chain; a source-level try{} would break the shared top-level const/let, so it is not used */
  setTimeout(()=>{const ld=document.getElementById('ld');if(!ld||ld.classList.contains('out'))return;try{__showErr('still loading after 20 s'+(three?'':' (three.js not loaded)'));const d=document.createElement('div');d.style.cssText='position:fixed;left:0;right:0;bottom:64px;z-index:2147483647;text-align:center;font:14px system-ui,sans-serif';d.innerHTML='<button type="button" style="font:inherit;padding:.5rem 1.2rem;margin:0 .6rem">Reload</button><a href="?reset=1" style="color:#cfc4b4">Reset saved data</a>';d.firstChild.onclick=()=>location.reload();document.body.appendChild(d)}catch(e){}},20000)
  function load(src,tries){const sc=document.createElement('script');sc.src=src;sc.onload=()=>{three=true;bar(30);run()};
@@ -119,9 +129,9 @@ if(dbg)addEventListener('DOMContentLoaded',()=>show('debug on',false))})()</scri
 <script type="text/x-hush">try{document.getElementById("ldB").style.width="30%"}catch(e){}</script>
 <script type="text/x-hush">
 const W=8,D=7,H=2.8;const MPK=k=>window.__mp&&__mp.active?__mp.k(k):1;
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
-renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(renderer.domElement);
+const renderer=new THREE.WebGLRenderer({antialias:!window.__safe&&(()=>{try{return localStorage.getItem('hushQ')==='high'}catch(e){return false}})()});
+renderer.setPixelRatio(window.__safe?1:Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
+renderer.shadowMap.enabled=!window.__safe;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.appendChild(renderer.domElement);
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x06070b);scene.fog=new THREE.FogExp2(0x0a0b12,0.09);
 const cam=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.05,160);cam.position.set(4.8,-1.3,15.5);cam.rotation.order='YXZ';
 let yaw=0,pitch=0;
@@ -1692,10 +1702,10 @@ const TITLE=(function(){const el=document.getElementById('title'),setEl=document
  sc.add(new THREE.AmbientLight(0x18101a,.6));
  cyl_(.045,.035,.07,new THREE.MeshPhongMaterial({color:0xe8e4dc}),-.33,.035,-.12);cyl_(.075,.075,.008,new THREE.MeshPhongMaterial({color:0xe8e4dc}),-.33,.004,-.12);
  cyl_(.025,.025,.13,new THREE.MeshPhongMaterial({color:0xf4f4f8,transparent:true,opacity:.8}),-.28,.065,.2).rotation.z=Math.PI/2;
- renderer.shadowMap.enabled=true;
+ renderer.shadowMap.enabled=!window.__safe;
  // --- the note ---
  const RULES=['If someone knocks on the door, do not answer it.','If you hear footsteps in our bedroom, do not check it out.','If you hear whispering, don\'t answer. It stops.','If something scratches at the basement door, leave it be.','Keep her quiet. Whatever happens, keep her quiet.'];
- const OPT=[{k:'start',t:'Start',y:1020},{k:'cont',t:'Continue',y:1090},{k:'set',t:'Settings',y:1160},{k:'diff',get t(){return 'Difficulty: '+(window.__xt?__xt.diffName():'Normal')},y:1230},{k:'night',get t(){return 'Night: '+(window.__xt&&__xt.night||1)},get hide(){return !(window.__xt&&__xt.nightsUnlocked&&__xt.nightsUnlocked()>1)},y:1020,x:560},{k:'mp',t:'Play together',get hide(){return !(window.__mp&&__mp.available)},y:1300},{k:'hunt',t:'Hunt',get hide(){return !(window.huntUnlocked&&huntUnlocked())},y:1090,x:640}];
+ const OPT=[{k:'start',t:'Start',y:1020},{k:'cont',t:'Continue',y:1090},{k:'set',t:'Settings',y:1160},{k:'diff',get t(){return 'Difficulty: '+(window.__xt?__xt.diffName():'Normal')},y:1230},{k:'night',get t(){return 'Night: '+(window.__xt&&__xt.night||1)},get hide(){return !(window.__xt&&__xt.nightsUnlocked&&__xt.nightsUnlocked()>1)},y:1020,x:560},{k:'gfx',get t(){const q=window.__set&&__set.q||'medium';return 'Graphics: '+q[0].toUpperCase()+q.slice(1)+(window.__safe?' (safe)':'')},y:1160,x:560},{k:'mp',t:'Play together',get hide(){return !(window.__mp&&__mp.available)},y:1300},{k:'hunt',t:'Hunt',get hide(){return !(window.huntUnlocked&&huntUnlocked())},y:1090,x:640}];
  let hsV=false,hsT=-1e9;const hasSave=()=>{const n=performance.now();if(n-hsT>1000){hsT=n;try{const v=localStorage.getItem('hushSave');hsV=!!v&&v.charAt(0)==='{'}catch(e){hsV=false}}return hsV};
  let hov=null,idle=0,idleAt=10+Math.random()*10,ph=0,pt=0,drips=[],on=true,T=0,lastDraw=0,dirty=true;
  const HAND="'Caveat','Segoe Print','Bradley Hand',cursive";
@@ -1727,13 +1737,24 @@ const TITLE=(function(){const el=document.getElementById('title'),setEl=document
  function whisper(){if(!AC||muted)return;const t0=AC.currentTime;burst(t0,2400+Math.random()*800,3,.035,.5,'bandpass');burst(t0+.12,4200+Math.random()*900,4,.02,.35,'bandpass')}
  el.addEventListener('mousemove',e=>{if(!on)return;const k=pick(e);if(k!==hov){hov=k;dirty=true;el.style.cursor=k?'pointer':'default';if(k)whisper()}});
  el.addEventListener('pointerdown',()=>{initAudio();if(AC&&AC.state==='suspended')AC.resume()});
- el.addEventListener('click',e=>{if(!on||!setEl.hidden)return;const k=pick(e);if(k)window.__lastClick={k:'title '+k,t:performance.now()};if(k==='start'||k==='cont')begin(k==='cont');else if(k==='set')openSet(true);else if(k==='diff'){try{__xt.cycleDiff()}catch(err){}dirty=true}else if(k==='night'){try{__xt.cycleNight()}catch(err){console.error(err)}dirty=true}else if(k==='mp'){try{__mp.openLobby()}catch(err){console.error(err)}}else if(k==='hunt'){try{__xt.huntSP.start()}catch(err){console.error(err)}}});
+ el.addEventListener('click',e=>{if(!on||!setEl.hidden)return;const k=pick(e);if(k)window.__lastClick={k:'title '+k,t:performance.now()};if(k==='start'||k==='cont')begin(k==='cont');else if(k==='set')openSet(true);else if(k==='diff'){try{__xt.cycleDiff()}catch(err){}dirty=true}else if(k==='night'){try{__xt.cycleNight()}catch(err){console.error(err)}dirty=true}else if(k==='gfx'){try{if(!window.__safe){const Q=['low','medium','high'];__set.choose(Q[(Q.indexOf(__set.q)+1)%3])}}catch(err){console.error(err)}dirty=true}else if(k==='mp'){try{__mp.openLobby()}catch(err){console.error(err)}}else if(k==='hunt'){try{__xt.huntSP.start()}catch(err){console.error(err)}}});
  function openSet(v){setEl.hidden=!v}
  document.getElementById('tsetClose').onclick=()=>openSet(false);
- function begin(cont){if(window.__warmGate&&__warmGate(()=>begin(cont)))return;on=false;window.__phase='play';el.style.pointerEvents='none';try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}
-  if(cont){try{const s=JSON.parse(localStorage.getItem('hushSave'));if(s&&s.clockT>0)clockT=s.clockT;if(s&&window.__xt)__xt.restore(s)}catch(e){console.error('[Hush] restore failed',e)}}
-  const f=document.getElementById('tfade');f.hidden=false;requestAnimationFrame(()=>f.classList.add('on'));
-  setTimeout(()=>{el.hidden=true;started=true;overlay.hidden=true;setPaused(false);resumeClamp=3;setTimeout(()=>{try{if(!document.pointerLockElement)relockFail()}catch(e){}},900);if(!cont&&window.__xt)try{__xt.intro()}catch(err){console.error('[Hush] intro failed',err);window.__cut=null}setTimeout(()=>{f.classList.remove('on');setTimeout(()=>f.hidden=true,1600)},200)},1300)}
+ function begin(cont){if(window.__warmGate&&__warmGate(()=>begin(cont)))return;on=false;window.__phase='play';const bc=n=>{try{window.__bc&&__bc(n)}catch(e){}};bc('start: clicked');el.style.pointerEvents='none';
+  bc('start: pointer lock');try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}
+  // v75: Start runs as small steps, each in its own task with the bar showing, and each one leaves a breadcrumb first
+  const P=window.__prep?__prep('Preparing the night...'):{set(){},done(){}};const f=document.getElementById('tfade');
+  const steps=[
+   ['start: restore save',()=>{if(cont){try{const s=JSON.parse(localStorage.getItem('hushSave'));if(s&&s.clockT>0)clockT=s.clockT;if(s&&window.__xt)__xt.restore(s)}catch(e){console.error('[Hush] restore failed',e)}}}],
+   ['start: fade',()=>{f.hidden=false;requestAnimationFrame(()=>f.classList.add('on'))}],
+   ['start: wait for fade',null],
+   ['start: show house',()=>{el.hidden=true;started=true;overlay.hidden=true;setPaused(false);resumeClamp=3;setTimeout(()=>{try{if(!document.pointerLockElement)relockFail()}catch(e){}},900)}],
+   ['start: intro cutscene',()=>{if(!cont&&window.__xt)try{__xt.intro()}catch(err){console.error('[Hush] intro failed',err);window.__cut=null}}],
+   ['start: first frames',()=>{let n=0;const fr=()=>{bc('play: frame '+(++n));if(n<5)requestAnimationFrame(fr);else{P.done();setTimeout(()=>bc('play'),4000)}};requestAnimationFrame(fr);
+     setTimeout(()=>{f.classList.remove('on');setTimeout(()=>f.hidden=true,1600)},200)}]];
+  let i=0;const t0=performance.now();const next=()=>{if(i>=steps.length)return;const [n,fn]=steps[i++];bc(n);P.set(100*i/steps.length);
+   if(!fn){setTimeout(next,Math.max(0,1300-(performance.now()-t0)));return}try{fn()}catch(e){console.error('[Hush] '+n,e)}setTimeout(next,0)};
+  setTimeout(next,0)}
  function frame(dt){T+=dt;if(!el.hidden&&setEl.hidden&&on)idle+=dt;
   if(ph===0&&idle>idleAt){ph=1;pt=0}else if(ph>0){pt+=dt;if(ph===1&&pt>2.6){ph=2;pt=0}else if(ph===2&&pt>5.5){ph=3;pt=0;mkDrips()}}
   // flickering candle (gentle and smooth with Reduce flashing)
@@ -3127,14 +3148,14 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 })();
 // ---------- 15. how to play: shown once the intro ends, and from the pause menu ----------
 (function(){const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush ext] help '+(t||''),e)}};
- const css=document.createElement('style');css.textContent=`#help{position:fixed;inset:0;z-index:9;background:rgba(4,4,7,.88);display:flex;align-items:center;justify-content:center;padding:16px}
-#help .pn{width:min(54rem,100%);max-height:88vh;overflow:auto;background:#121014;border:1px solid #2c2a30;border-radius:8px;padding:1.4rem 1.5rem 1.2rem;color:var(--fg);font-family:var(--ui);font-size:.82rem;line-height:1.55;box-shadow:0 10px 40px rgba(0,0,0,.7)}
+ const css=document.createElement('style');css.textContent=`#help{position:fixed;inset:0;z-index:30;touch-action:pan-y;background:rgba(4,4,7,.88);display:flex;align-items:center;justify-content:center;padding:16px}
+#help .pn{width:min(54rem,100%);max-height:88vh;max-height:calc(100dvh - 32px);overflow:auto;touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#121014;border:1px solid #2c2a30;border-radius:8px;padding:1.4rem 1.5rem 1.2rem;color:var(--fg);font-family:var(--ui);font-size:.82rem;line-height:1.55;box-shadow:0 10px 40px rgba(0,0,0,.7)}
 #help h2{font-family:var(--display);font-weight:400;font-size:1.7rem;margin:0 0 .3rem;text-wrap:balance}#help h3{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:#b0574a;margin:1.1rem 0 .4rem;font-weight:600}
 #help p{margin:.3rem 0;max-width:68ch}#help .lead{font-family:var(--display);font-size:1.05rem;color:#d8cfc4}#help .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:0 1.6rem}
 #help dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:.25rem .8rem;margin:.2rem 0}#help dt{white-space:nowrap}#help dd{margin:0;color:#c8c0b6}
 #help kbd{font-family:var(--ui);font-size:.72rem;border:1px solid #3a363e;border-bottom-width:2px;border-radius:4px;padding:.05rem .35rem;background:#1c1a20;color:var(--fg)}
 #help ul{margin:.2rem 0;padding-left:1.1rem}#help li{margin:.18rem 0}#help .end{color:var(--dim);font-style:italic}
-#help .bar{display:flex;justify-content:flex-end;margin-top:1rem}#help button{font-family:var(--ui);font-size:.85rem;letter-spacing:.06em;color:#f0e6e0;background:#3a0e10;border:1px solid #6a2024;border-radius:6px;padding:.55rem 1.4rem;cursor:pointer}#help button:hover,#help button:focus-visible{background:#4a1418;outline:none}
+#help .bar{display:flex;justify-content:flex-end;margin-top:1rem;position:sticky;bottom:-1.2rem;background:#121014;padding:.6rem 0 .2rem;border-top:1px solid #2c2a30}#help button{font-family:var(--ui);font-size:.85rem;letter-spacing:.06em;color:#f0e6e0;background:#3a0e10;border:1px solid #6a2024;border-radius:6px;padding:.55rem 1.4rem;cursor:pointer}#help button:hover,#help button:focus-visible{background:#4a1418;outline:none}
 #hBtn{font-family:var(--ui);font-size:.8rem;letter-spacing:.06em;color:var(--fg);background:#1a1716;border:1px solid #3a332c;border-radius:6px;padding:.5rem 1.1rem;cursor:pointer;align-self:center}#hBtn:hover,#hBtn:focus-visible{border-color:var(--accent);outline:none}`;document.head.appendChild(css);
  const K=k=>'<kbd>'+k+'</kbd>';
  const HTML=`<div class="pn" role="dialog" aria-modal="true" aria-labelledby="helpT"><h2 id="helpT">How to play</h2>
@@ -3175,7 +3196,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 <div class="bar"><button type="button" id="helpClose">Got it</button></div></div>`;
  const H=document.createElement('div');H.id='help';H.hidden=true;H.innerHTML=HTML;document.body.appendChild(H);
  const close=()=>{H.hidden=true;safe(()=>{if(started&&!ended&&overlay.hidden&&!window.__cut){overlay.hidden=false;setPaused(true)}},'close')};
- H.querySelector('#helpClose').addEventListener('click',e=>{e.stopPropagation();close()});
+ {const hc=H.querySelector('#helpClose');hc.addEventListener('click',e=>{e.stopPropagation();close()});hc.addEventListener('pointerup',e=>{if(e.pointerType!=='mouse'){e.preventDefault();e.stopPropagation();close()}});['pointerdown','touchstart'].forEach(k=>hc.addEventListener(k,e=>e.stopPropagation(),{passive:true}))}
  H.addEventListener('click',e=>{e.stopPropagation();if(e.target===H)close()});
  addEventListener('keydown',e=>{if(!H.hidden&&(e.code==='Escape'||e.code==='Enter')){e.preventDefault();e.stopImmediatePropagation();close()}},true);
  XT.help={open(){safe(()=>{if(document.pointerLockElement)document.exitPointerLock()},'unlock');safe(()=>{if(started&&!ended)setPaused(true)},'pause');H.hidden=false;const pn=H.querySelector('.pn');pn.scrollTop=0;setTimeout(()=>safe(()=>{H.querySelector('#helpClose').focus({preventScroll:true});pn.scrollTop=0}),50)},close,get open_(){return !H.hidden}};
@@ -3893,13 +3914,20 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  const ls={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
  const touch=(()=>{try{return matchMedia('(pointer:coarse)').matches||navigator.maxTouchPoints>1&&/Mac|iP/.test(navigator.platform||'')}catch(e){return false}})();
  const small=Math.min(screen.width||999,screen.height||999)<700;
- const QS={low:{pr:.8,prMax:1,sh:false,far:45,fog:.055,pts:5},medium:{pr:1.25,prMax:1.25,sh:true,soft:false,map:512,far:90,fog:0,pts:8},high:{pr:1.5,prMax:1.5,sh:true,soft:true,map:0,far:160,fog:0,pts:14}};
- let q=ls.get('hushQ');const qSaved=!!QS[q];if(!qSaved)q=touch?(small?'low':'medium'):(/Firefox\//.test(navigator.userAgent)?'medium':'high');
+ const QS={low:{pr:.8,prMax:1,sh:false,far:45,fog:.055,pts:5},medium:{pr:1,prMax:1,sh:true,soft:false,map:512,far:90,fog:0,pts:6},high:{pr:1.5,prMax:1.5,sh:true,soft:true,map:0,far:160,fog:0,pts:14}};
+ let q=ls.get('hushQ');if(window.__safe){q='low';QS.low=Object.assign({},QS.low,{pr:1,prMax:1})}const qSaved=window.__safe||!!QS[q];if(!qSaved)q=touch&&small?'low':'medium';
  // v72: guess the GPU before anything compiles, so a later slow-frame step-down never changes shader-baked state (shadow type) and never re-warms
  if(!qSaved&&q==='high')try{const ua=navigator.userAgent,gl=renderer.getContext(),x=gl.getExtension('WEBGL_debug_renderer_info'),g=String(x?gl.getParameter(x.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER));
   if(/Safari\//.test(ua)&&!/Chrome|Chromium|Edg\//.test(ua)||/Intel|SwiftShader|llvmpipe|Software|Mali|Adreno|PowerVR/i.test(g))q='medium'}catch(e){}
  const v=parseFloat(ls.get('hushVoice'));window.__voiceVol=v>=0?v:1;window.__invY=ls.get('hushInvY')==='1';
  const SET={get q(){return q},QS,touch,qSaved};window.__set=SET;
+ // v75 safe mode: no shadows, DPR 1, Low, and Lambert in place of the PBR materials (colour/emissive objects are shared, the rest is mirrored every frame)
+ const SAFE=window.__safe?{m:new Map(),t:0}:null;
+ function safeSwap(sc){if(!SAFE||!sc)return;sc.traverse(o=>{if(!(o.isMesh||o.isSkinnedMesh))return;const one=m=>{if(!m||!(m.isMeshStandardMaterial||m.isMeshPhysicalMaterial||m.isMeshPhongMaterial))return m;let l=SAFE.m.get(m);
+   if(!l){l=new THREE.MeshLambertMaterial({map:m.map,transparent:m.transparent,opacity:m.opacity,side:m.side,alphaTest:m.alphaTest,depthWrite:m.depthWrite,depthTest:m.depthTest,skinning:!!m.skinning,emissiveMap:m.emissiveMap,emissiveIntensity:m.emissiveIntensity,fog:m.fog,vertexColors:m.vertexColors});l.color=m.color;if(m.emissive)l.emissive=m.emissive;l.userData.__orig=m;SAFE.m.set(m,l)}return l};
+   o.material=Array.isArray(o.material)?o.material.map(one):one(o.material)})}
+ function safeSync(){SAFE.m.forEach((l,m)=>{if(l.map!==m.map){if(!l.map!==!m.map)l.needsUpdate=true;l.map=m.map}l.opacity=m.opacity;l.transparent=m.transparent;l.visible=m.visible;l.emissiveIntensity=m.emissiveIntensity;l.side=m.side})}
+ SET.safeSwap=safeSwap;
  const mapSz=new Map();
  function matsDirty(sc){sc.traverse(o=>{const m=o.material;if(!m)return;(Array.isArray(m)?m:[m]).forEach(x=>x.needsUpdate=true)})}
  function apply(nq,lite){if(QS[nq])q=nq;const c=QS[q],dpr=window.devicePixelRatio||1;
@@ -3912,6 +3940,9 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   safe(()=>{cam.far=c.far;cam.updateProjectionMatrix()},'far');
   lastPick=0;}
  SET.apply=apply;
+ // v75: one way to change quality; from the title, a change that alters shaders or MSAA reloads the page, so Start never compiles
+ SET.choose=nq=>{if(!QS[nq])return;const a=QS[q],b=QS[nq],heavy=a.sh!==b.sh||!!a.soft!==!!b.soft||(q==='high')!==(nq==='high');ls.set('hushQ',nq);
+  if(heavy&&!started){try{window.__bc&&__bc('title')}catch(e){}location.reload();return}apply(nq);try{const sq=document.getElementById('sQ');if(sq)sq.value=nq}catch(e){}};
  // fog floor on Low hides the shorter draw distance; applied only while rendering so the game's own fog logic is untouched
  const R0=renderer.render.bind(renderer);
  // v71 light padding: three.js bakes the number of visible lights of each kind (and how many cast shadows) into every shader,
@@ -3925,7 +3956,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   for(const k in n)if(n[k]>(P.T[k]||0)){if(P.T[k]!==undefined&&window.__phase==='play'&&padGrow++<5)try{window.__logErr&&__logErr('lights grew '+k+' '+P.T[k]+'->'+n[k])}catch(e){}P.T[k]=n[k]}
   for(const k in P.T){const want=P.T[k]-(n[k]||0),pl=P.pool[k]||(P.pool[k]=[]);while(pl.length<want){const sh=k.endsWith('S'),L=mkPad(sh?k.slice(0,-1):k,sh);pl.push(L);P.g.add(L);if(L.target)P.g.add(L.target)}pl.forEach((L,i)=>L.visible=i<want)}}
  SET.pad=pad;
- renderer.render=function(sc,c){try{if(sc&&sc.isScene)pad(sc)}catch(e){}const f=QS[q].fog;if(f&&sc===scene&&sc.fog&&sc.fog.density!==undefined){const d=sc.fog.density;sc.fog.density=Math.max(d,f);try{R0(sc,c)}finally{sc.fog.density=d}}else R0(sc,c)};
+ renderer.render=function(sc,c){try{if(sc&&sc.isScene)pad(sc)}catch(e){}if(SAFE&&sc&&sc.isScene)try{const n=performance.now();if(n-SAFE.t>2000){SAFE.t=n;safeSwap(sc)}safeSync()}catch(e){}const f=QS[q].fog;if(f&&sc===scene&&sc.fog&&sc.fog.density!==undefined){const d=sc.fog.density;sc.fog.density=Math.max(d,f);try{R0(sc,c)}finally{sc.fog.density=d}}else R0(sc,c)};
  // light budget: only the nearest N point lights in the house are live. The count never changes, so no shaders recompile.
  let pts=[],lastPick=0,lastCol=0;const wp=new THREE.Vector3();
  function collect(){pts=[];scene.traverse(o=>{if(o.isPointLight&&!o.userData.__pad){let p=o.parent,onCam=false;while(p){if(p===cam)onCam=true;p=p.parent}if(!onCam)pts.push(o)}})}
@@ -3936,7 +3967,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  setInterval(()=>{try{budget()}catch(e){}},120);SET.cull=()=>{lastPick=0;lastCol=0;budget()};
  // the settings panel (title screen and pause)
  const $=id=>document.getElementById(id),panel=$('tset');
- safe(()=>{const sq=$('sQ');sq.value=q;sq.onchange=()=>{ls.set('hushQ',sq.value);apply(sq.value);subtitle('Graphics: '+sq.options[sq.selectedIndex].text,1200)};
+ safe(()=>{const sq=$('sQ');sq.value=q;sq.onchange=()=>{SET.choose(sq.value);subtitle('Graphics: '+sq.options[sq.selectedIndex].text,1200)};
   const vv=$('sVoice');vv.value=window.__voiceVol;vv.oninput=()=>{window.__voiceVol=+vv.value;ls.set('hushVoice',vv.value)};
   const iy=$('sInvY');iy.checked=window.__invY;iy.onchange=()=>{window.__invY=iy.checked;ls.set('hushInvY',iy.checked?'1':'0')};
   ['keydown','keyup'].forEach(k=>panel.addEventListener(k,e=>e.stopPropagation()));
@@ -4018,10 +4049,10 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
 </script>
 
 <script type="text/x-hush">(function(){const btn=document.getElementById('ovBug'),msg=document.getElementById('bugMsg');if(!btn)return;
-function report(){const L=['Hush bug report','Version: v74','Time: '+new Date().toISOString()];
+function report(){const L=['Hush bug report','Version: v75','Time: '+new Date().toISOString()];
  try{const p=cam.getWorldPosition(new THREE.Vector3());L.push('Position: '+[p.x,p.y,p.z].map(v=>v.toFixed(2)).join(', '))}catch(e){L.push('Position: ?')}
  const m=window.__mp;let mode='Single-player',n=1;try{if(m&&m.active){mode=m.mode==='hunt'?'Hunt':'Co-op';n=m.roster().length;if(m.demon)mode+=' (demon)';else if(m.ghost)mode+=' (ghost)'}}catch(e){}
- L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent);try{if(m&&m.active&&m.voiceDiag)L.push(m.voiceDiag())}catch(e){}L.push('Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
+ L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Safe mode: '+(window.__safe?'on':'off'));try{const F=window.__lastFreeze;L.push('Last session froze at: '+(F?F.s+' ('+new Date(F.t).toISOString()+(F.safe?', safe mode':'')+')':'(no)'));const B=window.__bcLog||[];L.push('Steps this session: '+B.slice(-12).join(' | '))}catch(e){}try{if(m&&m.active&&m.voiceDiag)L.push(m.voiceDiag())}catch(e){}L.push('Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
 function done(){msg.hidden=false;clearTimeout(done.t);done.t=setTimeout(()=>msg.hidden=true,4000)}
 function fallback(t){const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove();done()}
 btn.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();const t=report();window.__lastReport=t;
@@ -4031,7 +4062,13 @@ btn.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();const t=
  const tm=document.createElement('div');tm.textContent='Bug report copied. Paste it in a message.';tm.hidden=true;tm.style.cssText='position:absolute;right:14px;top:52px;z-index:5;font:.75rem system-ui,sans-serif;color:#9fd29f';
  const ok=()=>{tm.hidden=false;clearTimeout(ok.t);ok.t=setTimeout(()=>tm.hidden=true,4000)};
  b.addEventListener('click',e=>{e.stopPropagation();const t=report();window.__lastReport=t;const fb=()=>{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(x){}a.remove();ok()};try{navigator.clipboard.writeText(t).then(ok,fb)}catch(x){fb()}});
- b.addEventListener('mousemove',e=>e.stopPropagation());tl.appendChild(b);tl.appendChild(tm)}}
+ b.addEventListener('mousemove',e=>e.stopPropagation());tl.appendChild(b);tl.appendChild(tm);
+ // v75: where the last session froze, and a Safe mode link
+ const sm=document.createElement('div');sm.id='tSafe';sm.style.cssText='position:absolute;left:14px;bottom:14px;z-index:5;max-width:min(26rem,calc(100% - 28px));font:.75rem/1.4 system-ui,sans-serif;color:#cfc4b4;display:flex;flex-direction:column;gap:.35rem;align-items:flex-start';
+ const LF=window.__lastFreeze;if(LF){const d=document.createElement('div');d.style.cssText='background:rgba(40,8,8,.85);border:1px solid #7a2a2a;border-radius:6px;padding:.4rem .7rem;color:#f0d6d0';d.textContent='Last time the game froze at: '+LF.s+'. Use Report a bug to send this, or try Safe mode.';sm.appendChild(d)}
+ const a=document.createElement('a');const sp=new URLSearchParams(location.search);if(window.__safe){sp.delete('safe');a.textContent='Safe mode is on - back to normal mode'}else{sp.set('safe','1');a.textContent='Safe mode'}
+ a.href=location.pathname+(sp.toString()?'?'+sp:'');a.style.cssText='color:#cfc4b4;background:rgba(22,22,28,.85);border:1px solid #3a3a44;border-radius:6px;padding:.4rem .9rem;text-decoration:none;font-weight:600;letter-spacing:.06em';a.title='Low quality, no shadows, simple materials';sm.appendChild(a);
+ ['click','mousedown','pointerdown','mousemove'].forEach(k=>sm.addEventListener(k,e=>e.stopPropagation()));tl.appendChild(sm)}}
 btn.addEventListener('mousedown',e=>e.stopPropagation());btn.addEventListener('pointerdown',e=>e.stopPropagation())})()</script>
 <script type="text/x-hush">
 // ===== 19. Hunt: a multiplayer mode where one player is the snake demon and the rest are babysitters =====
@@ -4162,16 +4199,16 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
 #hTB button small{display:block;font-size:.5rem;opacity:.8;margin-top:2px}
 @media (orientation:portrait){#hTB{grid-template-columns:repeat(3,52px);gap:8px}#hTB button{width:52px;height:52px}#hTB button.big{height:112px}}`;document.head.appendChild(c)}
  const tb=document.createElement('div');tb.id='hTB';tb.hidden=true;document.body.appendChild(tb);let tbMode='';
- const HB=[['claw','Claws','big'],['ceil','Ceiling'],['flick','Flicker'],['hiss','Hiss'],['show','Scare'],['use','Open']],FB=[['swipe','Claws','big'],['lunge','Lunge'],['sweep','Sweep']];
+ const HB=[['claw','Claws','big'],['ceil','Ceiling'],['flick','Flicker'],['hiss','Hiss'],['show','Scare'],['use','Open'],['crouch','Crouch'],['sprint','Sprint']],FB=[['swipe','Claws','big'],['lunge','Lunge'],['sweep','Sweep']];
  function tbBuild(m){tbMode=m;tb.innerHTML=(m==='f'?FB:HB).map(([k,t,c])=>'<button type="button" data-k="'+k+'" class="'+(c||'')+'">'+t+'<small></small></button>').join('')}
  tb.addEventListener('pointerdown',e=>{const b=e.target.closest('button');if(!b)return;e.preventDefault();e.stopPropagation();const k=b.dataset.k;
-  if(tbMode==='f')fightAtk(k);else if(k==='claw')claw();else if(k==='use')useE();else act(k);b.classList.add('on');setTimeout(()=>b.classList.remove('on'),160)});
+  if(k==='sprint'||k==='crouch'){const c=k==='sprint'?'ShiftLeft':'KeyC';keys[c]=!keys[c];b.classList.toggle('on',!!keys[c]);return}if(tbMode==='f')fightAtk(k);else if(k==='claw')claw();else if(k==='use')useE();else act(k);b.classList.add('on');setTimeout(()=>b.classList.remove('on'),160)});
  tb.addEventListener('contextmenu',e=>e.preventDefault());['click','mousedown'].forEach(k=>tb.addEventListener(k,e=>e.stopPropagation()));
  function tbTick(){const B=XT.bladeFight&&XT.bladeFight.S,fight=!!(B&&B.st!=='intro'&&me());window.__dmFightTouch=fight&&!!window.__touchMode&&!MP.ended;
   const tcEl=document.getElementById('tc'),show=!!window.__touchMode&&me()&&!MP.ended&&skEl.hidden&&(fight||(tcEl&&!tcEl.hidden));tb.hidden=!show;if(!show)return;
   const m=fight?'f':'h';if(m!==tbMode)tbBuild(m);
   tb.querySelectorAll('button').forEach(b=>{const k=b.dataset.k,sm=b.querySelector('small');let t='',no=false;
-   if(m==='f')no=B.st!=='idle';else{const l=left(k);if(l)t=l+'s';if(k==='claw'&&XT.hour()<24){no=true;t='12 AM'}if(k==='ceil')b.classList.toggle('on',!!ST.ceil);if(ST.stun>0&&k!=='ceil')no=true}
+   if(m==='f')no=B.st!=='idle';else{const l=left(k);if(l)t=l+'s';if(k==='claw'&&XT.hour()<24){no=true;t='12 AM'}if(k==='ceil')b.classList.toggle('on',!!ST.ceil);if(k==='sprint'||k==='crouch'){b.classList.toggle('on',!!keys[k==='sprint'?'ShiftLeft':'KeyC']);no=false;t=''}if(ST.stun>0&&k!=='ceil')no=true}
    if(sm.textContent!==t)sm.textContent=t;b.classList.toggle('no',no);b.classList.toggle('cd',!!t&&!no)})}
  setInterval(()=>safe(tbTick,'touchbar'),150);
 
@@ -4475,33 +4512,36 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   ()=>{window.__phase="lights";window.__set&&__set.cull&&__set.cull()},
   ()=>{window.__phase="compile title";const t=T();if(t)renderer.compile(t.dbg.sc,t.dbg.tc)},
   ()=>{window.__phase="warm title";redrawTitle()}];
- // the house: hidden props are shown (lights stay as they are, so the light count matches play) and drawn a few objects per slice
- let H=null;const rt=new THREE.WebGLRenderTarget(64,64);
- function houseBegin(){const st=[],R=[];scene.traverse(o=>{if(o.isLight)return;st.push([o,o.visible,o.frustumCulled]);o.visible=true;o.frustumCulled=false;if(o.isMesh||o.isPoints||o.isLine||o.isSprite)R.push(o)});return{st,R}}
+ // v75: the house, realm and post scenes are compiled once behind the loading bar with renderer.compile (no per-object drawing), then drawn once.
+ // Every program is built before the title is clickable, so Start never compiles. Each step is its own task and leaves a breadcrumb.
+ const rt=new THREE.WebGLRenderTarget(64,64);
+ function houseBegin(){const st=[];scene.traverse(o=>{if(o.isLight)return;st.push([o,o.visible,o.frustumCulled]);o.visible=true;o.frustumCulled=false});return{st}}
  function houseEnd(h){h.st.forEach(([o,v,f])=>{o.visible=v;o.frustumCulled=f})}
- function draw(){const p=renderer.getRenderTarget();try{for(const t of [null,rt]){renderer.setRenderTarget(t);renderer.render(scene,cam)}}finally{renderer.setRenderTarget(p)}}
- // one slice: draw only objects [a,b) (canvas and offscreen: Safari builds a pipeline per target), then restore everything and redraw the title over the canvas
- // v73: one object at a time; a slice ends as soon as one new shader program was built (or 12 ms passed), so no slice holds the page for long
- function slice(a,budget){const h=houseBegin();let end=a;const p0=renderer.info.programs.length,t=performance.now();try{h.R.forEach(o=>o.visible=false);while(end<h.R.length){const o=h.R[end++];o.visible=true;draw();o.visible=false;if(renderer.info.programs.length>p0||performance.now()-t>budget)break}}finally{houseEnd(h)}redrawTitle();return{end,total:h.R.length}}
- function full(){const h=houseBegin();try{draw();h.st.forEach(([o,v])=>{if(!o.isLight)o.visible=v});draw()}finally{houseEnd(h)}redrawTitle()}
- let WT=0,lastIn=-1e9;['pointerdown','pointermove','keydown','wheel','touchstart'].forEach(t=>addEventListener(t,()=>{lastIn=performance.now()},{capture:true,passive:true}));
- const bg=[];let bi=0,pos=0,done=false,waiters=[],busy=false;
- bg.push(()=>{window.__phase=window.__phase==="title"?"title":window.__phase;const r=slice(pos,12);WT=r.total;pos=r.end;LT.sliceN=(LT.sliceN||0)+1;return pos<r.total}); // repeats until every object has been drawn
- bg.push(()=>{full();return false});
- bg.push(()=>{const R=window.__rlm;if(R&&R.scene){const p=renderer.getRenderTarget();try{renderer.setRenderTarget(null);renderer.render(R.scene,cam)}finally{renderer.setRenderTarget(p)}redrawTitle()}try{renderer.compile(pScene,pCam)}catch(e){}return false});
- const idle=f=>{const g=()=>{if(waiters.length||performance.now()-lastIn>800)f();else setTimeout(()=>idle(f),250)};try{if(window.requestIdleCallback){requestIdleCallback(g,{timeout:1000});return}}catch(e){}setTimeout(g,50)};
- const yieldFrame=f=>{let ran=false;const go=()=>{if(!ran){ran=true;setTimeout(f,0)}};requestAnimationFrame(go);setTimeout(go,100)};
- let wStart=0;
- function bgStep(){if(done)return;const s0=performance.now();do{if(one())return}while(bi===0&&performance.now()-s0<(waiters.length?40:10));
-  if(waiters.length)yieldFrame(bgStep);else yieldFrame(()=>idle(bgStep))}
- function one(){if(!wStart)wStart=performance.now();busy=true;const s=performance.now();let again=false;try{again=bg[bi]()}catch(e){console.error("[Hush] warm step "+bi,e);again=false}busy=false;const d=performance.now()-s;if(d>800)lg("warm slice "+bi+" took "+Math.round(d)+"ms");
-  if(!again)bi++;prog();if(bi>=bg.length){done=true;rt.dispose();LT.warm=Math.round(performance.now()-wStart);LT.ready=Math.round(performance.now()-t0);lg("house warm "+LT.warm+"ms, ready at "+LT.ready+"ms, programs "+renderer.info.programs.length);setTimeout(probe,300);const w=waiters;waiters=[];w.forEach(f=>{try{f()}catch(e){console.error(e)}});return true}return false}
- // Start while the house is still warming: a short bar, then the game starts by itself
- let gate=null;function prog(){if(gate){try{gate.firstChild.nextSibling.firstChild.style.width=Math.min(100,Math.round(bi===0?10+75*(WT?pos/WT:0):85+bi*5))+"%"}catch(e){}}}
- window.__warmGate=cb=>{if(done)return false;waiters.push(()=>{if(gate){gate.remove();gate=null}cb()});if(!gate){gate=document.createElement("div");gate.setAttribute("role","status");gate.style.cssText="position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;gap:1rem;align-items:center;justify-content:center;background:rgba(6,5,8,.86);color:#cfc4b4;font:.9rem system-ui,-apple-system,sans-serif;padding:16px";
-  gate.innerHTML='<div>Preparing the house...</div><div style="width:min(16rem,70vw);height:3px;background:#1e1a20;border-radius:2px;overflow:hidden"><i style="display:block;height:100%;width:10%;background:#8a2020;transition:width .3s"></i></div>';document.body.appendChild(gate);prog()}window.__phase="preparing";if(!busy)yieldFrame(bgStep);return true};
+ const S=()=>window.__set||{};
+ function compileHouse(){const h=houseBegin();try{S().safeSwap&&S().safeSwap(scene);S().pad&&S().pad(scene);renderer.compile(scene,cam)}finally{houseEnd(h)}}
+ // the hidden props are drawn offscreen 120 at a time (uploads their buffers and textures), shadow maps frozen; one chunk per task, at most 60
+ let R=null,rp=0;const CH=120;
+ function drawChunk(){const p=renderer.getRenderTarget(),h=houseBegin(),au=renderer.shadowMap.autoUpdate;if(!R){R=[];h.st.forEach(([o])=>{if(o.isMesh||o.isPoints||o.isLine||o.isSprite)R.push(o)})}
+  try{R.forEach(o=>o.visible=false);for(let k=rp;k<Math.min(R.length,rp+CH);k++)R[k].visible=true;renderer.shadowMap.autoUpdate=false;renderer.setRenderTarget(rt);renderer.render(scene,cam)}finally{renderer.shadowMap.autoUpdate=au;houseEnd(h);renderer.setRenderTarget(p)}rp+=CH;return rp<R.length}
+ function drawSmall(){const p=renderer.getRenderTarget();try{renderer.setRenderTarget(rt);renderer.render(scene,cam)}finally{renderer.setRenderTarget(p)}}
+ function drawCanvas(){const p=renderer.getRenderTarget();try{renderer.setRenderTarget(null);renderer.render(scene,cam)}finally{renderer.setRenderTarget(p)}redrawTitle()}
+ pre.push(
+  ()=>{window.__phase="compile house";compileHouse()},
+  ()=>{window.__phase="compile realm";const R=window.__rlm;if(R&&R.scene){S().safeSwap&&S().safeSwap(R.scene);S().pad&&S().pad(R.scene);renderer.compile(R.scene,cam)}},
+  ()=>{window.__phase="compile post";try{renderer.compile(pScene,pCam)}catch(e){}},
+  ()=>{window.__phase="draw house";if(drawChunk()&&(LT.chunks=(LT.chunks||0)+1)<60)i--},
+  ()=>{window.__phase="draw house (shadows)";drawSmall()},
+  ()=>{window.__phase="draw house (screen)";drawCanvas()},
+  ()=>{window.__phase="draw realm";const R=window.__rlm;if(R&&R.scene){const p=renderer.getRenderTarget();try{renderer.setRenderTarget(rt);renderer.render(R.scene,cam)}finally{renderer.setRenderTarget(p)}}rt.dispose();
+   LT.programs=renderer.info.programs.length;LT.warm=Math.round(performance.now()-t0)});
+ // the gate stays only as a fallback (Start before loading finished); it can never wait more than 2 s
+ let done=false,gate=null,waiters=[];
+ function finish(){if(done)return;done=true;if(gate){gate.done();gate=null}const w=waiters;waiters=[];w.forEach(f=>{try{f()}catch(e){console.error(e)}})}
+ window.__warmGate=cb=>{if(done)return false;waiters.push(cb);if(!gate){gate=window.__prep?__prep('Preparing the house...'):null;gate&&gate.set(50);setTimeout(finish,2000)}window.__phase="preparing";return true};
+ const fade0=fade;
  let i=0;
- const next=()=>{if(i>=pre.length){LT.title=Math.round(performance.now()-t0);lg("title at "+LT.title+"ms");fade();setTimeout(()=>idle(bgStep),400);return}const s=performance.now();try{pre[i]()}catch(e){console.error("[Hush] loading step "+i,e)}const d=performance.now()-s;if(d>800)lg("loading step "+i+" took "+Math.round(d)+"ms");i++;bar(88+i*4);setTimeout(next,16)};
+ const PN=["lights","compile title","warm title","compile house","compile realm","compile post","draw house","draw house (shadows)","draw house (screen)","draw realm"];
+ const next=()=>{if(i>=pre.length){LT.title=Math.round(performance.now()-t0);lg("ready at "+LT.title+"ms, programs "+renderer.info.programs.length);finish();fade0();try{window.__bc&&__bc("title")}catch(e){}setTimeout(probe,300);return}const s=performance.now();try{window.__bc&&__bc("loading: "+(PN[i]||i))}catch(e){}try{pre[i]()}catch(e){console.error("[Hush] loading step "+i,e)}const d=performance.now()-s;if(d>800)lg("loading step "+i+" took "+Math.round(d)+"ms");i++;bar(88+i*12/pre.length);setTimeout(next,16)};
  // measure title frames; if slow and the player never picked a quality, step down resolution and shadow-map size only (nothing recompiles)
  const probe=()=>{const S=window.__set;let n=0,st=0,lt=0;const f=t=>{if(lt)st+=t-lt;lt=t;n++;if(n<40)requestAnimationFrame(f);else{const avg=st/(n-1);
    try{if(S&&!S.qSaved&&avg>28&&S.q!=="low"){const nq=S.q==="high"?"medium":"low";S.apply(nq,true);const sq=document.getElementById("sQ");if(sq)sq.value=nq;lg("slow frames ("+Math.round(avg)+"ms), quality -> "+nq+" (resolution/shadow size only)");S.cull&&S.cull()}}catch(e){console.error(e)}}};requestAnimationFrame(f)};
