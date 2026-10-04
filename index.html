@@ -3251,7 +3251,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 // Secret endings (no hints anywhere): hit by a car on the road, crossing the road (You Left), and the house collapsing when its doors are used 10 times in 3 s.
 // In multiplayer each player runs their own street, and only that player dies.
 (function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush out] '+(t||''),e)}};
- const R0=18.9,R1=24.3,FAR=25.0,LN=[20.25,22.95],XL=-8,XR=12,V=20,SPAN=[-48,56];
+ const R0=18.9,R1=24.3,FAR=R1+.12,LN=[20.25,22.95],XL=-8,XR=12,V=20,SPAN=[-48,56];
  const OUT={};window.__out=OUT;
  // v79: the house stretch (far from the baby) moved the hedge and yard but not the street, gate or walls, and a remap put the hedge's gap back; outdoors the stretch is off and the gap is re-cut every frame
  window.__outside=()=>!(window.__rlm&&__rlm.on)&&iZ(cam.position.z)>9.8&&fy<-2&&fy>-3.5;let hA=null,hB=null;
@@ -3288,8 +3288,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   XT.ending(id);setTimeout(()=>flash('#000',0,10),400)}
  const me=()=>({x:cam.position.x,z:cam.position.z});
  const can=()=>XT.live()&&!over&&!(window.__mp&&(__mp.ghost||__mp.demon))&&!(window.__rlm&&__rlm.on);
- // traffic: one car at a time, every 6 to 10 s, headlights and an engine you can hear coming
- const car=XT.props.car,beam=car.children.find(c=>c.isSpotLight);const T={on:false,x:0,dir:1,z:LN[0],next:4,honk:false};OUT.T=T;
+ // traffic: one car at a time; the first comes about 2 s after you reach the sidewalk, then every 3 to 6 s
+ const car=XT.props.car,beam=car.children.find(c=>c.isSpotLight);const T={on:false,x:0,dir:1,z:LN[0],next:2,honk:false,armed:false};OUT.T=T;
  function spawn(){T.on=true;T.dir=Math.random()<.5?1:-1;T.x=T.dir>0?SPAN[0]:SPAN[1];T.z=T.dir>0?LN[0]:LN[1];T.honk=false;car.visible=true;car.rotation.set(0,T.dir>0?0:Math.PI,0);car.position.set(T.x,F,T.z);if(beam)beam.intensity=2.4}
  function park(){T.on=false;car.visible=false;if(beam)beam.intensity=0;if(eng)eng.g.gain.setTargetAtTime(0,AC.currentTime,.1)}
  function hit(){over=true;window.__noMove=1;horn();setTimeout(()=>{noise(.5,.9,500);flash('#fff',1,60);setTimeout(()=>flash('#000',1,250),120)},180);setTimeout(()=>finish('car'),1100)}
@@ -3299,7 +3299,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   if(!window.__cut){const tg=OUT.gate.open?-1.5:0;G.rotation.y+=(tg-G.rotation.y)*Math.min(1,dt*6);gs.off=G.rotation.y<-.35}
   const p=me(),out=__outside();
   if(window.__cut||(window.__rlm&&__rlm.on)){if(T.on)T.on=false;if(eng)eng.g.gain.value=0;return}
-  if(!T.on){T.next-=dt;if(T.next<=0&&out&&XT.live()){spawn();T.next=6+Math.random()*4}}
+  const walk=out&&p.z>18.2;if(walk&&!T.armed){T.armed=true;if(!T.on)T.next=2}else if(!out&&T.armed&&!T.on)T.armed=false;
+  if(!T.on){if(T.armed){T.next-=dt;if(T.next<=0&&XT.live()){spawn();T.next=3+Math.random()*3}}}
   else{T.next-=dt;T.x+=T.dir*V*dt;car.position.x=T.x;
    const e=engine();if(e){const d=Math.hypot(T.x-p.x,T.z-p.z),k=Math.max(0,1-d/60);e.g.gain.setTargetAtTime(.22*k*k,AC.currentTime,.05);const ap=(p.x-T.x)*T.dir>0;e.o.frequency.value=48*(ap?1.08:.92);e.o2.frequency.value=73*(ap?1.08:.92);if(e.p)e.p.pan.value=Math.max(-1,Math.min(1,(T.x-p.x)/20))}
    const inRoad=p.z>R0-.1&&p.z<R1+.1;
