@@ -94,10 +94,10 @@ body:has(#title:not([hidden])) #cross{display:none}
 (function(){const K='hushBC',OK={title:1,play:1,'':1};let prev=null;try{prev=JSON.parse(localStorage.getItem(K)||'null')}catch(e){}
  // v76: Firefox commits localStorage writes only when the task ends, so a crumb written by a task that hangs is lost; sessionStorage and the URL hash are extra copies
  try{const ss=JSON.parse(sessionStorage.getItem(K)||'null');if(ss&&ss.t&&(!prev||ss.t>prev.t))prev=ss}catch(e){}
- try{const hm=/[#&]bc=([^&~]*)~(\d+)/.exec(location.hash);if(hm){const hs={s:decodeURIComponent(hm[1]),t:+hm[2],v:'v78.1'};if(!prev||hs.t>prev.t)prev=hs;history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
+ try{const hm=/[#&]bc=([^&~]*)~(\d+)/.exec(location.hash);if(hm){const hs={s:decodeURIComponent(hm[1]),t:+hm[2],v:'v79'};if(!prev||hs.t>prev.t)prev=hs;history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
  const mirror=(s,j)=>{try{sessionStorage.setItem(K,j)}catch(e){}try{const h=location.hash;if(!h||/^#bc=/.test(h))history.replaceState(null,'',location.pathname+location.search+(OK[s]?'':'#bc='+encodeURIComponent(s)+'~'+Date.now()))}catch(e){}};
  window.__lastFreeze=prev&&prev.s&&!OK[prev.s]?prev:null;const log=window.__bcLog=[];
- window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();const j=JSON.stringify({s,t:Date.now(),v:'v78.1',safe:!!window.__safe});mirror(s,j);localStorage.setItem(K,j)}catch(e){}};
+ window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();const j=JSON.stringify({s,t:Date.now(),v:'v79',safe:!!window.__safe});mirror(s,j);localStorage.setItem(K,j)}catch(e){}};
  let sf=false;try{sf=new URLSearchParams(location.search).get('safe')==='1'}catch(e){}window.__safe=sf;
  // a small "Preparing..." bar used while Start runs its steps
  window.__prep=txt=>{let g=null;try{g=document.createElement('div');g.setAttribute('role','status');g.style.cssText='position:fixed;left:0;right:0;bottom:12%;z-index:21;display:flex;flex-direction:column;gap:.7rem;align-items:center;color:#cfc4b4;font:.9rem system-ui,-apple-system,sans-serif;pointer-events:none;padding:0 16px';
@@ -1357,7 +1357,7 @@ const DEMON=(function(){const C=CARE.dbg,pics=C.pics,g=new THREE.Group();g.visib
   [92,131,185,277,415,622].forEach(f=>{const s=AC.createOscillator();s.type='sawtooth';s.frequency.setValueAtTime(f*1.03,t0);s.frequency.exponentialRampToValueAtTime(f*.92,t0+1.5);s.connect(o);s.start(t0);s.stop(t0+1.7)});burst(t0,900,.6,.5,.5,'bandpass')}
  function start(k){const a=T[k]&&T[k]();if(!a)return false;A=Object.assign({k,t:0},a);stats[k]=(stats[k]||0)+1;return true}
  function stop(){if(!A)return;A.end&&A.end();A=null;g.visible=false;glow.intensity=0}
- function localSight(sc){let ok=false;if(sc)ok=start('scare');const order=['window','painting','hallway','doorway','mirror','monitor'].sort(()=>Math.random()-.5);for(const k of order){if(ok)break;ok=start(k)}return ok}
+ function localSight(sc){if(window.__mp&&__mp.ghost)return false;let ok=false;if(sc)ok=start('scare');const order=['window','painting','hallway','doorway','mirror','monitor'].sort(()=>Math.random()-.5);for(const k of order){if(ok)break;ok=start(k)}return ok}
  function update(dt){if(!entered||ended)return;clk+=dt;if(A){A.t+=dt;A.tick&&A.tick(A);if(A.done||A.t>=A.dur)stop();return}if(window.__mp&&__mp.client)return;
   const n=C.noise,L=late();next-=dt*(.35+1.6*n)*(L?1.7:1);if(next>0||n<(L?.12:.25))return;
   const sc=hour()>=24&&n>.7&&clk-lastScare>170&&Math.random()<.35;const ok=(window.__mp&&__mp.active)?__mp.demonSight(sc):localSight(sc);
@@ -1533,7 +1533,7 @@ const HUNT=(function(){let tm=0,warn=0,k=null;
   if(!entered||ended||window.__dead||window.__tbc||TRAP.on||RLM.on)return;const n=CARE.dbg.noise;if(n>=.97)tm+=dt;else tm=Math.max(0,tm-dt*2);
   if(tm>15&&!warn){warn=1;subtitle('(Something is coming. Quiet her down.)',4000);if((window.__mp&&__mp.active))try{__mp.subAll('(Something is coming. Quiet her down.)',4000)}catch(e){}}if(tm<8)warn=0;
   if(tm>=30){if((window.__mp&&__mp.active)){tm=0;try{__mp.hunt()}catch(e){console.error(e)}return}fire()}}
- function fire(){try{if(window.__xt&&__xt.hideHunt&&__xt.hideHunt()){tm=0;return}}catch(e){console.error(e)}k=0;DEMON.dbg.show('scare',true)}
+ function fire(){if(window.__mp&&__mp.ghost){tm=0;return}try{if(window.__xt&&__xt.hideHunt&&__xt.hideHunt()){tm=0;return}}catch(e){console.error(e)}k=0;DEMON.dbg.show('scare',true)}
  return{update,fire,get t(){return tm},set t(v){tm=v}}})();
 window.__hunt=HUNT;
 // ===== background music (generated): a music-box + soft pad bed when calm, low strings / dissonance / pulse that layer in with her
@@ -2077,14 +2077,16 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 })();
 // ---------- 7. endings, exit cutscenes, credits ----------
 (function(){const XT=window.__xt;
- const NAMES={parents:"Six O'Clock",dawn:'Dawn',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed'},ORDER=['parents','dawn','death','cult','secret','car','left','collapse'];
+ const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted'},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted'];
+ // v79: one line under every ending card's title (Petra)
+ const DESC={parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back."};
  const got=()=>{try{const a=JSON.parse(XT.ls.get('hushEndings')||'[]');return Array.isArray(a)?a.filter(k=>NAMES[k]):[]}catch(e){return[]}};
  const css=document.createElement('style');css.textContent=`#xfade{position:fixed;inset:0;z-index:8;background:#000;opacity:0;pointer-events:none;transition:opacity 1.2s;display:flex;align-items:center;justify-content:center;padding:0 16px;text-align:center;font-family:var(--display);font-style:italic;font-size:1.6rem;color:#d8cfc4}#xfade.on{opacity:1}
 #xend{position:fixed;inset:0;z-index:10;background:#050405;color:var(--fg);display:flex;align-items:center;justify-content:center;padding:24px 16px;overflow:hidden}#xend .in{max-width:32rem;width:100%;text-align:center;display:flex;flex-direction:column;gap:.9rem;max-height:100%}
 #xend h1{font-family:var(--display);font-weight:400;font-size:2.1rem;margin:0;text-wrap:balance}#xend .tag{font-family:var(--ui);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:#a04040;margin:0}#xend p.txt{font-family:var(--display);color:#bfb6a8;font-size:1.05rem;line-height:1.5;margin:0}
 #xend .roll{height:34vh;overflow:hidden;position:relative;-webkit-mask-image:linear-gradient(transparent,#000 18%,#000 82%,transparent);mask-image:linear-gradient(transparent,#000 18%,#000 82%,transparent)}#xend .roll div{position:absolute;left:0;right:0;font-family:var(--ui);font-size:.78rem;line-height:1.9;color:var(--dim);animation:xroll 26s linear forwards}#xend .roll b{display:block;color:var(--fg);font-weight:400;margin-top:1rem;letter-spacing:.12em;text-transform:uppercase;font-size:.66rem}
 @keyframes xroll{from{transform:translateY(34vh)}to{transform:translateY(-100%)}}@media (prefers-reduced-motion:reduce){#xend .roll div{animation:none;position:static}#xend .roll{height:auto;overflow:auto}}
-#xend .found{font-family:var(--ui);font-size:.72rem;color:var(--dim);letter-spacing:.06em}#xend button{align-self:center;font-family:var(--ui);font-size:.85rem;letter-spacing:.06em;color:#f0e6e0;background:#3a0e10;border:1px solid #6a2024;border-radius:6px;padding:.6rem 1.4rem;cursor:pointer}#xend button:hover,#xend button:focus-visible{background:#4a1418;outline:none}
+#xend p.desc{font-family:var(--ui);font-size:.82rem;line-height:1.5;color:#d8c8a8;margin:0;font-style:italic}#xend .found{font-family:var(--ui);font-size:.72rem;color:var(--dim);letter-spacing:.06em}#xend button{align-self:center;font-family:var(--ui);font-size:.85rem;letter-spacing:.06em;color:#f0e6e0;background:#3a0e10;border:1px solid #6a2024;border-radius:6px;padding:.6rem 1.4rem;cursor:pointer}#xend button:hover,#xend button:focus-visible{background:#4a1418;outline:none}
 #tEnd{position:absolute;left:16px;top:calc(env(safe-area-inset-top,0px) + 14px);font-family:var(--ui);font-size:.7rem;letter-spacing:.06em;color:#8a7e70;line-height:1.6;pointer-events:none;max-width:calc(100% - 32px)}#tEnd b{color:#c8b8a0;font-weight:400}`;document.head.appendChild(css);
  const fade=document.createElement('div');fade.id='xfade';fade.hidden=true;document.body.appendChild(fade);
  const card=document.createElement('div');card.id='xend';card.hidden=true;document.body.appendChild(card);
@@ -2104,9 +2106,10 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   car:["Get Run Over by a Car","Headlights, a horn, and then nothing at all. Back in the house on Larch Road a baby starts to cry, and nobody comes."],
   left:["You Left","You walk away down Larch Road and you do not look back. Behind you a light comes on in the nursery window. You never find out who turned it on."],
   collapse:["The House Collapsed","The doors bang, and bang, and the old house finally gives up: beams, plaster, the chandelier. In the morning the firemen find the crib under it all, untouched, and empty."],
+  abstracted:["Abstracted.","The black came in from the edges, and the eyes came with it: too many, all the wrong colours, all of them looking for you. Somewhere very far away a baby is crying. You can't remember which way is up."],
   cult:["Welcome home.","They wrap you in the third robe. It fits. The Order of the Low Door has a new sister, and the Deep has its gift, and nobody ever asks the sitter's name again."]};
  function showCard(id,extra){const [h,p]=TXT[id];const g=got();if(document.pointerLockElement)document.exitPointerLock();
-  card.innerHTML='<div class="in"><p class="brand">HUSH</p><p class="tag">Ending '+(ORDER.indexOf(id)+1)+' of '+ORDER.length+' &middot; '+NAMES[id]+'</p><h1>'+(extra&&extra.h&&id==='death'?extra.h:h)+'</h1><p class="txt">'+(extra&&extra.p&&id==='death'?extra.p+' ':'')+p+'</p>'+
+  card.innerHTML='<div class="in"><p class="brand">HUSH</p><p class="tag">Ending '+(ORDER.indexOf(id)+1)+' of '+ORDER.length+' &middot; '+NAMES[id]+'</p><h1>'+(extra&&extra.h&&id==='death'?extra.h:h)+'</h1><p class="desc">'+(DESC[id]||'')+'</p><p class="txt">'+(extra&&extra.p&&id==='death'?extra.p+' ':'')+p+'</p>'+
    '<div class="roll"><div><b>Created by Petra Davis</b>Thanks to my beta tester, Sloane!<b>Hush</b>A night of babysitting<b>Made with</b>Three.js r128<br>The Web Audio API (every sound is generated)<b>Difficulty</b>'+(XT.diffName?XT.diffName():'Normal')+'<b>Night</b>'+(XT.night||1)+'<b>Notes found</b>'+(XT.notes?XT.notes.found.length:0)+' of '+(XT.notes?XT.notes.avail().length:7)+'<b>Calls answered</b>'+(XT.phone?XT.phone.answered:0)+'<b>Thank you</b>for keeping her quiet.<br>Mostly.</div></div>'+
    '<p class="found">Endings found '+g.length+'/'+ORDER.length+': '+ORDER.map(k=>g.includes(k)?NAMES[k]:'???').join(' &middot; ')+'</p><button type="button" id="xBack">Back to the title</button></div>';
   card.hidden=false;fade.hidden=true;fade.classList.remove('on');card.querySelector('#xBack').onclick=()=>{try{clearSave()}catch(e){}location.reload()};setTimeout(()=>{try{card.querySelector('#xBack').focus()}catch(e){}},50);if(AC)setTimeout(()=>{try{AC.suspend()}catch(e){}},2500)}
@@ -2124,7 +2127,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  // helpers for the cut scenes
  const say=(L,t,st)=>{while(st.i<L.length&&t>=L[st.i][0]){const [,k,txt,d]=L[st.i];subtitle(txt,d*1000);if(k&&XT.voice)XT.voice(txt.replace(/\(.*?\)/g,''),k,d*.85,.4);st.i++}};
  const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
- const CUT={car:()=>null,left:()=>null,collapse:()=>null,
+ const CUT={car:()=>null,left:()=>null,collapse:()=>null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
   parents(){if(window.__rlm&&__rlm.on)return null;const {mom,dad}=XT.props;mom.visible=dad.visible=true;subtitle('',1);
    const L=[[2.6,'mom',"We're home! Oh... you're still here.",2.6],[5.6,'mom',"She was so quiet. Wasn't she quiet? We could hear how quiet she was.",3.6],[9.6,'dad',"Thank you. We'll take it from here.",2.6],[12.6,null,"(Their smiles are much too wide. Neither of them blinks.)",3]],st={i:0};
    fadeTo(false);
@@ -3019,7 +3022,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const EYE=PF.y,FLR=stopP.y;
   const pos=()=>S.spec||S.dead?SPEC.clone():new THREE.Vector3(S.p.x,EYE+S.py,S.p.z);
   // where the one she is after stands (single-player: always you)
-  const tgtPos=()=>{if(!S.MP||S.tg===S.me)return S.dead||S.spec?null:{x:S.p.x,z:S.p.z};return safe(()=>__mp.posOf(S.tg),'pos')||null};
+  const tgtPos=()=>{if(S.MP&&S.tg!==S.me){const F=safe(()=>__mp.fighters(),'f')||[];if(!F.includes(S.tg))S.tg=F[0]||S.me}/* v79: a fighter who died stops being the target */if(!S.MP||S.tg===S.me)return S.dead||S.spec?null:{x:S.p.x,z:S.p.z};return safe(()=>__mp.posOf(S.tg),'pos')||null};
   const hurt=()=>{if(S.iT>0||S.dead)return;S.php--;S.iT=.9;S.shake=.35;hurtEl.classList.add('on');requestAnimationFrame(()=>requestAnimationFrame(()=>hurtEl.classList.remove('on')));sfx(120,1,.45,.35,'lowpass');sfx(700,2,.15,.2,'bandpass');
    if(S.php<=0){if(S.MP){S.dead=true;S.over=true;vm.visible=false;cue('');subtitle('(The blade slips out of your hand. You can only watch.)',3000);safe(()=>__mp.bossDead(),'bdead')}else{S.st='lost';S.fT=0;S.over=true;cue('');subtitle('(The blade slips out of your hand.)',2500)}}};
   const spd=()=>Math.max(.5,DD.sp*[1,1.2,1.42][S.ph]);
@@ -3245,6 +3248,172 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    setTimeout(()=>location.href=location.pathname+location.search,150)});
   addEventListener('keydown',e=>{if(e.code==='Escape'&&!cf.hidden&&!overlay.hidden){e.stopPropagation();show(false)}},true)}
 })();
+// ---------- v79: the purple rabbit (Abstracted), the bathroom medicine cabinet (Poison Taster), Maomao the cat, Jinshi's gift hairpin ----------
+(function(){const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush ext] v79 '+(t||''),e)}};
+ const ach=id=>safe(()=>XT.achUnlock&&XT.achUnlock(id),'ach '+id);
+ const mp=()=>!!(window.__mp&&__mp.active),calm=()=>!!(window.__getCalm&&__getCalm());
+ const hit=(g,w,h,d,x,y,z,label,act)=>{const m=new THREE.Mesh(BG(w,h,d),hitM);m.position.set(x,y,z);g.add(m);m.userData.i={get label(){return typeof label==='function'?label():label},act};inter.push(m);return m};
+ const tone=(f0,f1,dur,vol,type,fq)=>{if(!AC||muted||!master)return;const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime;o.type=type||'sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.04);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  if(fq){const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=fq;f.Q.value=3;o.connect(f);f.connect(g)}else o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+.05)};
+
+ // ===== 1. the hamper in the nursery corner, and the purple rabbit in yellow overalls on its lid =====
+ const HX=-3.58,HZ=-3.08;
+ {const g=new THREE.Group(),wick=M(0xb8986a),wd=M(0x8a6a44);
+  cyl(.25,.21,.56,wick,0,.28,0,12,g);[.12,.3,.48].forEach(y=>cyl(.255-y*.07,.255-y*.07,.03,wd,0,y,0,12,g));cyl(.27,.27,.04,wd,0,.58,0,12,g);
+  box(.3,.06,.04,M(0xe8e0d0),.08,.5,.22,g).rotation.z=.3;// a sock caught under the lid
+  const R=new THREE.Group();R.position.set(0,.6,0);g.add(R);const pu=M(0x8a5ac8),pk=M(0xf0a8d0),yl=M(0xf2c832),bk=M(0x141018);
+  sph(.085,pu,0,.13,0,1,1.1,.9,R);sph(.09,yl,0,.07,0,1.05,.72,.95,R);// body, overalls
+  box(.11,.07,.02,yl,0,.15,.075,R);[-.035,.035].forEach(x=>{box(.018,.09,.012,yl,x,.19,.07,R);sph(.009,M(0xd0d0d8),x,.165,.082,1,1,1,R)});
+  sph(.075,pu,0,.27,.005,1,.95,.95,R);// head
+  [-1,1].forEach(s=>{const e=sph(.024,pu,s*.035,.4,-.005,1,3.4,.55,R);e.rotation.z=-s*.18;const i=sph(.012,pk,s*.036,.4,.008,1,3,.3,R);i.rotation.z=-s*.18;
+   sph(.012,bk,s*.028,.29,.066,1,1,.5,R);sph(.03,pu,s*.085,.1,.03,.8,1.2,.8,R);sph(.032,pu,s*.045,.02,.06,1,.7,1.4,R)});
+  sph(.012,pk,0,.26,.073,1,.8,.6,R);box(.03,.004,.004,bk,0,.245,.07,R);
+  R.rotation.y=Math.atan2(-HX,-HZ);g.rotation.y=0;XT.place(g,HX,0,HZ);
+  solids.push({x0:HX-.27,x1:HX+.27,z0:HZ-.27,z1:HZ+.27,y0:0,y1:.6});
+  hit(g,.42,.5,.42,0,.82,0,'Purple rabbit',()=>safe(press,'rabbit'));XT.rabbit={g,R}}
+ let pressed=false;
+ function press(){if(pressed||!XT.live())return;pressed=true;
+  tone(180,60,1.2,.2,'square',400);
+  if(mp()){safe(()=>XT.markEnding('abstracted'),'mark');safe(()=>__mp.die('Abstracted.','The rabbit pressed back.'),'die');return}
+  XT.ending('abstracted')}
+ // the ending: black ooze from every edge, glitching, and a crowd of mismatched cartoon eyes blinking and looking around
+ XT.oozeCut=function(){const cv=document.createElement('canvas');cv.id='ooze';cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none';document.body.appendChild(cv);
+  const q=cv.getContext('2d');let W=0,H=0;const fit=()=>{const d=Math.min(2,devicePixelRatio||1);W=cv.width=Math.round(innerWidth*d);H=cv.height=Math.round(innerHeight*d)};fit();
+  const C=calm(),PAL=['#ff3fa4','#29d7ff','#7cff4a','#ff8a1f','#b66bff','#ffe23a','#ff4a4a','#3affc8'];
+  const blobs=[];for(let i=0;i<46;i++){const side=i%4,u=Math.random();blobs.push({side,u,r:.12+Math.random()*.22,ph:Math.random()*7,sp:.6+Math.random()})}
+  const drips=[];for(let i=0;i<18;i++)drips.push({x:Math.random(),w:.012+Math.random()*.03,sp:.08+Math.random()*.14,d:Math.random()*2});
+  const eyes=[];for(let i=0;i<34;i++){const a=Math.random()*7,rr=Math.pow(Math.random(),.6);eyes.push({x:.5+Math.cos(a)*rr*.5,y:.5+Math.sin(a)*rr*.5,t0:.6+(1-rr)*4.5+Math.random()*1.5,s:.03+Math.random()*.06,asp:.6+Math.random()*.9,ir:PAL[i%PAL.length],sc:Math.random()<.25?PAL[(i+3)%PAL.length]:'#fbf6ee',pt:i%4,lx:0,ly:0,tx:0,ty:0,nl:Math.random()*2,bl:0,rot:(Math.random()-.5)*.6})}
+  let hum=null;safe(()=>{if(!AC||muted||!master)return;const o=AC.createOscillator(),o2=AC.createOscillator(),g=AC.createGain(),f=AC.createBiquadFilter();o.type='sawtooth';o2.type='square';o.frequency.value=41;o2.frequency.value=61.7;f.type='lowpass';f.frequency.value=300;g.gain.value=0;o.connect(f);o2.connect(f);f.connect(g);g.connect(master);g.gain.setTargetAtTime(.16,AC.currentTime,.8);o.start();o2.start();hum={o,o2,g,f}},'hum');
+  let blip=0;const sm=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
+  function eye(e,t,k){const S=Math.min(W,H)*e.s*(1+.15*Math.sin(t*2+e.t0)),x=e.x*W,y=e.y*H,rx=S,ry=S*e.asp;
+   e.nl-=1/60;if(e.nl<=0){e.nl=.4+Math.random()*2.2;if(t>7.4){e.tx=0;e.ty=0}else{e.tx=(Math.random()-.5)*2;e.ty=(Math.random()-.5)*2}if(Math.random()<.25)e.bl=.22}
+   if(t>7.4){e.tx=(W/2-x)/W*3;e.ty=(H/2-y)/H*3}
+   e.lx+=(e.tx-e.lx)*.2;e.ly+=(e.ty-e.ly)*.2;const L=Math.hypot(e.lx,e.ly);if(L>1){e.lx/=L;e.ly/=L}
+   let open=e.bl>0?Math.abs(e.bl/.11-1):1;if(e.bl>0)e.bl-=1/60;open*=sm((t-e.t0)/.35);if(open<=.02){q.strokeStyle='#000';q.lineWidth=S*.12;q.beginPath();q.moveTo(x-rx,y);q.lineTo(x+rx,y);q.stroke();return}
+   q.save();q.translate(x,y);q.rotate(e.rot);q.scale(1,Math.max(.03,open));
+   q.fillStyle=e.sc;q.beginPath();q.ellipse(0,0,rx,ry,0,0,7);q.fill();q.lineWidth=S*.12;q.strokeStyle='#000';q.stroke();
+   q.save();q.beginPath();q.ellipse(0,0,rx,ry,0,0,7);q.clip();const ix=e.lx*rx*.45,iy=e.ly*ry*.45,ir=Math.min(rx,ry)*.55;
+   q.fillStyle=e.ir;q.beginPath();q.arc(ix,iy,ir,0,7);q.fill();q.fillStyle='#000';q.beginPath();
+   if(e.pt===1)q.ellipse(ix,iy,ir*.18,ir*.75,0,0,7);else if(e.pt===2){for(let j=0;j<10;j++){const a=j*Math.PI/5-Math.PI/2,r=j%2?ir*.22:ir*.6;j?q.lineTo(ix+Math.cos(a)*r,iy+Math.sin(a)*r):q.moveTo(ix+Math.cos(a)*r,iy+Math.sin(a)*r)}q.closePath()}else if(e.pt===3){q.rect(ix-ir*.4,iy-ir*.12,ir*.8,ir*.24);q.rect(ix-ir*.12,iy-ir*.4,ir*.24,ir*.8)}else q.arc(ix,iy,ir*.5,0,7);q.fill();
+   q.fillStyle='#fff';q.beginPath();q.arc(ix-ir*.3,iy-ir*.32,ir*.17,0,7);q.fill();q.restore();q.restore()}
+  return{step(dt,t){if(cv.width!==Math.round(innerWidth*Math.min(2,devicePixelRatio||1)))fit();const k=sm(t/5.2),M2=Math.max(W,H);
+    q.clearRect(0,0,W,H);
+    // ooze: lumps that swell in from every edge, and drips that run down from the top
+    q.fillStyle='#060408';q.beginPath();for(const b of blobs){const r=M2*b.r*(k*1.9+.04)*(1+.12*Math.sin(t*b.sp*2+b.ph));const px=b.side===0?b.u*W:b.side===1?W:b.side===2?b.u*W:0,py=b.side===0?0:b.side===1?b.u*H:b.side===2?H:b.u*H;q.moveTo(px+r,py);q.arc(px,py,r,0,7)}q.fill();
+    for(const d of drips){const L=Math.max(0,(t-d.d)*d.sp)*H*1.2;if(L<=0)continue;const x=d.x*W,w=d.w*W;q.fillRect(x-w/2,0,w,L);q.beginPath();q.arc(x,L,w*.85,0,7);q.fill()}
+    if(t>8.2){q.globalAlpha=sm((t-8.2)/1.2);q.fillRect(0,0,W,H);q.globalAlpha=1}
+    // wet shine
+    q.strokeStyle='rgba(120,90,160,.18)';q.lineWidth=M2*.004;for(let i=0;i<blobs.length;i+=3){const b=blobs[i],r=M2*b.r*(k*1.9+.04)*.82;if(r<8)continue;const px=b.side===0?b.u*W:b.side===1?W:b.side===2?b.u*W:0,py=b.side===0?0:b.side===1?b.u*H:b.side===2?H:b.u*H;q.beginPath();q.arc(px,py,r,b.ph,b.ph+.5);q.stroke()}
+    // the eyes
+    if(t<9.3)for(const e of eyes)if(t>e.t0)eye(e,t,k);
+    // glitch: torn slices, colour bars
+    const gr=C?.04:.35;if(t>1&&Math.random()<gr){const n=C?1:2+(Math.random()*4|0);for(let i=0;i<n;i++){const y=Math.random()*H,h=H*(.01+Math.random()*.06),dx=(Math.random()-.5)*W*.12;try{q.drawImage(cv,0,y,W,h,dx,y,W,h)}catch(e){}if(!C){q.fillStyle=PAL[(Math.random()*PAL.length)|0];q.globalAlpha=.35;q.fillRect(0,y,W,h*.25);q.globalAlpha=1}}}
+    if(hum){blip-=dt;hum.f.frequency.value=300+200*Math.sin(t*3)+(Math.random()<.1?900:0);if(blip<=0&&t<8.5){blip=.12+Math.random()*.5;safe(()=>tone(200+Math.random()*1800,80+Math.random()*400,.09,.05,'square'),'blip')}if(t>8)hum.g.gain.setTargetAtTime(0,AC.currentTime,.4)}
+    if(t>2.5)subtitle(t<6?'(It is warm. It is everywhere. It is looking.)':'(Everything is looking at you.)',600);
+    return t>10},
+   end(){safe(()=>cv.remove(),'cv');safe(()=>{if(hum){hum.g.gain.value=0;hum.o.stop();hum.o2.stop()}},'hum stop')}}};
+
+ // ===== 2. Poison Taster: a dusty medicine cabinet on the upstairs bathroom wall, with an unlabeled bottle =====
+ {const g=new THREE.Group(),dust=M(0xc8c0ac),dk=M(0x8a8272);g.rotation.y=Math.PI/2;// faces +x, into the bathroom
+  box(.44,.56,.13,dust,0,0,0,g);box(.4,.52,.01,M(0x403a34),0,0,.06,g);box(.38,.015,.1,dk,0,-.06,.0,g);
+  const door=new THREE.Group();door.position.set(.21,0,.07);g.add(door);box(.42,.54,.02,dust,-.21,0,0,door);box(.34,.44,.005,new THREE.MeshPhongMaterial({color:0x6a7078,specular:0xaaaaaa,shininess:60}),-.21,0,.012,door);door.rotation.y=.95;
+  const bot=new THREE.Group();bot.position.set(.04,-.05,.0);g.add(bot);cyl(.034,.038,.12,new THREE.MeshPhongMaterial({color:0x4a2e14,transparent:true,opacity:.88,shininess:80}),0,.06,0,10,bot);cyl(.014,.022,.03,M(0x4a2e14),0,.135,0,8,bot);cyl(.016,.016,.025,M(0xb89a6a),0,.16,0,8,bot);
+  cyl(.022,.022,.08,M(0xe0dcd0),-.11,.04-.05,0,8,g);cyl(.02,.02,.06,M(0xa83a2a),.13,.03-.05,0,8,g);box(.08,.05,.03,M(0xe8e0c8),-.1,-.2,.0,g);
+  for(let i=0;i<14;i++){const d=box(.006,.006,.006,M(0xe8e4dc),(Math.random()-.5)*.42,.285,(Math.random()-.5)*.12,g)}
+  XT.place(g,5.52,1.55,-2.75);
+  hit(g,.46,.6,.3,0,0,.08,()=>tasting?'':'Taste the unlabeled bottle',()=>safe(taste,'taste'))}
+ let tasting=0;
+ function taste(){if(tasting||!XT.live())return;tasting=7;safe(()=>{if(AC&&!muted)burst(AC.currentTime,900,2,.05,.18,'bandpass')},'snd');tone(320,120,.6,.06,'sine');
+  subtitle('You uncork it and take a sip. It tastes like nothing at all, and then like everything.',3200);setTimeout(()=>{if(!ended)subtitle('...delicious.',3500)},3300);ach('poison')}
+ XT.onUpdate(dt=>{if(!tasting)return;tasting=Math.max(0,tasting-dt);const el=renderer.domElement,a=Math.min(1,tasting/1.5)*Math.min(1,(7-tasting)/.8),T=performance.now()/1000,c=calm()?.4:1;
+  if(tasting<=0||ended){el.style.transform='';el.style.filter='';tasting=0;return}
+  el.style.transform='rotate('+(Math.sin(T*1.7)*3.2*a*c).toFixed(2)+'deg) scale('+(1.06+.03*Math.sin(T*2.3)*a).toFixed(3)+','+(1.06-.03*Math.sin(T*2.3)*a).toFixed(3)+') translateX('+(Math.sin(T*1.1)*14*a*c).toFixed(1)+'px)';
+  el.style.filter='hue-rotate('+(Math.sin(T*.9)*60*a*c).toFixed(0)+'deg) saturate('+(1+a*.8).toFixed(2)+') blur('+(a*1.4*c).toFixed(2)+'px)'});
+
+ // ===== 3. Maomao: a cream-coloured cat who wanders the ground floor (never the basement). E to pet; sometimes she leads you to a note you haven't found =====
+ const cat=(()=>{const g=new THREE.Group(),cr=M(0xf2e4c4),cr2=M(0xe4cfa4),pk=M(0xf0a8a8),ey=new THREE.MeshBasicMaterial({color:0x8ad04a}),bk=M(0x101010);
+  const body=sph(.11,cr,0,.2,0,.95,.85,1.75,g);const head=new THREE.Group();head.position.set(0,.31,.19);g.add(head);sph(.075,cr,0,0,0,1.1,.95,1,head);sph(.03,cr2,0,-.02,.06,1.2,.8,.8,head);
+  [-1,1].forEach(s=>{const e=new THREE.Mesh(new THREE.ConeGeometry(.03,.06,4),cr);e.position.set(s*.042,.07,-.005);e.rotation.z=-s*.25;head.add(e);const i=new THREE.Mesh(new THREE.ConeGeometry(.017,.04,4),pk);i.position.set(s*.042,.066,.008);i.rotation.z=-s*.25;head.add(i);sph(.012,ey,s*.03,.012,.064,1,1,.5,head);sph(.006,bk,s*.03,.012,.07,.5,1,.4,head)});
+  sph(.009,pk,0,-.008,.078,1,.8,.6,head);
+  const legs=[];[[-1,1],[1,1],[-1,-1],[1,-1]].forEach(([a,b])=>{const p=new THREE.Group();p.position.set(a*.055,.16,b*.12);g.add(p);cyl(.022,.02,.16,cr,0,-.08,0,6,p);legs.push(p)});
+  const tail=new THREE.Group();tail.position.set(0,.24,-.17);g.add(tail);const tc=cyl(.016,.012,.26,cr2,0,.13,0,6,tail);tail.rotation.x=-.5;
+  g.userData.noMap=1;scene.add(g);return{g,head,legs,tail,body}})();
+ const C={x:2.2,z:1.2,a:0,st:'idle',t:2,path:[],sp:.55,lead:null,meow:0,sit:0,petT:0,lastLead:-60};XT.cat=C;
+ hit(cat.g,.36,.42,.6,0,.22,0,()=>'Pet Maomao',()=>safe(pet,'pet'));
+ // a walkability grid for the ground floor from the solids (rest coordinates), rebuilt each time she plans a walk so open and shut doors count
+ const GX0=-3.9,GZ0=-3.4,GX1=8.3,GZ1=9.4,CS=.2,NX=Math.ceil((GX1-GX0)/CS),NZ=Math.ceil((GZ1-GZ0)/CS),R_=.13;
+ const cellX=i=>GX0+(i+.5)*CS,cellZ=j=>GZ0+(j+.5)*CS,ci=x=>Math.max(0,Math.min(NX-1,Math.floor((x-GX0)/CS))),cj=z=>Math.max(0,Math.min(NZ-1,Math.floor((z-GZ0)/CS)));
+ function grid(){const B=new Uint8Array(NX*NZ);
+  // the staircase and the space under it
+  for(let i=0;i<NX;i++)for(let j=0;j<NZ;j++){const x=cellX(i),z=cellZ(j);if(x>.25&&x<4.2&&z>3.35&&z<5.65)B[j*NX+i]=1}
+  for(const s0 of solids){const s=s0.r||s0;if(s0.off||s.off)continue;const y0=s.y0===undefined?0:s.y0,y1=s.y1===undefined?H:s.y1;if(y1<F+.05||y0>F+.35)continue;
+   if(s.x1<GX0||s.x0>GX1||s.z1<GZ0||s.z0>GZ1)continue;const i0=ci(s.x0-R_),i1=ci(s.x1+R_),j0=cj(s.z0-R_),j1=cj(s.z1+R_);
+   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const x=cellX(i),z=cellZ(j);if(x>s.x0-R_&&x<s.x1+R_&&z>s.z0-R_&&z<s.z1+R_)B[j*NX+i]=1}}
+  return B}
+ function nearestFree(B,x,z){const i0=ci(x),j0=cj(z);for(let r=0;r<12;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){if(Math.max(Math.abs(di),Math.abs(dj))!==r)continue;const i=i0+di,j=j0+dj;if(i<0||j<0||i>=NX||j>=NZ)continue;if(!B[j*NX+i])return j*NX+i}return -1}
+ function plan(tx,tz){const B=grid(),s=nearestFree(B,C.x,C.z),e=nearestFree(B,tx,tz);if(s<0||e<0)return null;const prev=new Int32Array(NX*NZ).fill(-1);prev[s]=s;const Q=[s];let h=0;
+  while(h<Q.length){const c=Q[h++];if(c===e)break;const i=c%NX,j=(c/NX)|0;for(const [di,dj] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]){const a=i+di,b=j+dj;if(a<0||b<0||a>=NX||b>=NZ)continue;const n=b*NX+a;if(B[n]||prev[n]>=0)continue;if(di&&dj&&(B[j*NX+a]||B[b*NX+i]))continue;prev[n]=c;Q.push(n)}}
+  if(prev[e]<0)return null;const P=[];for(let c=e;c!==s;c=prev[c])P.push({x:cellX(c%NX),z:cellZ((c/NX)|0)});P.reverse();
+  // skip every other cell for a smoother walk
+  return P.filter((p,i)=>i%2===1||i===P.length-1)}
+ // which unfound note to lead to: a ground-floor one goes straight there, an upstairs one to the foot of the stairs; never the basement
+ function noteTarget(){const N=XT.notes;if(!N)return null;const L=N.avail().filter(n=>!N.found.includes(n.id)&&n.y>F-1);if(!L.length)return null;
+  const gf=L.filter(n=>n.y<F+1.5&&n.x>GX0&&n.x<GX1&&n.z>GZ0&&n.z<GZ1);const n=(gf.length?gf:L)[0];return gf.length?{n,x:n.x,z:n.z}:{n,x:-.4,z:4.5,up:1}}
+ function meow(){if(!AC||muted||!master)return;const d=Math.hypot(cam.position.x-mX(C.x),cam.position.z-mZ(C.z),cam.position.y-(F+.3));if(d>14)return;const v=.09/(1+d*.35);
+  const o=AC.createOscillator(),g=AC.createGain(),f=AC.createBiquadFilter(),t=AC.currentTime;o.type='sawtooth';o.frequency.setValueAtTime(520,t);o.frequency.linearRampToValueAtTime(820,t+.18);o.frequency.linearRampToValueAtTime(480,t+.55);f.type='bandpass';f.frequency.setValueAtTime(900,t);f.frequency.linearRampToValueAtTime(1600,t+.2);f.frequency.linearRampToValueAtTime(700,t+.55);f.Q.value=4;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.06);g.gain.exponentialRampToValueAtTime(.0001,t+.6);o.connect(f);f.connect(g);g.connect(master);o.start(t);o.stop(t+.65)}
+ function purr(){if(!AC||muted||!master)return;const t=AC.currentTime,n=AC.sampleRate*1.8|0,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(.5+.5*Math.sin(i/AC.sampleRate*Math.PI*2*26))*Math.min(1,i/4000,(n-i)/6000);
+  const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=220;g.gain.value=.5;s.connect(f);f.connect(g);g.connect(master);s.start(t)}
+ function startLead(){const T=noteTarget();if(!T)return false;const P=plan(T.x,T.z);if(!P)return false;C.lead=T;C.path=P;C.st='lead';C.sp=1.0;C.lastLead=clk2;return true}
+ let clk2=0;
+ function pet(){if(!XT.live())return;purr();C.petT=2.4;C.st='idle';C.t=2.4;C.path=[];subtitle(['Maomao purrs and leans into your hand.','Maomao headbutts your palm.','Maomao closes her eyes, very pleased with herself.'][(Math.random()*3)|0],2400);
+  if(!C.lead&&Math.random()<.45&&noteTarget())setTimeout(()=>safe(()=>{if(C.st!=='idle'||!XT.live())return;if(startLead()){meow();subtitle('Maomao hops away and looks back at you, like she wants you to follow.',3600)}},'lead'),2500)}
+ XT.onUpdate(dt=>{clk2+=dt;if(window.__cut)return;const g=cat.g;
+  // she stays put while you are far away, off the ground floor, in the realm or somewhere else entirely
+  const near=Math.abs(fy-F)<.6&&Math.hypot(cam.position.x-mX(C.x),cam.position.z-mZ(C.z))<18;
+  if(C.petT>0)C.petT-=dt;
+  if(C.st==='idle'||C.st==='wait'){C.t-=dt;C.sit=Math.min(1,C.sit+dt*3);
+   if(C.st==='wait'){C.meow-=dt;const N=XT.notes,done=!C.lead||!N||N.found.includes(C.lead.n.id);if(C.meow<=0&&near){C.meow=4+Math.random()*2;meow()}if(done||C.t<=0){C.lead=null;C.st='idle';C.t=2}}
+   else if(C.t<=0&&C.petT<=0){if(near&&clk2-C.lastLead>70&&Math.random()<.35&&startLead()){}else{let P=null;for(let k=0;k<4&&!P;k++)P=plan(GX0+.4+Math.random()*(GX1-GX0-.8),GZ0+.4+Math.random()*(GZ1-GZ0-.8));if(P&&P.length){C.path=P;C.st='walk';C.sp=.45+Math.random()*.2}else C.t=3}}}
+  else{C.sit=Math.max(0,C.sit-dt*4);const p=C.path[0];if(!p){if(C.st==='lead'){C.st='wait';C.t=45;C.meow=.3;if(C.lead&&C.lead.up)subtitle('Maomao sits at the foot of the stairs and stares up at them.',3200)}else{C.st='idle';C.t=3+Math.random()*6}}
+   else{const dx=p.x-C.x,dz=p.z-C.z,d=Math.hypot(dx,dz),s=C.sp*dt*(C.st==='lead'&&near&&Math.hypot(cam.position.x-mX(C.x),cam.position.z-mZ(C.z))>3.5?.25:1);
+    if(d<=s){C.x=p.x;C.z=p.z;C.path.shift()}else{C.x+=dx/d*s;C.z+=dz/d*s}
+    let da=Math.atan2(dx,dz)-C.a;while(da>Math.PI)da-=Math.PI*2;while(da<-Math.PI)da+=Math.PI*2;C.a+=da*Math.min(1,dt*6)}}
+  // pose
+  const moving=C.st==='walk'||C.st==='lead',T=clk2*(C.sp*14);g.position.set(mX(C.x),F+.0-.06*C.sit,mZ(C.z));g.rotation.y=C.a;
+  cat.legs.forEach((l,i)=>{l.rotation.x=moving?Math.sin(T+(i===0||i===3?0:Math.PI))*.5:0;l.scale.y=1-.45*C.sit*(i>1?1:0)});cat.body.rotation.x=-.25*C.sit;cat.head.position.y=.31+.05*C.sit;
+  cat.tail.rotation.x=-.5-.4*C.sit+Math.sin(clk2*(C.petT>0?6:1.6))*.12;cat.tail.rotation.z=Math.sin(clk2*1.3)*.35;cat.head.rotation.y=C.st==='wait'?Math.sin(clk2*.7)*.6:Math.sin(clk2*.4)*.25});
+ XT.parts.cat={save:()=>({x:+C.x.toFixed(2),z:+C.z.toFixed(2)}),load:v=>{if(v&&isFinite(v.x)&&isFinite(v.z)){C.x=+v.x;C.z=+v.z}}};
+
+ // ===== 4. Jinshi's gift: a gold hairpin hidden in the front flowerbed (outside, left of the path) =====
+ let pin=false;const PB={x:2.5,z:13.4};
+ {const soil=M(0x2e2018),edge=M(0x6a5a50);box(1.9,.1,1.1,soil,PB.x,F+.03,PB.z);[[1.98,.08,PB.z-.56],[1.98,.08,PB.z+.56]].forEach(([w,d,z])=>box(w,.16,d,edge,PB.x,F+.06,z));[-1,1].forEach(s=>box(.08,.16,1.1,edge,PB.x+s*.95,F+.06,PB.z));
+  const PC=[0xd84a6a,0xf0d050,0xe8e0f0,0xb070d0,0xf08a40];for(let i=0;i<26;i++){const x=PB.x-.8+((i*.37)%1)*1.6,z=PB.z-.42+((i*.61)%1)*.84,h=.18+((i*.53)%1)*.22;cyl(.008,.008,h,M(0x3a6a3a),x,F+.08+h/2,z,4);sph(.04+((i*.29)%1)*.02,M(PC[i%5]),x,F+.08+h,z,1,.6,1);sph(.03,M(0x2e5a34),x+.03,F+.12,z+.02,1.4,.5,1)}}
+ const hp=new THREE.Group();{const gm=new THREE.MeshPhongMaterial({color:0xd8b040,shininess:110,specular:0xfff0b0,flatShading:true});const st=cyl(.006,.003,.17,gm,0,0,0,6,hp);st.rotation.z=Math.PI/2;
+  const orn=new THREE.Group();orn.position.set(-.085,0,0);hp.add(orn);for(let k=0;k<5;k++){const a=k/5*Math.PI*2;sph(.013,gm,Math.cos(a)*.014,Math.sin(a)*.014,0,1,1,.4,orn)}sph(.008,M(0xc02030),0,0,.004,1,1,1,orn);
+  [-.02,0,.02].forEach((z,k)=>{const c=cyl(.002,.002,.04,gm,-.09,-.025-k*.004,z,4,hp);sph(.006,new THREE.MeshPhongMaterial({color:0x5ac0a0,shininess:90}),-.09,-.045-k*.004,z,1,1,1,hp)});
+  hp.rotation.set(-Math.PI/2+.25,0,.6);hp.position.set(PB.x-.45,F+.1,PB.z+.2);scene.add(hp);
+  const gl=new THREE.Mesh(new THREE.OctahedronGeometry(.012,0),new THREE.MeshBasicMaterial({color:0xfff2c0}));gl.position.set(PB.x-.5,F+.12,PB.z+.2);scene.add(gl);hp.userData.gl=gl;
+  const hb=new THREE.Mesh(BG(.32,.22,.32),hitM);hb.position.set(PB.x-.47,F+.12,PB.z+.2);scene.add(hb);hb.userData.i={label:'Something gold in the flowers',act(){safe(take,'pin')}};inter.push(hb);hp.userData.hb=hb}
+ function hidePin(){pin=true;hp.visible=false;hp.userData.gl.visible=false;const i=inter.indexOf(hp.userData.hb);if(i>=0)inter.splice(i,1)}
+ function take(){if(pin||!XT.live())return;hidePin();tone(1320,1760,.5,.06,'sine');setTimeout(()=>tone(1760,2200,.6,.05,'sine'),120);subtitle("A gold hairpin, light as a leaf, with a little jade at the tips. Someone's gift to someone, a long time ago. You keep it.",4200);ach('hairpin')}
+ XT.onUpdate(()=>{if(pin)return;const gl=hp.userData.gl,T=performance.now()/1000;const k=Math.max(0,Math.sin(T*2.1))**12;gl.scale.setScalar(.2+k*1.6);gl.visible=k>.05});
+ XT.parts.hairpin={save:()=>pin?1:0,load:v=>{if(v)hidePin()}};
+ XT.v79={press,taste,pet,take,plan,cat:C,noteTarget};
+ // v79: the dead don't get hunted: a ghost never starts a prowl, search or hide-hunt of its own (the host already skips ghosts when it picks a target)
+ safe(()=>{const H=XT.hide,gh=()=>!!(window.__mp&&__mp.active&&__mp.ghost);if(H&&H.prowlStart){const ps=H.prowlStart;H.prowlStart=function(){if(gh())return;return ps.apply(this,arguments)}}
+  const hh=XT.hideHunt;if(hh)XT.hideHunt=function(){if(gh())return true;return hh.apply(this,arguments)}},'ghost guard');
+ // ===== 5. title screen: "Start Over from Night 1" (resets night progress and the saved night; endings and achievements stay) =====
+ safe(()=>{const css=document.createElement('style');css.textContent=`#soB{position:absolute;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 90px);font:600 .78rem var(--ui);letter-spacing:.06em;color:#e8dcc8;background:rgba(20,16,20,.8);border:1px solid #5a4a3a;border-radius:6px;padding:.5rem .9rem;cursor:pointer;z-index:2}#soB:hover,#soB:focus-visible{background:#2a2026;outline:none}
+#soP{position:fixed;inset:0;z-index:11;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(4,4,7,.7)}#soP .pp{width:min(24rem,100%);box-sizing:border-box;background:#efe4cb;color:#1e1a2a;padding:1.1rem 1.2rem;font-family:var(--ui);box-shadow:0 10px 40px rgba(0,0,0,.7)}#soP p{margin:0 0 .9rem;font-size:.9rem;line-height:1.45}#soP .r{display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap}#soP button{font:600 .82rem var(--ui);border-radius:5px;padding:.5rem 1rem;cursor:pointer;color:#f4ecdc;background:#3a1e1a;border:1px solid #5a2e28}#soP button.no{background:transparent;color:#3a1e1a}`;document.head.appendChild(css);
+  const t=document.getElementById('title'),b=document.createElement('button');b.id='soB';b.type='button';b.textContent='Start Over from Night 1';t.appendChild(b);
+  const P=document.createElement('div');P.id='soP';P.hidden=true;P.innerHTML='<div class="pp" role="alertdialog" aria-label="Start over"><p>Start over from Night 1? Your night progress will reset.</p><div class="r"><button type="button" class="no">Cancel</button><button type="button" class="yes">Start over</button></div></div>';document.body.appendChild(P);
+  const stop=e=>e.stopPropagation();['click','pointerdown','touchstart','touchend','keydown','keyup'].forEach(k=>{b.addEventListener(k,stop);P.addEventListener(k,stop)});
+  b.addEventListener('click',()=>{P.hidden=false;setTimeout(()=>safe(()=>P.querySelector('.no').focus()),30)});
+  P.addEventListener('click',e=>{if(e.target===P||e.target.classList.contains('no'))P.hidden=true});P.addEventListener('keydown',e=>{if(e.key==='Escape')P.hidden=true});
+  P.querySelector('.yes').addEventListener('click',()=>{['hushNights','hushNightSel','hushSave'].forEach(k=>XT.ls.del(k));try{clearSave()}catch(e){}XT.night=1;location.reload()});
+  setInterval(()=>safe(()=>{b.hidden=t.hidden||!!(window.__mp&&__mp.active)}),500)},'startover');
+})();
 </script>
 <script type="text/x-hush">
 // ===== v77: outside. The front door opens onto the yard, the garden gate onto the sidewalk and Larch Road.
@@ -3288,7 +3457,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   XT.ending(id);setTimeout(()=>flash('#000',0,10),400)}
  const me=()=>({x:cam.position.x,z:cam.position.z});
  const can=()=>XT.live()&&!over&&!(window.__mp&&(__mp.ghost||__mp.demon))&&!(window.__rlm&&__rlm.on);
- // traffic: one car at a time; the first comes about 2 s after you reach the sidewalk, then every 3 to 6 s
+ // traffic: one car at a time; v79: the first comes about 2 s after you reach the sidewalk, then every 3 to 6 s
  const car=XT.props.car,beam=car.children.find(c=>c.isSpotLight);const T={on:false,x:0,dir:1,z:LN[0],next:2,honk:false,armed:false};OUT.T=T;
  function spawn(){T.on=true;T.dir=Math.random()<.5?1:-1;T.x=T.dir>0?SPAN[0]:SPAN[1];T.z=T.dir>0?LN[0]:LN[1];T.honk=false;car.visible=true;car.rotation.set(0,T.dir>0?0:Math.PI,0);car.position.set(T.x,F,T.z);if(beam)beam.intensity=2.4}
  function park(){T.on=false;car.visible=false;if(beam)beam.intensity=0;if(eng)eng.g.gain.setTargetAtTime(0,AC.currentTime,.1)}
@@ -3718,10 +3887,10 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // ---------- messages ----------
  function clientHandle(m){if(MP.active&&!MP.host)lastHostMsg=performance.now();switch(m.t){
   case 'gfx':safe(()=>playScare(m),'gfx');break;
-  case 'welcome':MP.id=m.pid;roster=m.roster;if(m.diff)MP.hostDiff=m.diff;if(m.mode)MP.mode=m.mode;MP.hostHu=!!m.hu;MP.code=m.code;MP.hostId=m.host;lastHostMsg=performance.now();reconnecting=false;syncAvatars();lobbyDraw();callMissing();
+  case 'welcome':MP.id=m.pid;roster=m.roster;if(m.diff)MP.hostDiff=m.diff;if(m.night)MP.hostNight=m.night|0;if(m.mode)MP.mode=m.mode;MP.hostHu=!!m.hu;MP.code=m.code;MP.hostId=m.host;lastHostMsg=performance.now();reconnecting=false;syncAvatars();lobbyDraw();callMissing();
    if(m.started&&!MP.started){MP.rj=m.rj||null;startGame(m.cfg,true)}break;
   case 'hdm':if(MP.hm){MP.hm.demon=m.id;MP.demon=m.id===MP.id}break;
-  case 'roster':roster=m.roster;if(m.diff)MP.hostDiff=m.diff;if(m.mode)MP.mode=m.mode;MP.hostHu=!!m.hu;syncAvatars();lobbyDraw();callMissing();micHud();break;
+  case 'roster':roster=m.roster;if(m.diff)MP.hostDiff=m.diff;if(m.night)MP.hostNight=m.night|0;if(m.mode)MP.mode=m.mode;MP.hostHu=!!m.hu;syncAvatars();lobbyDraw();callMissing();micHud();break;
   case 'full':lobbyStatus('Lobby full. That game already has 4 players.',true);teardown(true);break;
   case 'started':lobbyStatus('That game has already started.',true);teardown(true);break;
   case 'start':graceT=performance.now()+45000;if(!MP.started)setTimeout(()=>safe(()=>startGame(m.cfg,false),'start'),300);break;
@@ -3734,6 +3903,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    if(m.by===MP.id&&m.broken)break;subtitle(m.broken?'(Someone broke a house rule. Everything goes still. Then, upstairs, she starts to scream.)':(e&&e.endCap)||(m.id==='knock'?'(The knocking stops.)':m.id==='steps'?'(The footsteps fade.)':m.id==='whisper'?'(The whispering stops.)':'(The scratching stops.)'),3500);break}
   case 'chat':safe(()=>chatShow(m),'chat');break;
   case 'sub':subtitle(m.txt,m.ms||3000);break;
+  case 'tolobby':if(!MP.host){lbGo=true;goLobby()}break;
   case 'skip':if(!MP.host){skipHour.force=true;safe(skipHour,'skip')}break;
   case 'skipmsg':skipHour.msg=m.m;break;
   case 'end':MP.pendingEnd={id:m.id,extra:m.extra};MP.decided=m.id;runPending();break;
@@ -3765,6 +3935,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'bslash':safe(()=>XT.bladeFight.remoteSlash(),'bslash');break;
   case 'bready':{const S=XT.bladeFight.S;if(S&&S.rdyIds)S.rdyIds.add(pid);break}
   case 'bhit':{const S=XT.bladeFight.S;if(S&&m.r==='parry'&&S.aid===m.aid&&(S.st==='strike'||S.st==='wind')){S.st='stag';S.stT=1.6}break}
+  case 'tolobby':if(MP.ended||ended||window.__dead){lbGo=false;MP.backToLobby()}break;
   case 'bdead':if(p){p.rep=Object.assign({},p.rep||{},{gh:1})}else if(pid===MP.id){}checkAllDead();break
   default:if(MP.onH)safe(()=>MP.onH(pid,m),'onH')}}
  // the host's own player: everything a client would send, handled directly
@@ -3784,7 +3955,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    if(!reconnecting&&lastHostMsg&&performance.now()-lastHostMsg>lim(hostConn&&hostConn.open,7000,20000))hostLost()}
   if(MP.pendingEnd&&!MP.ended)runPending();
   if(tickN%2===0){safe(voiceTick,'voice');}if(tickN%40===7)safe(callMissing,'recall');if(tickN%3===0)safe(micHud,'mic');if(tickN%10===0&&MP.ghost)ghostHud()}
- let rosterT=0;function bcastRoster(force){const now=performance.now();if(!force&&now-rosterT<1000)return;rosterT=now;bcast({t:'roster',roster,diff:XT.diffKey(),mode:MP.mode,hu:huntUnlocked()?1:0})}
+ let rosterT=0;function bcastRoster(force){const now=performance.now();if(!force&&now-rosterT<1000)return;rosterT=now;bcast({t:'roster',roster,diff:XT.diffKey(),night:XT.night||1,mode:MP.mode,hu:huntUnlocked()?1:0})}
  function hostTick(){const now=performance.now();
   for(const k in AWAY)if(now-AWAY[k].t>HOLD){const a=AWAY[k];delete AWAY[k];bcast({t:'note',txt:'('+a.name+' did not come back.)',ms:3000});subtitle('('+a.name+' did not come back.)',3000);if(a.dm&&MP.hm)safe(()=>MP.onDemonGone&&MP.onDemonGone(),'dmgone');checkAllDead()}
   // players who went quiet are gone
@@ -3837,7 +4008,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
     if(!known&&!rj&&roster.length+awN>=MAXP){safe(()=>c.send({t:'full'}));setTimeout(()=>safe(()=>c.close()),400);return}
     let p=known||(rj&&roster.find(q=>q.id===c.peer));if(!p){const used=new Set(roster.map(q=>q.slot).concat(Object.values(AWAY).map(a=>a.slot)));let slot=tok&&PREF[tok]!=null&&!used.has(PREF[tok])?PREF[tok]:0;while(used.has(slot))slot++;p={id:c.peer,name:(d.name||'').trim().slice(0,16)||'Player '+(slot+1),slot,join:++joinSeq,gh:0,tok};roster.push(p)}
     conns.set(c.peer,c);if(!P.has(c.peer))P.set(c.peer,{rep:null,last:performance.now(),sp:0});
-    c.send({t:'welcome',pid:c.peer,roster,code:MP.code,host:MP.id,started:MP.started,cfg:cfg(),rj,diff:XT.diffKey(),mode:MP.mode,hu:huntUnlocked()?1:0});bcastRoster(true);syncAvatars();lobbyDraw();micHud();
+    c.send({t:'welcome',pid:c.peer,roster,code:MP.code,host:MP.id,started:MP.started,cfg:cfg(),rj,diff:XT.diffKey(),night:XT.night||1,mode:MP.mode,hu:huntUnlocked()?1:0});bcastRoster(true);syncAvatars();lobbyDraw();micHud();
     if(MP.started){const t=rj?'('+p.name+' is back.)':'('+p.name+' joined.)';bcast({t:'note',txt:t,ms:2500},c.peer);subtitle(t,2500)}if(rj&&P.get(c.peer))P.get(c.peer).rep=null;return}
    if(!conns.has(c.peer)){if(c.open&&c._tok&&AWAY[c._tok]&&MP.started)H({t:'hello',tok:c._tok,name:''});if(!conns.has(c.peer))return}const pp=P.get(c.peer);if(pp)pp.seen=performance.now();hostHandle(c.peer,d)};c.on('data',H);
   c.on('close',()=>{if(conns.get(c.peer)===c)dropPlayer(c.peer)});c.on('error',()=>{})}
@@ -3861,7 +4032,7 @@ const p=roster.find(q=>q.id===id);
   peer.on('error',e=>{if(peer!==my)return;const t=e&&e.type;if(!MP.active){clearTimeout(to);clearTimeout(cTo);teardown(true);fail(netErr(t));if(LR.n>0&&LR.code===code&&(t==='peer-unavailable'||t==='network'||t==='server-error')){LR.n--;busy('Waiting for the host to reopen the lobby...');setTimeout(()=>{if(tok===cTok&&!MP.active&&!peer)joinGame(code)},2500)}}else if(reconnecting&&t==='peer-unavailable'){}else console.warn('[Hush mp] peer error',t)});
   peer.on('disconnected',()=>{safe(()=>{if(peer&&peer===my&&!peer.destroyed)peer.reconnect()})})}
  // the host left: the next player in join order takes over, or the session ends cleanly
- function hostLost(){if(!MP.active||MP.host||MP.leaving||reconnecting)return;const old=MP.hostId;hostConn=null;roster=roster.filter(p=>p.id!==old);cleanCall(old);
+ function hostLost(){if(!MP.active||MP.host||MP.leaving||reconnecting)return;if(MP.ended){lbGo=true;goLobby();return}const old=MP.hostId;hostConn=null;roster=roster.filter(p=>p.id!==old);cleanCall(old);
   const next=roster.slice().sort((a,b)=>a.join-b.join)[0];
   if(!next){endSession('The host left. The session has ended.');return}
   if(next.id===MP.id){becomeHost(old);return}
@@ -3939,7 +4110,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  lobbyEl.innerHTML='<div class="pp" role="dialog" aria-label="Play together"><h2>Play together</h2>'+
   '<label>Your name<input id="mpName" maxlength="16" autocomplete="nickname" placeholder="Player 1"></label>'+
   '<div id="mpPre"><div class="row"><button type="button" id="mpHost">Host a game</button></div><div class="or">or join with a code</div><div class="row"><input id="mpCode" maxlength="8" placeholder="CODE" aria-label="Game code" autocapitalize="characters"><button type="button" id="mpJoin">Join</button></div></div>'+
-  '<div id="mpIn" hidden><div class="code" id="mpCodeShow"></div><div class="mode" id="mpMode" role="radiogroup" aria-label="Mode"><button type="button" data-m="coop" role="radio">Co-op</button><button type="button" data-m="hunt" role="radio">Hunt</button></div><div class="sm" id="mpModeD"></div><div class="mode" id="mpDiff" role="radiogroup" aria-label="Difficulty"><button type="button" data-d="easy" role="radio">Easy</button><button type="button" data-d="normal" role="radio">Normal</button><button type="button" data-d="nightmare" role="radio">Nightmare</button></div><div class="row"><button type="button" id="mpCopy">Copy invite link</button></div><ul id="mpRoster"></ul><details id="mpVd"><summary>Voice check</summary><pre id="mpVdT"></pre></details></div>'+
+  '<div id="mpIn" hidden><div class="code" id="mpCodeShow"></div><div class="mode" id="mpMode" role="radiogroup" aria-label="Mode"><button type="button" data-m="coop" role="radio">Co-op</button><button type="button" data-m="hunt" role="radio">Hunt</button></div><div class="sm" id="mpModeD"></div><div class="mode" id="mpNight" role="radiogroup" aria-label="Night"><button type="button" data-n="1" role="radio">Night 1</button><button type="button" data-n="2" role="radio">Night 2</button><button type="button" data-n="3" role="radio">Night 3</button></div><div class="mode" id="mpDiff" role="radiogroup" aria-label="Difficulty"><button type="button" data-d="easy" role="radio">Easy</button><button type="button" data-d="normal" role="radio">Normal</button><button type="button" data-d="nightmare" role="radio">Nightmare</button></div><div class="row"><button type="button" id="mpCopy">Copy invite link</button></div><ul id="mpRoster"></ul><details id="mpVd"><summary>Voice check</summary><pre id="mpVdT"></pre></details></div>'+
   '<div class="st" id="mpSt" role="status" aria-live="polite"></div><div class="row"><button type="button" class="ghost" id="mpBack" hidden>Back</button></div><p class="sm">Up to 4 players. One baby, one house. The host\'s difficulty and night are used. Voice chat is on: press M to mute.</p>'+
   '<div class="row"><button type="button" id="mpStart" hidden>Start the night</button><button type="button" class="ghost" id="mpClose">Close</button></div></div>';
  document.body.appendChild(lobbyEl);
@@ -3952,6 +4123,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  lobbyEl.addEventListener('click',e=>e.stopPropagation());
  L$('mpHost').onclick=()=>hostGame();L$('mpJoin').onclick=()=>joinGame(codeIn.value);codeIn.addEventListener('keydown',e=>{if(e.key==='Enter')joinGame(codeIn.value)});
  L$('mpStart').onclick=()=>hostStart();L$('mpBack').onclick=()=>cancelConnect();
+ L$('mpNight').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled||!MP.host||MP.started)return;const n=+b.dataset.n;if(!(n>=1&&n<=(XT.nightsUnlocked?XT.nightsUnlocked():1)))return;safe(()=>{XT.parts.night.load(n);XT.ls.set('hushNightSel',n);TITLE.redraw&&TITLE.redraw()},'night');lobbyDraw();bcastRoster(true)});
  L$('mpDiff').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!MP.host||MP.started)return;const d=b.dataset.d;safe(()=>{XT.parts.diff.load(d);XT.ls.set('hushDiff',d);TITLE.redraw&&TITLE.redraw()},'diff');lobbyDraw();bcastRoster(true)});
  L$('mpMode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!MP.host||MP.started)return;const m=b.dataset.m;MP.mode=m;lobbyDraw();bcastRoster(true)});
  L$('mpClose').onclick=()=>{rjClear();if(!MP.active&&peer)cancelConnect();if(MP.active&&!MP.started){teardown(false)}lobbyEl.hidden=true;lobbyDraw()};
@@ -3965,6 +4137,8 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  function lobbyDraw(){const inS=MP.active;L$('mpPre').hidden=inS;L$('mpIn').hidden=!inS;nameIn.disabled=inS;L$('mpStart').hidden=!(MP.host&&!MP.started);
   L$('mpCodeShow').textContent=MP.code||'';invEl.hidden=!(inS&&!MP.started&&TITLE.on);
   L$('mpRoster').innerHTML=roster.slice().sort((a,b)=>a.slot-b.slot).map(p=>'<li><i style="background:'+COL[p.slot%4]+'"></i>'+esc(p.name)+(p.id===MP.id?' (you)':'')+(p.join===0||p.id===MP.hostId?' &middot; host':'')+'</li>').join('');
+  // v79: the host picks the night (any night they have unlocked); guests see it, and the start message carries it to everyone
+  {const nk=MP.host?(XT.night||1):MP.hostNight||1,un=XT.nightsUnlocked?XT.nightsUnlocked():1;L$('mpNight').querySelectorAll('button').forEach(b=>{const n=+b.dataset.n,on=n===nk;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');b.disabled=!MP.host||MP.started||n>un;b.title=MP.host&&n>un?'Not unlocked yet':''})}
   {const dk=MP.host?XT.diffKey():MP.hostDiff||'normal';L$('mpDiff').querySelectorAll('button').forEach(b=>{const on=b.dataset.d===dk;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');b.disabled=!MP.host||MP.started})}
   {const hu=true;// Hunt is always available in multiplayer (v65)
    L$('mpMode').querySelectorAll('button').forEach(b=>{const m=b.dataset.m,on=MP.mode===m;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');
@@ -3987,8 +4161,16 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
   loadPeer();let n=0;const iv=setInterval(()=>{if(MP.active){clearInterval(iv);return}if(MP.available&&peerOK()){clearInterval(iv);MP.openLobby();codeIn.value=r.code;lobbyStatus('Rejoining '+r.code+'...');joinGame(r.code)}else if(++n>40)clearInterval(iv)},250)}
  setInterval(()=>{if(MP.active&&!MP.host&&MP.code&&!MP.ended)rjSave(MP.code)},20000);
  const LR={n:0,code:null},PREF={};
- MP.backToLobby=()=>{const o={code:MP.code,host:MP.host?1:0,t:Date.now(),mode:MP.mode||'coop'};if(MP.host){o.slots={};roster.forEach(p=>{if(p.tok)o.slots[p.tok]=p.slot})}
-  try{localStorage.setItem('hushLobby',JSON.stringify(o))}catch(e){}rjClear();MP.leaving=true;location.href=location.pathname+location.search};
+ // v79: back to the lobby together. Before, each player's button only reloaded their own page; when the host went first, the others saw the host vanish
+ // (hostLost) and were dropped to "The host left" or took over a finished night, so they had to find the lobby again by hand.
+ // Now whoever presses it at the end of the night takes everyone: a client asks the host, the host tells everyone, then re-hosts the same code and the others rejoin it.
+ let lbGo=false;
+ MP.backToLobby=()=>{if(lbGo)return;const over=MP.ended||ended||window.__dead;
+  if(MP.active&&over&&!MP.host&&hostConn&&hostConn.open){lbGo=true;safe(()=>hostConn.send({t:'tolobby'}),'tolobby');setTimeout(()=>{lbGo=false;goLobby()},3000);return}
+  if(MP.active&&over&&MP.host){lbGo=true;bcast({t:'tolobby'});setTimeout(goLobby,400);return}
+  goLobby()};
+ function goLobby(){const o={code:MP.code,host:MP.host?1:0,t:Date.now(),mode:MP.mode||'coop'};if(MP.host){o.slots={};roster.forEach(p=>{if(p.tok)o.slots[p.tok]=p.slot})}
+  try{localStorage.setItem('hushLobby',JSON.stringify(o))}catch(e){}rjClear();MP.leaving=true;location.href=location.pathname+location.search}
  function lobbyReturn(){let r=null;try{r=JSON.parse(localStorage.getItem('hushLobby')||'null')}catch(e){}try{localStorage.removeItem('hushLobby')}catch(e){}
   if(!r||!r.code||Date.now()-r.t>300000||/[#&]join=/.test(location.hash))return false;
   loadPeer();let n=0;const iv=setInterval(()=>{if(MP.active){clearInterval(iv);return}if(!MP.available||!peerOK()){if(++n>40)clearInterval(iv);return}clearInterval(iv);MP.openLobby();
@@ -4115,7 +4297,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   {id:'dawn',n:'First Light',d:'Save her before dawn.'},
   {id:'death',n:'Taken',d:'Be taken by the house.'},
   {id:'cult',n:'Family',d:'Kneel and wait for them.',h:1},
-  {id:'secret',n:'The Blade',d:'Walk away with her at dawn, carrying an old sword.',h:1},
+  {id:'secret',n:'The Blade',d:'Win the sword fight against the demon.',h:1},
   {id:'night1',n:'Babysitter',d:'Survive a whole night.'},
   {id:'night3',n:'The Last Night',d:'Survive Night 3.'},
   {id:'nightmare',n:'Nightmare',d:'Survive a night on Nightmare.'},
@@ -4127,7 +4309,10 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   {id:'four',n:'Full House',d:'Play a night with four people.'},
   {id:'car',n:'Get Run Over by a Car',d:'Find the ending on the road.',h:1},
   {id:'left',n:'You Left',d:'Find the ending across the road.',h:1},
-  {id:'collapse',n:'The House Collapsed',d:'Find the ending in the doors.',h:1}];
+  {id:'collapse',n:'The House Collapsed',d:'Find the ending in the doors.',h:1},
+  {id:'abstracted',n:'Abstracted',d:'Press the rabbit.',h:1},
+  {id:'poison',n:'Poison Taster',d:'Taste the unlabeled bottle in the bathroom cabinet.',h:1},
+  {id:'hairpin',n:"Jinshi's Gift",d:'Find the gold hairpin hidden outside.'}];
  const ls={get(){try{return JSON.parse(localStorage.getItem('hushAch')||'{}')||{}}catch(e){return{}}},set(v){try{localStorage.setItem('hushAch',JSON.stringify(v))}catch(e){}}};
  let got=ls.get();
  // this night's record (saved with the game, so Continue keeps it)
@@ -4169,7 +4354,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   if(mp&&mp.active&&mp.started&&safe(()=>mp.dbg.roster().length,'n')>=4)unlock('four')},'watch'),250);
  const oe=XT.ending;
  XT.ending=function(id,extra){const r=oe.apply(this,arguments);
-  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse'].includes(id))unlock(id);
+  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted'].includes(id))unlock(id);
    const won=id==='parents'||id==='dawn'||id==='secret';
    if(won){unlock('night1');if((XT.night||1)>=3)unlock('night3');if(XT.diffKey&&XT.diffKey()==='nightmare')unlock('nightmare');if(!run.hid)unlock('nohide');if(!run.cried)unlock('nocry');
     if(window.__mp&&__mp.active)unlock('together')}
@@ -4301,7 +4486,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   const light=el.classList.contains('onLight');if(!light&&L>150)el.classList.add('onLight');else if(light&&L<110)el.classList.remove('onLight');MR.clockL=Math.round(L)}
  // rolling performance log: every 2 s, average and worst frame plus the stage; read back on the next load
  let prevPerf=null;try{prevPerf=JSON.parse(localStorage.getItem('hushPerf')||'null')}catch(e){}window.__lastPerf=prevPerf;
- setInterval(()=>{if(!perf.n)return;const rec={avg:Math.round(perf.sum/perf.n),max:Math.round(perf.max),n:perf.n,stage:window.__phase||'?',calls:MR.calls,t:Date.now(),v:'v78.1',safe:!!window.__safe};perf.sum=perf.max=perf.n=0;
+ setInterval(()=>{if(!perf.n)return;const rec={avg:Math.round(perf.sum/perf.n),max:Math.round(perf.max),n:perf.n,stage:window.__phase||'?',calls:MR.calls,t:Date.now(),v:'v79',safe:!!window.__safe};perf.sum=perf.max=perf.n=0;
   try{localStorage.setItem('hushPerf',JSON.stringify(rec))}catch(e){}},2000);
  // ?fps=1: a small counter
  if(QP.get('fps')==='1'){const d=document.createElement('div');d.id='fpsC';d.style.cssText='position:fixed;left:8px;top:8px;z-index:2147483646;font:11px/1.3 ui-monospace,Menlo,Consolas,monospace;color:#bfe8a0;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:3px;pointer-events:none;white-space:pre';document.body.appendChild(d);
@@ -4324,7 +4509,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
 })();
 </script>
 <script type="text/x-hush">(function(){const btn=document.getElementById('ovBug'),msg=document.getElementById('bugMsg');if(!btn)return;
-function report(){const L=['Hush bug report','Version: v78.1','Time: '+new Date().toISOString()];
+function report(){const L=['Hush bug report','Version: v79','Time: '+new Date().toISOString()];
  try{const p=cam.getWorldPosition(new THREE.Vector3());L.push('Position: '+[p.x,p.y,p.z].map(v=>v.toFixed(2)).join(', '))}catch(e){L.push('Position: ?')}
  const m=window.__mp;let mode='Single-player',n=1;try{if(m&&m.active){mode=m.mode==='hunt'?'Hunt':'Co-op';n=m.roster().length;if(m.demon)mode+=' (demon)';else if(m.ghost)mode+=' (ghost)'}}catch(e){}
  L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Safe mode: '+(window.__safe?'on':'off'));try{const F=window.__lastFreeze;L.push('Last session froze at: '+(F?F.s+' ('+new Date(F.t).toISOString()+(F.safe?', safe mode':'')+')':'(no)'));const LP=window.__lastPerf;L.push('Last session speed: '+(LP?LP.avg+' ms/frame avg, '+LP.max+' ms worst, '+LP.calls+' draw calls, stage '+LP.stage+(LP.avg>500?' (very slow)':''):'(no record)'));try{const M=window.__mrg;if(M)L.push('This session: '+M.calls+' draw calls, merged '+M.recs+' meshes into '+M.chunks+', shadows 1/'+M.shadowEvery)}catch(_){}const B=window.__bcLog||[];L.push('Steps this session: '+B.slice(-12).join(' | '))}catch(e){}try{if(m&&m.active&&m.voiceDiag)L.push(m.voiceDiag())}catch(e){}L.push('Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
