@@ -94,10 +94,10 @@ body:has(#title:not([hidden])) #cross{display:none}
 (function(){const K='hushBC',OK={title:1,play:1,'':1};let prev=null;try{prev=JSON.parse(localStorage.getItem(K)||'null')}catch(e){}
  // v76: Firefox commits localStorage writes only when the task ends, so a crumb written by a task that hangs is lost; sessionStorage and the URL hash are extra copies
  try{const ss=JSON.parse(sessionStorage.getItem(K)||'null');if(ss&&ss.t&&(!prev||ss.t>prev.t))prev=ss}catch(e){}
- try{const hm=/[#&]bc=([^&~]*)~(\d+)/.exec(location.hash);if(hm){const hs={s:decodeURIComponent(hm[1]),t:+hm[2],v:'v78'};if(!prev||hs.t>prev.t)prev=hs;history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
+ try{const hm=/[#&]bc=([^&~]*)~(\d+)/.exec(location.hash);if(hm){const hs={s:decodeURIComponent(hm[1]),t:+hm[2],v:'v78.1'};if(!prev||hs.t>prev.t)prev=hs;history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
  const mirror=(s,j)=>{try{sessionStorage.setItem(K,j)}catch(e){}try{const h=location.hash;if(!h||/^#bc=/.test(h))history.replaceState(null,'',location.pathname+location.search+(OK[s]?'':'#bc='+encodeURIComponent(s)+'~'+Date.now()))}catch(e){}};
  window.__lastFreeze=prev&&prev.s&&!OK[prev.s]?prev:null;const log=window.__bcLog=[];
- window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();const j=JSON.stringify({s,t:Date.now(),v:'v78',safe:!!window.__safe});mirror(s,j);localStorage.setItem(K,j)}catch(e){}};
+ window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();const j=JSON.stringify({s,t:Date.now(),v:'v78.1',safe:!!window.__safe});mirror(s,j);localStorage.setItem(K,j)}catch(e){}};
  let sf=false;try{sf=new URLSearchParams(location.search).get('safe')==='1'}catch(e){}window.__safe=sf;
  // a small "Preparing..." bar used while Start runs its steps
  window.__prep=txt=>{let g=null;try{g=document.createElement('div');g.setAttribute('role','status');g.style.cssText='position:fixed;left:0;right:0;bottom:12%;z-index:21;display:flex;flex-direction:column;gap:.7rem;align-items:center;color:#cfc4b4;font:.9rem system-ui,-apple-system,sans-serif;pointer-events:none;padding:0 16px';
@@ -4300,7 +4300,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   const light=el.classList.contains('onLight');if(!light&&L>150)el.classList.add('onLight');else if(light&&L<110)el.classList.remove('onLight');MR.clockL=Math.round(L)}
  // rolling performance log: every 2 s, average and worst frame plus the stage; read back on the next load
  let prevPerf=null;try{prevPerf=JSON.parse(localStorage.getItem('hushPerf')||'null')}catch(e){}window.__lastPerf=prevPerf;
- setInterval(()=>{if(!perf.n)return;const rec={avg:Math.round(perf.sum/perf.n),max:Math.round(perf.max),n:perf.n,stage:window.__phase||'?',calls:MR.calls,t:Date.now(),v:'v78',safe:!!window.__safe};perf.sum=perf.max=perf.n=0;
+ setInterval(()=>{if(!perf.n)return;const rec={avg:Math.round(perf.sum/perf.n),max:Math.round(perf.max),n:perf.n,stage:window.__phase||'?',calls:MR.calls,t:Date.now(),v:'v78.1',safe:!!window.__safe};perf.sum=perf.max=perf.n=0;
   try{localStorage.setItem('hushPerf',JSON.stringify(rec))}catch(e){}},2000);
  // ?fps=1: a small counter
  if(QP.get('fps')==='1'){const d=document.createElement('div');d.id='fpsC';d.style.cssText='position:fixed;left:8px;top:8px;z-index:2147483646;font:11px/1.3 ui-monospace,Menlo,Consolas,monospace;color:#bfe8a0;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:3px;pointer-events:none;white-space:pre';document.body.appendChild(d);
@@ -4323,7 +4323,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
 })();
 </script>
 <script type="text/x-hush">(function(){const btn=document.getElementById('ovBug'),msg=document.getElementById('bugMsg');if(!btn)return;
-function report(){const L=['Hush bug report','Version: v78','Time: '+new Date().toISOString()];
+function report(){const L=['Hush bug report','Version: v78.1','Time: '+new Date().toISOString()];
  try{const p=cam.getWorldPosition(new THREE.Vector3());L.push('Position: '+[p.x,p.y,p.z].map(v=>v.toFixed(2)).join(', '))}catch(e){L.push('Position: ?')}
  const m=window.__mp;let mode='Single-player',n=1;try{if(m&&m.active){mode=m.mode==='hunt'?'Hunt':'Co-op';n=m.roster().length;if(m.demon)mode+=' (demon)';else if(m.ghost)mode+=' (ghost)'}}catch(e){}
  L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Safe mode: '+(window.__safe?'on':'off'));try{const F=window.__lastFreeze;L.push('Last session froze at: '+(F?F.s+' ('+new Date(F.t).toISOString()+(F.safe?', safe mode':'')+')':'(no)'));const LP=window.__lastPerf;L.push('Last session speed: '+(LP?LP.avg+' ms/frame avg, '+LP.max+' ms worst, '+LP.calls+' draw calls, stage '+LP.stage+(LP.avg>500?' (very slow)':''):'(no record)'));try{const M=window.__mrg;if(M)L.push('This session: '+M.calls+' draw calls, merged '+M.recs+' meshes into '+M.chunks+', shadows 1/'+M.shadowEvery)}catch(_){}const B=window.__bcLog||[];L.push('Steps this session: '+B.slice(-12).join(' | '))}catch(e){}try{if(m&&m.active&&m.voiceDiag)L.push(m.voiceDiag())}catch(e){}L.push('Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
