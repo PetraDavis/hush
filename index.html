@@ -5352,9 +5352,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   sleepy:h=>[-1,1].forEach(k=>bx(.04,.01,.01,B(0x101010),k*.045,.004,-.125,h)),
   // Mesmerizer: big solid black round eyes, each with one white highlight
   // Mesmerizer: big round black eyes with a thin white rim, a yellow crescent glint in the upper outer corner and a small white dot below it
-  mesm:h=>[-1,1].forEach(k=>{const disc=(r,c,z,sy)=>{const e=new THREE.Mesh(new THREE.CircleGeometry(r,20),B(c));e.rotation.y=Math.PI;e.scale.y=sy||1.15;e.position.set(k*.05,.012,z);h.add(e);return e};
-   disc(.038,0xf6f2ea,-.1245);disc(.033,0x0a080c,-.1255);const y=new THREE.Mesh(new THREE.RingGeometry(.014,.024,14,1,Math.PI*.35,Math.PI*.6),B(0xf2d23a));y.rotation.y=Math.PI;y.position.set(k*.05+k*.002,.016,-.1265);if(k>0)y.scale.x=-1;h.add(y);
-   const d=new THREE.Mesh(new THREE.CircleGeometry(.006,10),B(0xffffff));d.rotation.y=Math.PI;d.position.set(k*.05-k*.014,.0,-.1265);h.add(d)}),
+  mesm:h=>[-1,1].forEach(k=>{const e=new THREE.Mesh(new THREE.CylinderGeometry(.034,.034,.02,12),B(0x0a080c));e.rotation.x=Math.PI/2;e.scale.y=1.15;e.position.set(k*.05,.01,-.122);h.add(e);sph(.009,B(0xffffff),1,1,.5,k*.05-.012,.024,-.133,h)}),
   lashes:h=>[-1,1].forEach(k=>{bx(.025,.025,.01,B(0x101010),k*.045,.01,-.125,h);const l=bx(.018,.006,.01,B(0x101010),k*.065,.028,-.124,h);l.rotation.z=k*.6}),
  };
  const MOUTH={
@@ -5367,15 +5365,13 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
     const f=new THREE.Mesh(new THREE.ConeGeometry(.008,.03,4),B(0xf6f2e6));f.rotation.x=Math.PI;f.position.set(k*.04,-.05,-.128);h.add(f)})},
   // Mesmerizer: a wide open grin full of little sharp teeth
   shark:h=>{const fl=(sh,c,z)=>{const o=new THREE.Mesh(new THREE.ShapeGeometry(sh),B(c));o.rotation.y=Math.PI;o.position.z=z;h.add(o);return o},S=()=>new THREE.Shape();
-   // wide grin: flat-ish top lip, deep curved bottom, corners pulled up; dark red inside
-   const mo=S();mo.moveTo(-.062,-.04);mo.quadraticCurveTo(0,-.05,.062,-.04);mo.quadraticCurveTo(.05,-.105,0,-.108);mo.quadraticCurveTo(-.05,-.105,-.062,-.04);fl(mo,0x7a0c18,-.1235);
-   // sharp white triangular teeth, a row along each lip
-   const tri=(x,y,w,l)=>{const t=S();t.moveTo(x-w/2,y);t.lineTo(x+w/2,y);t.lineTo(x,y+l);t.lineTo(x-w/2,y);fl(t,0xfbf8f0,-.1245)};
-   for(let i=0;i<7;i++){const x=-.048+i*.016,y=-.046+.006*Math.pow(x/.06,2);tri(x,y,.016,-.022)}
-   for(let i=0;i<6;i++){const x=-.04+i*.016,y=-.1+.04*Math.pow(x/.06,2);tri(x,y,.015,.018)}
-   // pink tongue lolling out of one corner of the mouth, hanging down past the chin
-   const tg=S();tg.moveTo(-.045,-.075);tg.quadraticCurveTo(-.02,-.085,-.022,-.11);tg.quadraticCurveTo(-.026,-.15,-.05,-.152);tg.quadraticCurveTo(-.072,-.148,-.066,-.115);tg.quadraticCurveTo(-.062,-.09,-.045,-.075);
-   const t=fl(tg,0xe8788e,-.1265);const ln=S();ln.moveTo(-.045,-.095);ln.lineTo(-.041,-.095);ln.lineTo(-.046,-.14);ln.lineTo(-.05,-.14);fl(ln,0xc04a62,-.127)},
+   // open smile: top edge curving up at the corners, deep round bottom, pure black inside
+   const mo=S();mo.moveTo(-.058,-.04);mo.quadraticCurveTo(0,-.058,.058,-.04);mo.quadraticCurveTo(.05,-.1,0,-.102);mo.quadraticCurveTo(-.05,-.1,-.058,-.04);fl(mo,0x000000,-.1235);
+   // small pink tongue resting in the bottom of the mouth
+   const tg=S();tg.moveTo(-.026,-.09);tg.quadraticCurveTo(0,-.074,.026,-.09);tg.quadraticCurveTo(.02,-.1,0,-.1);tg.quadraticCurveTo(-.02,-.1,-.026,-.09);fl(tg,0xd85a6a,-.124);
+   // little fangs: five along the top lip, two at the bottom
+   const w=B(0xf6f2e6);for(let i=0;i<5;i++){const x=-.034+i*.017,t=new THREE.Mesh(new THREE.ConeGeometry(.007,.016,3),w);t.rotation.x=Math.PI;t.position.set(x,-.054+.012*Math.pow(x/.05,2),-.128);h.add(t)}
+   [-1,1].forEach(k=>{const u=new THREE.Mesh(new THREE.ConeGeometry(.006,.012,3),w);u.position.set(k*.038,-.084,-.128);h.add(u)})},
  };
  // ---------- robes, shawl, haori ----------
  function robe(b,rig,c){const S=SURF(c.base,c.tex,c.cell);
@@ -5508,7 +5504,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const SKIN={peach:['Peach',0xe2c0a0],porcelain:['Porcelain',0xf0d8c4],honey:['Honey',0xc8956a],umber:['Umber',0x8a5a3a],deep:['Deep',0x5a3a26],purple:['Rabbit purple',0x8a5ac8]};
  const SLOT=[0xe0705a,0x4fb3a9,0xe0b84a,0x9a7ad8],SLOTH=['bark','chestnut','ink','wheat'];
  const HAIRN={bald:'Bald',short:'Short',long:'Long',ponytail:'Ponytail',bob:'Bob with bangs',buns:'Twin buns',maomao:"Maomao's buns",nezuko:"Nezuko's long hair",miku:"Miku's twin tails",teto:"Teto's drill twin tails"};
- const EYEN={dots:'Dots',ydots:'Yellow dots (rabbit)',wide:'Wide',sleepy:'Sleepy',mesm:'Big round (Mesmerizer)',lashes:'Lashes'},MOUTHN={none:'None',smile:'Smile',flat:'Flat',oh:'Gasp',snake:'Snake grin',shark:'Shark grin, tongue out'};
+ const EYEN={dots:'Dots',ydots:'Yellow dots (rabbit)',wide:'Wide',sleepy:'Sleepy',mesm:'Big round (Mesmerizer)',lashes:'Lashes'},MOUTHN={none:'None',smile:'Smile',flat:'Flat',oh:'Gasp',snake:'Snake grin',shark:'Open smile'};
  const NECK={'':'None',pearl:'Pearl necklace',gold:'Gold necklace',silver:'Small silver necklace'},HAORI={'':'None',tanjiro:"Tanjiro's haori",nezuko:'Black haori'};
  const EARC=[0xf2ece4,0x5a2a4a,0x141010,0xf0b0c0,0x8ab0d8,0xe8c030,0x7a9a4a,0xc02030];
  // what unlocks what (keys of U())
@@ -5526,7 +5522,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
-  if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes]&&lk.eyes!=='mesm')o.eyes=lk.eyes;if(MOUTH[lk.mouth]&&lk.mouth!=='shark')o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
+  if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
   if(lk.haori in HAORI)o.haori=lk.haori;if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb'].forEach(k=>o[k]=lk[k]?1:0);o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
@@ -5543,18 +5539,24 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   const rig={arms,legs};of.x(body,s,rig,o);if(o.bat)batBack(body);
   if(o.tie&&o.outfit!=='miku')tieLayer(body);if(o.neck)necklace(body,o.neck);if(o.haori)haori(body,rig,o.haori);
   const h=new THREE.Group();h.position.set(0,1.62,0);body.add(h);sph(.13,sk,.95,1.1,1,0,0,0,h);
-  const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1];HAIR[o.hair](hg,P(hc==='grad'?0:hc));
-  if(hc==='grad')gradHair(hg);
+  const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],hm=P(hc==='grad'?0:hc);HAIR[o.hair](hg,hm);
+  if(hc==='grad')gradHair(hg,hm);
   if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.mask)mask(h);
   return{legs,arms,head:h}}
- // Nezuko's gradient, fitted to each hairstyle: black on the crown, fading to orange over the lower part of that style's own height, per vertex (so drill tips end orange)
- function gradHair(hg){hg.updateMatrixWorld(true);const inv=new THREE.Matrix4().copy(hg.matrixWorld).invert(),v=new THREE.Vector3(),L=[];let lo=1e9,hi=-1e9;
-  hg.traverse(c=>{if(!c.isMesh)return;const m=new THREE.Matrix4().multiplyMatrices(inv,c.matrixWorld),g=c.geometry.clone(),p=g.attributes.position,ys=new Float32Array(p.count);
+ // Nezuko's gradient, fitted to each hairstyle's own height (like her real hair): black at the crown/roots, starting to fade about 30% of the way down
+ // (around ear/shoulder height), clearly orange over the lower ~55%, brightest at the tips. Only meshes using the hair material are recoloured,
+ // so accessories built into a hairstyle (Miku's clips, Maomao's gold flowers) keep their own colours.
+ function gradHair(hg,hm){hg.updateMatrixWorld(true);const inv=new THREE.Matrix4().copy(hg.matrixWorld).invert(),v=new THREE.Vector3(),L=[];let lo=1e9,hi=-1e9;
+  hg.traverse(c=>{if(!c.isMesh||(hm&&c.material!==hm))return;const m=new THREE.Matrix4().multiplyMatrices(inv,c.matrixWorld),g=c.geometry.clone(),p=g.attributes.position,ys=new Float32Array(p.count);
    for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(m);ys[i]=v.y;lo=Math.min(lo,v.y);hi=Math.max(hi,v.y)}c.geometry=g;L.push([c,ys])});
-  const y0=hi-.32*(hi-lo),span=Math.max(.02,y0-lo),A=new THREE.Color(0x121010),Bc=new THREE.Color(0xf58a30),k=new THREE.Color();
-  // tall single pieces (drills, tails) also get their own gradient, so each one ends orange at its tip
-  L.forEach(([c,ys])=>{let a=1e9,z=-1e9;ys.forEach(y=>{a=Math.min(a,y);z=Math.max(z,y)});const own=z-a>.3;const col=new Float32Array(ys.length*3);for(let i=0;i<ys.length;i++){let t=Math.max(0,Math.min(1,(y0-ys[i])/span/.7));if(own)t=Math.max(t,Math.min(1,(z-.05*(z-a)-ys[i])/(.42*(z-a))));t=t*t*(3-2*t);k.copy(A).lerp(Bc,t);col[i*3]=k.r;col[i*3+1]=k.g;col[i*3+2]=k.b}
-   c.geometry.setAttribute('color',new THREE.BufferAttribute(col,3));c.material=P(0xffffff,{vertexColors:true})})}
+  if(!L.length)return;const H=Math.max(.05,hi-lo),yS=hi-.4*H,yF=hi-.55*H,A=new THREE.Color(0x121010),O=new THREE.Color(0xe8742a),Bc=new THREE.Color(0xffa448),k=new THREE.Color();
+  const sm=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t)},mat=P(0xffffff,{vertexColors:true});
+  // tall single pieces (drills, tails) also get their own ramp, so each one ends bright orange at its tip
+  L.forEach(([c,ys])=>{let a=1e9,z=-1e9;ys.forEach(y=>{a=Math.min(a,y);z=Math.max(z,y)});const own=z-a>.3;const col=new Float32Array(ys.length*3);
+   for(let i=0;i<ys.length;i++){const y=ys[i];let t=sm((yS-y)/(yS-yF)),u=Math.max(0,Math.min(1,(yF-y)/Math.max(.02,yF-lo)));
+    if(own){const w=(z-y)/(z-a);t=Math.max(t,sm((w-.25)/.2));u=Math.max(u,Math.max(0,Math.min(1,(w-.45)/.55)))}
+    k.copy(A).lerp(O,t).lerp(Bc,u*t);col[i*3]=k.r;col[i*3+1]=k.g;col[i*3+2]=k.b}
+   c.geometry.setAttribute('color',new THREE.BufferAttribute(col,3));c.material=mat})}
  function build(body,p){const r=dress(body,eff(p));body.traverse(m=>{if(m.isMesh)m.castShadow=true});return r}
 
  // ---------- the Customize screen ----------
@@ -5592,8 +5594,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   grp('Hair style','hair',Object.keys(HAIR).map(v=>({v,n:HAIRN[v]})));
   grp('Hair color','hc',Object.keys(HC).map(v=>({v,n:HC[v][0],c:HC[v][1]})));
   grp('Skin','skin',Object.keys(SKIN).map(v=>({v,n:SKIN[v][0],c:SKIN[v][1]})));
-  grp('Eyes','eyes',Object.keys(EYES).filter(v=>v!=='mesm').map(v=>({v,n:EYEN[v]})));
-  grp('Mouth','mouth',Object.keys(MOUTH).filter(v=>v!=='shark').map(v=>({v,n:MOUTHN[v]})));
+  grp('Eyes','eyes',Object.keys(EYES).map(v=>({v,n:EYEN[v]})));
+  grp('Mouth','mouth',Object.keys(MOUTH).map(v=>({v,n:MOUTHN[v]})));
   grp('Outfit','outfit',Object.keys(OUTFIT).map(v=>({v,n:OUTFIT[v].n,c:OUTFIT[v].shirt==null?SLOT[0]:OUTFIT[v].shirt})));
   grp('Haori (over any outfit)','haori',Object.keys(HAORI).map(v=>({v,n:HAORI[v],c:v==='tanjiro'?0x2a7a52:v?0x18161a:null})));
   grp('Layers (over any outfit)','tog',[['muzzle','Bamboo muzzle',0x7a9a4a],['sheath','Sword sheath',0x1a1a1e],['mask','Snake mask',0x5f8a4a],['tie','Teal tie',0x2ab5ac],['ears','Bunny ears',o.ears==null?0xf2ece4:o.ears],['cap','Red "052" cap',0xc8202e],['hb','Pinstripe cap with bow',0x3a62c4],['bat','Baseball bat (on back)',0xf2f0ee]].map(([v,n,c])=>({v,n,c})));
