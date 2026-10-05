@@ -80,7 +80,7 @@ body:has(#title:not([hidden])) #cross{display:none}
 
 <div id="overlay" hidden><div class="box"><h1>Hush</h1><p>Click to start - WASD to move, Shift to sprint, Space to jump, mouse to look, C or Ctrl to crouch, E to open doors, use things, sit and pick her up or hide (closets, under beds, the pantry; hold Shift to hold your breath), L flashlight, M to mute</p><p id="flashOpt">F: reduce flashing (off)</p><button id="ovSet" type="button">Settings</button> <button id="ovBug" type="button">Report a bug</button><p id="bugMsg" hidden>Copied! Paste it to Claude.</p></div></div>
 <div id="title"><div class="keys">WASD move - Shift sprint - Space jump - C crouch - E use / hide - L flashlight - T skip an hour - M mute - F reduce flashing</div>
-</div><div id="tfade" hidden></div><div id="tset" hidden><h2>Settings</h2><label>Master volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Voice chat <input id="sVoice" type="range" min="0" max="1.5" step="0.05"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><label>Invert Y <input id="sInvY" type="checkbox"></label><label>Graphics <select id="sQ"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Ending music <input id="sEndM" type="checkbox" checked></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><button id="tsetClose" type="button">Done</button></div>
+</div><div id="tfade" hidden></div><div id="tset" hidden><h2>Settings</h2><label>Master volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Voice chat <input id="sVoice" type="range" min="0" max="1.5" step="0.05"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><label>Invert Y <input id="sInvY" type="checkbox"></label><label>Graphics <select id="sQ"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Ending music <input id="sEndM" type="checkbox" checked></label><label>Hints <input id="sHints" type="checkbox" checked></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><button id="tsetClose" type="button">Done</button></div>
 <button id="skipB" type="button" hidden>Skip hour [T]</button><div id="blurE"></div><div id="cross"></div><div id="hint" hidden>[E] Door</div><div id="msg">It's locked.</div><div id="sub" hidden></div><div id="hud" hidden></div><div id="need" hidden><svg viewBox="0 0 24 24" aria-hidden="true"></svg><span></span></div><div id="mon" hidden><div class="hd">BABY MONITOR<b id="monL"></b></div><div class="bars"></div><div id="monT">quiet</div></div><div id="prog" hidden><div><b></b></div><span></span></div><div id="dead" hidden><div class="box"><p class="brand">HUSH</p><h1>You shouldn't have checked.</h1><p>It was waiting for you.</p><button id="restart" type="button">Restart</button></div></div><div id="fade" hidden></div><div id="tbc" hidden><p class="brand">HUSH</p><h1>To be continued...</h1><button id="tbcR" type="button">Restart</button></div><div id="end" hidden><div class="box"><p class="brand">HUSH</p><h1>The parents are home.</h1><p>End of the prototype. Reload the page to play again.</p></div></div>
 <div id="note" hidden><div class="paper"><p class="hd">Thank you for coming on such short notice!</p>
 <ul><li>Feed Lilith around 7 PM, 10 PM, 1 AM and 4 AM, or whenever she gets hungry. Bottles are in the fridge. Warm one in the bottle warmer on the counter, never the microwave.</li>
@@ -2091,6 +2091,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  // v79: one line under every ending card's title (Petra)
  const DESC={parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back."};
  const got=()=>{try{const a=JSON.parse(XT.ls.get('hushEndings')||'[]');return Array.isArray(a)?a.filter(k=>NAMES[k]):[]}catch(e){return[]}};
+ XT.endInfo=()=>({order:ORDER.slice(),names:NAMES,desc:DESC,got:got()});
  const css=document.createElement('style');css.textContent=`#xfade{position:fixed;inset:0;z-index:8;background:#000;opacity:0;pointer-events:none;transition:opacity 1.2s;display:flex;align-items:center;justify-content:center;padding:0 16px;text-align:center;font-family:var(--display);font-style:italic;font-size:1.6rem;color:#d8cfc4}#xfade.on{opacity:1}
 #xend{position:fixed;inset:0;z-index:10;background:#050405;color:var(--fg);display:flex;align-items:center;justify-content:center;padding:24px 16px;overflow:hidden}#xend .in{max-width:32rem;width:100%;text-align:center;display:flex;flex-direction:column;gap:.9rem;max-height:100%}
 #xend h1{font-family:var(--display);font-weight:400;font-size:2.1rem;margin:0;text-wrap:balance}#xend .tag{font-family:var(--ui);font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:#a04040;margin:0}#xend p.txt{font-family:var(--display);color:#bfb6a8;font-size:1.05rem;line-height:1.5;margin:0}
@@ -5113,6 +5114,117 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  XT.endTune=function(id){if(!on||!AC||!musG||muted||!T[id])return 0;stop();bus=AC.createGain();bus.gain.value=.9;bus.connect(musG);playing=id;
   if(AC.state==='suspended')AC.resume().catch(()=>{});const t=AC.currentTime+.25;let d=8;safe(()=>{d=T[id](t)},'tune '+id);until=performance.now()+(d+.6)*1000;return d};
  XT.tuneLeft=()=>Math.max(0,(until-performance.now())/1000);XT.tunePlaying=()=>XT.tuneLeft()>0?playing:null;XT.tuneStop=stop;XT.tuneIds=Object.keys(T);
+})();
+</script>
+<script type="text/x-hush">
+// ===== v81: hints for stuck players. After 4 minutes of a night with no progress (no care given, no note found), a small hint.
+// Settings > Hints turns them off. Hints only ever cover the basics: never secrets, hidden things or secret endings. =====
+(function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush hints] '+(t||''),e)}};
+ let on=true;try{on=localStorage.getItem('hushHints')!=='0'}catch(e){}
+ safe(()=>{const c=document.getElementById('sHints');if(!c)return;c.checked=on;c.onchange=()=>{on=c.checked;try{localStorage.setItem('hushHints',on?'1':'0')}catch(e){}if(!on)el.hidden=true}},'ui');
+ const css=document.createElement('style');css.textContent='#hintBox{position:fixed;z-index:6;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 70px);max-width:min(30rem,calc(100% - 32px));box-sizing:border-box;font:500 .82rem/1.4 var(--ui,system-ui,sans-serif);color:#efe6d8;background:rgba(16,14,18,.86);border:1px solid #5a4a3a;border-left:3px solid #c9a45c;border-radius:6px;padding:.55rem .8rem;pointer-events:auto;cursor:pointer;transition:opacity .6s}#hintBox b{color:#e0b870;font-weight:600;margin-right:.35rem}#hintBox.fade{opacity:0}body.touch #hintBox{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 64px)}';document.head.appendChild(css);
+ const el=document.createElement('div');el.id='hintBox';el.hidden=true;el.setAttribute('role','status');document.body.appendChild(el);
+ el.addEventListener('click',e=>{e.stopPropagation();el.hidden=true});['pointerdown','touchstart','mousedown'].forEach(k=>el.addEventListener(k,e=>e.stopPropagation()));
+ const WAIT=240,SHOW=10;let idle=0,shown=0,sig='',i=0,hideT=null;
+ const C=()=>window.CARE&&CARE.dbg||(typeof CARE!=='undefined'?CARE.dbg:null);
+ function progress(){let s='';safe(()=>{const c=C();s=JSON.stringify(c?c.stats:0)+'|'+(XT.notes?XT.notes.found.length:0)+'|'+(XT.night||1)},'sig');return s}
+ // which hint fits right now: what the baby needs first, then the goal, then notes and the general tools
+ function pick(){const c=C(),N=c&&c.N||{},L=[];
+  const top=Object.keys(N).filter(k=>k!=='burp').sort((a,b)=>N[b]-N[a])[0];
+  if(c&&!c.asleep&&top&&N[top]>.55)L.push({hunger:'She is getting hungry. Take a bottle from the fridge, warm it in the bottle warmer on the kitchen counter, then feed her.',diaper:'She needs a clean diaper. Pick her up with E and carry her to the changing table in the upstairs bathroom.',sleepy:'She is getting sleepy. Carry her to the glider in the nursery and sit to rock her to sleep. The music box helps.',bored:'She is bored. Carry her to her toys in the nursery and play with her.'}[top]);
+  if(c&&(N.burp||0)>.4)L.push('Burp her after every bottle, or she will fuss.');
+  L.push("The goal is simple: keep Lilith quiet and cared for until 6 AM. The baby monitor shows how loud she is.");
+  if(XT.notes&&!XT.notes.all)L.push('There are letters and pages to read around the house. Try the rooms you have not looked through yet. What you read is kept in your journal (pause menu).');
+  L.push('When nothing is happening you can press T (or the skip button) to skip ahead an hour.');
+  L.push('If something is hunting you, hide: closets, under beds and the pantry all work. Hold Shift (or the breath button) to hold your breath.');
+  if(window.__touchMode)L.forEach((s,k)=>{L[k]=s.replace(/ with E| use E| \(or the skip button\)/g,m=>m===' (or the skip button)'?'':' with Use').replace(/press T/,'tap the skip button').replace(/Hold Shift \(or the breath button\)/,'Hold the breath button')});
+  return L[(i++)%L.length]}
+ function show(txt){el.innerHTML='<b>Hint</b>'+txt;el.classList.remove('fade');el.hidden=false;clearTimeout(hideT);hideT=setTimeout(()=>{el.classList.add('fade');hideT=setTimeout(()=>{el.hidden=true},700)},SHOW*1000)}
+ XT.onUpdate(dt=>{if(!on||!XT.live()||paused||(window.__mp&&(__mp.ghost||__mp.demon||__mp.hm))){if(!XT.live())idle=0;return}
+  const s=progress();if(s!==sig){sig=s;idle=0;return}idle+=Math.min(dt,.5);
+  if(idle>=WAIT){idle=0;shown++;safe(()=>show(pick()),'show')}});
+ XT.hints={get idle(){return idle},set idle(v){idle=v},show:()=>show(pick()),get on(){return on}};
+})();
+</script>
+<script type="text/x-hush">
+// ===== v81: one set-piece scare per night, and they stack: Night 1 has the first, Night 2 the first two, Night 3 all three.
+// 1: a door near you creaks slowly open and something whispers.  2: a dark figure runs across the far end of the corridor you are looking down.
+// 3: the demon at a window you are looking at, knocking on the glass. No flashing; with Reduce flashing on, the sting is softer. =====
+(function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush scares] '+(t||''),e)}};
+ const done={};let wait=20,act=null;const hr=()=>XT.hour();const calm=()=>!!(window.__getCalm&&__getCalm());
+ const WIN={1:[20.3,23.5],2:[21,25],3:[22.5,26.5]};
+ const fw=new THREE.Vector3(),tmp=new THREE.Vector3();
+ const view=()=>{cam.getWorldDirection(fw);return fw};
+ const angTo=p=>{const d=tmp.copy(p).sub(cam.position),L=d.length();return [Math.acos(Math.max(-1,Math.min(1,d.dot(view())/L))),L]};
+ function whisper(x,z,g){if(!AC||muted)return;const d=Math.hypot(x-cam.position.x,z-cam.position.z),k=(g||.06)/(1+d*.25),t0=AC.currentTime;for(let i=0;i<7;i++)burst(t0+.2+i*.17+Math.random()*.06,2200+Math.random()*2200,3,k,.3,'bandpass')}
+ function steps(n,g){if(!AC||muted)return;const t0=AC.currentTime;for(let i=0;i<n;i++)burst(t0+i*.17,140,1.4,g,.09,'lowpass')}
+ function knock(g){if(!AC||muted)return;const t0=AC.currentTime+.1;[0,.28,.56,1.5,1.62].forEach(x=>{burst(t0+x,2600,6,g,.05,'bandpass');burst(t0+x,700,3,g*.6,.07,'bandpass')})}
+ function sting(soft){if(!AC||muted)return;const t0=AC.currentTime,o=AC.createGain(),pk=soft?.18:.45;o.gain.setValueAtTime(.0001,t0);o.gain.exponentialRampToValueAtTime(pk,t0+.03);o.gain.exponentialRampToValueAtTime(.0001,t0+2.2);o.connect(master);
+  [98,104,147,208,311].forEach(f=>{const s=AC.createOscillator();s.type='sawtooth';s.frequency.setValueAtTime(f,t0);s.frequency.exponentialRampToValueAtTime(f*.94,t0+2);s.connect(o);s.start(t0);s.stop(t0+2.3)})}
+ // the runner for night 2: a tall thin shadow
+ const fig=new THREE.Group();{const m=new THREE.MeshBasicMaterial({color:0x050406,fog:true});const b=new THREE.Mesh(new THREE.CylinderGeometry(.14,.2,1.35,7),m);b.position.y=.95;fig.add(b);const hd=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),m);hd.position.y=1.78;hd.scale.set(.9,1.2,.9);fig.add(hd);
+  [-1,1].forEach(k=>{const l=new THREE.Mesh(new THREE.CylinderGeometry(.045,.03,.8,5),m);l.position.set(k*.08,.36,0);l.name='leg';fig.add(l);const a=new THREE.Mesh(new THREE.CylinderGeometry(.035,.025,.95,5),m);a.position.set(k*.22,1.05,0);a.rotation.z=k*.15;fig.add(a)})}
+ fig.visible=false;fig.userData.noMap=1;scene.add(fig);
+ const EV={
+  1(){const c=doors.filter(d=>!d.open&&!d.solid.off&&d.solid.x0!==undefined&&Math.abs(d.solid.y0-fy)<1&&(()=>{const p=new THREE.Vector3((d.solid.x0+d.solid.x1)/2,fy+1.2,(d.solid.z0+d.solid.z1)/2),[a,L]=angTo(p);return L>2&&L<7&&a<1.1})());
+   if(!c.length)return false;const d=c[(Math.random()*c.length)|0],x=(d.solid.x0+d.solid.x1)/2,z=(d.solid.z0+d.solid.z1)/2;
+   whisper(x,z,.05);setTimeout(()=>safe(()=>{if(!XT.live())return;d.sp=.22;d.open=true;d.spO=true;safe(()=>XT.hinge&&XT.hinge(x,z,1.4,true),'hinge');subtitle('(A door creaks open, very slowly, all by itself.)',3200)},'open'),1400);
+   setTimeout(()=>safe(()=>{if(XT.live()){whisper(x,z,.07);subtitle('(Something on the other side whispers. It sounds like your name.)',3400)}},'w2'),4600);return true},
+  2(){if(window.__rlm&&__rlm.on)return false;const d=view(),l=Math.hypot(d.x,d.z);if(l<.5)return false;const ux=d.x/l,uz=d.z/l;let x=cam.position.x,z=cam.position.z,L=0;
+   while(L<11){const nx=x+ux*.25,nz=z+uz*.25;if(blocked(nx,nz))break;x=nx;z=nz;L+=.25}if(L<4.5)return false;
+   const D=L-.5,cx=cam.position.x+ux*D,cz=cam.position.z+uz*D,px=-uz,pz=ux;let w0=0,w1=0;for(let s=.25;s<=1.6;s+=.25){if(blocked(cx+px*s,cz+pz*s))break;w1=s}for(let s=.25;s<=1.6;s+=.25){if(blocked(cx-px*s,cz-pz*s))break;w0=s}
+   const dir=Math.random()<.5?1:-1,a0=-dir*Math.max(.5,w0+.4),a1=dir*Math.max(.5,w1+.4);
+   act={t:0,dur:1.05,step(t){const k=t/this.dur,s=a0+(a1-a0)*k;fig.position.set(cx+px*s,fy,cz+pz*s);fig.rotation.y=Math.atan2(px*dir,pz*dir);fig.children.forEach(c=>{if(c.name==='leg')c.rotation.x=Math.sin(t*22+(c.position.x>0?Math.PI:0))*.7})},end(){fig.visible=false}};
+   fig.visible=true;act.step(0);steps(6,.12);setTimeout(()=>safe(()=>{if(XT.live())subtitle('(Something ran across the end of the hall.)',2600)},'sub'),1200);return true},
+  3(){const DM=window.__demon;if(!DM||DM.active||(window.__mp&&__mp.active&&!__mp.host&&false))return false;if(!DM.show('window',true))return false;
+   knock(calm()?.12:.25);setTimeout(()=>safe(()=>sting(calm()),'sting'),1500);subtitle('(Tap. Tap. Tap. Something is at the window.)',2600);
+   setTimeout(()=>safe(()=>{if(DM.active==='window')DM.stop()},'stop'),calm()?2600:3400);return true}};
+ XT.onUpdate(dt=>{if(act){act.t+=dt;safe(()=>act.step(act.t),'step');if(act.t>=act.dur){safe(()=>act.end(),'end');act=null}return}
+  if(!XT.live()||paused||window.__cut||(window.__mp&&(__mp.ghost||__mp.demon||__mp.hm))||(XT.hide&&XT.hide.hid)||(window.__rlm&&__rlm.on))return;
+  wait-=dt;if(wait>0)return;wait=4;const n=Math.min(3,XT.night||1),h=hr();
+  for(let k=n;k>=1;k--){if(done[k])continue;const [h0,h1]=WIN[k];if(h<h0||h>h1)continue;if(Math.random()<.5)continue;if(safe(()=>EV[k](),'ev'+k)){done[k]=1;wait=60;break}}});
+ XT.parts.scares={save:()=>Object.keys(done).join(''),load:v=>{String(v||'').split('').forEach(k=>{if(EV[k])done[k]=1})}};
+ XT.scares={run:k=>EV[k]&&EV[k](),done,get act(){return act}};
+})();
+</script>
+<script type="text/x-hush">
+// ===== v81: endings gallery on the title screen. Every ending you have found, with a little picture and its description; the rest stay ???. =====
+(function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush gallery] '+(t||''),e)}};
+ if(!XT.endInfo)return;
+ const css=document.createElement('style');css.textContent=`#galB{position:absolute;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 64px);font:600 .78rem var(--ui);letter-spacing:.06em;color:#e8dcc8;background:rgba(20,16,20,.8);border:1px solid #5a4a3a;border-radius:6px;padding:.5rem .9rem;cursor:pointer;z-index:2}#galB:hover,#galB:focus-visible{background:#2a2026;outline:none}
+@media (orientation:portrait) and (max-width:700px){#galB{top:calc(env(safe-area-inset-top,0px) + 378px);bottom:auto}}
+#galP{position:fixed;inset:0;z-index:12;background:rgba(4,3,6,.94);display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+#galP .in{width:min(60rem,100%);box-sizing:border-box;color:var(--fg);font-family:var(--ui)}#galP h2{font-family:var(--display);font-weight:400;font-size:1.7rem;margin:.2rem 0 .1rem}#galP .sub{margin:0 0 1rem;color:var(--dim);font-size:.78rem;letter-spacing:.06em}
+#galP .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,15.5rem),1fr));gap:12px}
+#galP .c{background:#141116;border:1px solid #2c2730;border-radius:8px;overflow:hidden;display:flex;flex-direction:column}#galP .c canvas{width:100%;aspect-ratio:16/10;display:block;background:#0a080b}
+#galP .c .t{padding:.6rem .75rem .75rem}#galP .c h3{margin:0 0 .3rem;font-family:var(--display);font-weight:400;font-size:1.1rem;color:#efe4d0}#galP .c p{margin:0;font-size:.76rem;line-height:1.45;color:#c8bca8;font-style:italic}#galP .c .n{font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;color:#a04040;margin:0 0 .2rem;font-style:normal}
+#galP .c.lock h3{color:#6a6070}#galP .c.lock p{color:#5a5262}
+#galP .bar{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(4,3,6,.94);padding:.2rem 0 .6rem;z-index:1}#galP .x{font:600 .85rem var(--ui);color:#f0e6e0;background:#3a0e10;border:1px solid #6a2024;border-radius:6px;padding:.55rem 1.2rem;cursor:pointer}`;document.head.appendChild(css);
+ // the little pictures, drawn once each on a 320x200 canvas
+ const P={
+  parents(q,W,H){q.fillStyle='#120c0a';q.fillRect(0,0,W,H);q.fillStyle='#f0c070';q.fillRect(W*.3,H*.12,W*.4,H*.88);[.4,.6].forEach((x,i)=>{q.fillStyle='#1a1214';q.fillRect(W*x-16,H*.36,32,H*.64);q.beginPath();q.arc(W*x,H*.3,15,0,7);q.fill();q.strokeStyle='#f4ecdc';q.lineWidth=2.5;q.beginPath();q.arc(W*x,H*.29,9,.25,Math.PI-.25);q.stroke();q.fillStyle='#f4ecdc';[-5,5].forEach(k=>q.fillRect(W*x+k-1.5,H*.26,3,3))});q.fillStyle='#d8c8a8';q.font='bold 18px Georgia';q.fillText('6:00',W*.04,H*.14)},
+  dawn(q,W,H){const g=q.createLinearGradient(0,0,0,H);g.addColorStop(0,'#3a4a78');g.addColorStop(.6,'#f0a868');g.addColorStop(1,'#f8d890');q.fillStyle=g;q.fillRect(0,0,W,H);q.fillStyle='#fff2c0';q.beginPath();q.arc(W*.5,H*.72,34,0,7);q.fill();q.fillStyle='#2a2430';q.fillRect(0,H*.72,W,H*.28);q.fillStyle='#3a3240';q.beginPath();q.moveTo(W*.12,H*.72);q.lineTo(W*.12,H*.42);q.lineTo(W*.24,H*.3);q.lineTo(W*.36,H*.42);q.lineTo(W*.36,H*.72);q.fill();q.fillStyle='#f8d890';q.fillRect(W*.2,H*.48,12,12)},
+  death(q,W,H){q.fillStyle='#0c0608';q.fillRect(0,0,W,H);q.strokeStyle='#5a4a40';q.lineWidth=3;q.strokeRect(W*.3,H*.5,W*.4,H*.32);for(let i=1;i<8;i++){q.beginPath();q.moveTo(W*.3+i*W*.05,H*.5);q.lineTo(W*.3+i*W*.05,H*.82);q.stroke()}q.fillStyle='#7a0e14';q.beginPath();q.moveTo(W*.78,H*.95);q.lineTo(W*.85,H*.25);q.lineTo(W*.92,H*.95);q.fill();q.beginPath();q.arc(W*.85,H*.22,10,0,7);q.fill()},
+  cult(q,W,H){q.fillStyle='#0e0608';q.fillRect(0,0,W,H);[.25,.5,.75].forEach((x,i)=>{q.fillStyle='#8a1418';q.beginPath();q.moveTo(W*x-26,H*.95);q.lineTo(W*x,H*.28);q.lineTo(W*x+26,H*.95);q.fill();q.fillStyle='#5a0a0e';q.beginPath();q.arc(W*x,H*.3,13,Math.PI,0);q.fill();q.fillStyle='#ffd070';q.fillRect(W*x-2,H*.62,4,10);q.beginPath();q.arc(W*x,H*.6,4,0,7);q.fill()});q.strokeStyle='rgba(200,40,40,.5)';q.lineWidth=2;q.beginPath();q.ellipse(W*.5,H*.94,W*.42,H*.05,0,0,7);q.stroke()},
+  secret(q,W,H){q.fillStyle='#0a0a12';q.fillRect(0,0,W,H);q.save();q.translate(W*.5,H*.5);q.rotate(-.7);q.fillStyle='#d8dce4';q.fillRect(-6,-80,12,120);q.beginPath();q.moveTo(-6,-80);q.lineTo(0,-96);q.lineTo(6,-80);q.fill();q.fillStyle='#c8a040';q.fillRect(-26,40,52,8);q.fillStyle='#4a2a1a';q.fillRect(-5,48,10,32);q.restore();q.fillStyle='rgba(255,220,140,.15)';q.beginPath();q.arc(W*.5,H*.5,70,0,7);q.fill()},
+  car(q,W,H){q.fillStyle='#08080c';q.fillRect(0,0,W,H);q.fillStyle='#1a1a20';q.fillRect(0,H*.7,W,H*.3);q.fillStyle='#8a8470';for(let i=0;i<6;i++)q.fillRect(i*60+10,H*.84,30,4);[.33,.67].forEach(x=>{const g=q.createRadialGradient(W*x,H*.55,2,W*x,H*.55,60);g.addColorStop(0,'rgba(255,250,220,1)');g.addColorStop(1,'rgba(255,240,180,0)');q.fillStyle=g;q.fillRect(0,0,W,H)});q.fillStyle='#f0e8c8';q.font='bold 22px sans-serif';q.textAlign='center';q.fillText('HONK!',W*.5,H*.25);q.textAlign='left'},
+  left(q,W,H){q.fillStyle='#0a0c14';q.fillRect(0,0,W,H);q.fillStyle='#1c1c22';q.beginPath();q.moveTo(W*.42,H*.35);q.lineTo(W*.58,H*.35);q.lineTo(W,H);q.lineTo(0,H);q.fill();q.fillStyle='#14121a';q.fillRect(W*.47,H*.55,14,34);q.beginPath();q.arc(W*.47+7,H*.52,7,0,7);q.fill();q.fillStyle='#2a2630';q.fillRect(W*.04,H*.1,60,50);q.fillStyle='#f0c070';q.fillRect(W*.04+22,H*.1+16,16,14)},
+  collapse(q,W,H){q.fillStyle='#0e0c0c';q.fillRect(0,0,W,H);q.fillStyle='#3a3230';q.beginPath();q.moveTo(W*.15,H*.9);q.lineTo(W*.3,H*.5);q.lineTo(W*.45,H*.62);q.lineTo(W*.6,H*.38);q.lineTo(W*.72,H*.58);q.lineTo(W*.85,H*.9);q.fill();q.strokeStyle='#6a5a50';q.lineWidth=5;[[.2,.7,.5,.45],[.55,.8,.8,.5],[.35,.85,.65,.6]].forEach(([a,b,c,d])=>{q.beginPath();q.moveTo(W*a,H*b);q.lineTo(W*c,H*d);q.stroke()});q.fillStyle='rgba(180,170,160,.25)';for(let i=0;i<30;i++){q.beginPath();q.arc((i*53)%W,H*.4+((i*29)%60),3+(i%4),0,7);q.fill()}},
+  abstracted(q,W,H){q.fillStyle='#060408';q.fillRect(0,0,W,H);const C=['#ff3fa4','#29d7ff','#7cff4a','#ff8a1f','#b66bff','#ffe23a'];for(let i=0;i<9;i++){const x=30+((i*97)%260),y=30+((i*61)%140),r=12+(i%3)*6;q.fillStyle='#fbf6ee';q.beginPath();q.ellipse(x,y,r,r*.7,0,0,7);q.fill();q.fillStyle=C[i%6];q.beginPath();q.arc(x+(i%2?3:-3),y,r*.45,0,7);q.fill();q.fillStyle='#000';q.beginPath();q.arc(x+(i%2?3:-3),y,r*.2,0,7);q.fill()}}};
+ const LOCKD=(q,W,H)=>{q.fillStyle='#0c0a0e';q.fillRect(0,0,W,H);q.fillStyle='#2a2430';q.font='bold 46px Georgia';q.textAlign='center';q.textBaseline='middle';q.fillText('?',W/2,H/2);q.textAlign='left';q.textBaseline='alphabetic'};
+ const t=document.getElementById('title');const b=document.createElement('button');b.id='galB';b.type='button';t.appendChild(b);
+ const pan=document.createElement('div');pan.id='galP';pan.hidden=true;pan.setAttribute('role','dialog');pan.setAttribute('aria-label','Endings');document.body.appendChild(pan);
+ const stop=e=>e.stopPropagation();['click','pointerdown','touchstart','touchend','keydown','keyup','mousedown'].forEach(k=>{b.addEventListener(k,stop);pan.addEventListener(k,stop)});
+ const label=()=>{const I=XT.endInfo();b.textContent='Endings '+I.got.length+'/'+I.order.length};label();
+ function open(){const I=XT.endInfo();pan.innerHTML='<div class="in"><div class="bar"><div><h2>Endings</h2><p class="sub">Found '+I.got.length+' of '+I.order.length+'</p></div><button type="button" class="x">Close</button></div><div class="grid"></div></div>';
+  const G=pan.querySelector('.grid');I.order.forEach((id,k)=>{const f=I.got.includes(id),c=document.createElement('div');c.className='c'+(f?'':' lock');const cv=document.createElement('canvas');cv.width=320;cv.height=200;c.appendChild(cv);
+   const tx=document.createElement('div');tx.className='t';tx.innerHTML='<p class="n">Ending '+(k+1)+'</p><h3></h3><p></p>';tx.querySelector('h3').textContent=f?I.names[id]:'???';tx.querySelector('p:last-child').textContent=f?(I.desc[id]||''):'Not found yet.';c.appendChild(tx);G.appendChild(c);
+   safe(()=>{const q=cv.getContext('2d');(f&&P[id]?P[id]:LOCKD)(q,320,200)},'draw '+id)});
+  pan.querySelector('.x').onclick=close;pan.hidden=false;setTimeout(()=>safe(()=>pan.querySelector('.x').focus()),30)}
+ function close(){pan.hidden=true;safe(()=>b.focus())}
+ b.addEventListener('click',open);pan.addEventListener('keydown',e=>{if(e.key==='Escape')close()});pan.addEventListener('click',e=>{if(e.target===pan)close()});
+ setInterval(()=>safe(()=>{b.hidden=t.hidden||!!(window.__mp&&__mp.active);if(!b.hidden)label()}),700);
+ XT.gallery={open,close};
 })();
 </script>
 <script type="text/x-hush">(function(){const el=document.getElementById("ld");if(!el)return;const b=document.getElementById("ldB"),bar=w=>{if(b)b.style.width=w+"%"};const lg=m=>{try{window.__logErr&&__logErr(m)}catch(e){}};
