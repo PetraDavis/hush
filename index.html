@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Hush</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style id="ldCss">
@@ -79,7 +80,7 @@ body:has(#title:not([hidden])) #cross{display:none}
 
 <div id="overlay" hidden><div class="box"><h1>Hush</h1><p>Click to start - WASD to move, Shift to sprint, Space to jump, mouse to look, C or Ctrl to crouch, E to open doors, use things, sit and pick her up or hide (closets, under beds, the pantry; hold Shift to hold your breath), L flashlight, M to mute</p><p id="flashOpt">F: reduce flashing (off)</p><button id="ovSet" type="button">Settings</button> <button id="ovBug" type="button">Report a bug</button><p id="bugMsg" hidden>Copied! Paste it to Claude.</p></div></div>
 <div id="title"><div class="keys">WASD move - Shift sprint - Space jump - C crouch - E use / hide - L flashlight - T skip an hour - M mute - F reduce flashing</div>
-</div><div id="tfade" hidden></div><div id="tset" hidden><h2>Settings</h2><label>Master volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Voice chat <input id="sVoice" type="range" min="0" max="1.5" step="0.05"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><label>Invert Y <input id="sInvY" type="checkbox"></label><label>Graphics <select id="sQ"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><button id="tsetClose" type="button">Done</button></div>
+</div><div id="tfade" hidden></div><div id="tset" hidden><h2>Settings</h2><label>Master volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Voice chat <input id="sVoice" type="range" min="0" max="1.5" step="0.05"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><label>Invert Y <input id="sInvY" type="checkbox"></label><label>Graphics <select id="sQ"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Ending music <input id="sEndM" type="checkbox" checked></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><button id="tsetClose" type="button">Done</button></div>
 <button id="skipB" type="button" hidden>Skip hour [T]</button><div id="blurE"></div><div id="cross"></div><div id="hint" hidden>[E] Door</div><div id="msg">It's locked.</div><div id="sub" hidden></div><div id="hud" hidden></div><div id="need" hidden><svg viewBox="0 0 24 24" aria-hidden="true"></svg><span></span></div><div id="mon" hidden><div class="hd">BABY MONITOR<b id="monL"></b></div><div class="bars"></div><div id="monT">quiet</div></div><div id="prog" hidden><div><b></b></div><span></span></div><div id="dead" hidden><div class="box"><p class="brand">HUSH</p><h1>You shouldn't have checked.</h1><p>It was waiting for you.</p><button id="restart" type="button">Restart</button></div></div><div id="fade" hidden></div><div id="tbc" hidden><p class="brand">HUSH</p><h1>To be continued...</h1><button id="tbcR" type="button">Restart</button></div><div id="end" hidden><div class="box"><p class="brand">HUSH</p><h1>The parents are home.</h1><p>End of the prototype. Reload the page to play again.</p></div></div>
 <div id="note" hidden><div class="paper"><p class="hd">Thank you for coming on such short notice!</p>
 <ul><li>Feed Lilith around 7 PM, 10 PM, 1 AM and 4 AM, or whenever she gets hungry. Bottles are in the fridge. Warm one in the bottle warmer on the counter, never the microwave.</li>
@@ -100,10 +101,10 @@ body:has(#title:not([hidden])) #cross{display:none}
 (function(){const K='hushBC',OK={title:1,play:1,'':1};let prev=null;try{prev=JSON.parse(localStorage.getItem(K)||'null')}catch(e){}
  // v76: Firefox commits localStorage writes only when the task ends, so a crumb written by a task that hangs is lost; sessionStorage and the URL hash are extra copies
  try{const ss=JSON.parse(sessionStorage.getItem(K)||'null');if(ss&&ss.t&&(!prev||ss.t>prev.t))prev=ss}catch(e){}
- try{const hm=/[#&]bc=([^&~]*)~(\d+)/.exec(location.hash);if(hm){const hs={s:decodeURIComponent(hm[1]),t:+hm[2],v:'v79'};if(!prev||hs.t>prev.t)prev=hs;history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
+ try{const hm=/[#&]bc=([^&~]*)~(\d+)/.exec(location.hash);if(hm){const hs={s:decodeURIComponent(hm[1]),t:+hm[2],v:'v81'};if(!prev||hs.t>prev.t)prev=hs;history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
  const mirror=(s,j)=>{try{sessionStorage.setItem(K,j)}catch(e){}try{const h=location.hash;if(!h||/^#bc=/.test(h))history.replaceState(null,'',location.pathname+location.search+(OK[s]?'':'#bc='+encodeURIComponent(s)+'~'+Date.now()))}catch(e){}};
  window.__lastFreeze=prev&&prev.s&&!OK[prev.s]?prev:null;const log=window.__bcLog=[];
- window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();const j=JSON.stringify({s,t:Date.now(),v:'v79',safe:!!window.__safe});mirror(s,j);localStorage.setItem(K,j)}catch(e){}};
+ window.__bc=s=>{try{if(log.length&&log[log.length-1].slice(log[log.length-1].indexOf(' ')+1)===s)return;log.push((performance.now()/1000).toFixed(1)+'s '+s);if(log.length>40)log.shift();const j=JSON.stringify({s,t:Date.now(),v:'v81',safe:!!window.__safe});mirror(s,j);localStorage.setItem(K,j)}catch(e){}};
  let sf=false;try{sf=new URLSearchParams(location.search).get('safe')==='1'}catch(e){}window.__safe=sf;
  // a small "Preparing..." bar used while Start runs its steps
  window.__prep=txt=>{let g=null;try{g=document.createElement('div');g.setAttribute('role','status');g.style.cssText='position:fixed;left:0;right:0;bottom:12%;z-index:21;display:flex;flex-direction:column;gap:.7rem;align-items:center;color:#cfc4b4;font:.9rem system-ui,-apple-system,sans-serif;pointer-events:none;padding:0 16px';
@@ -2036,7 +2037,8 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  const lockIt=()=>{try{const p=renderer.domElement.requestPointerLock();p&&p.catch&&p.catch(()=>{})}catch(e){}};
  skipB.addEventListener('click',e=>{e.stopPropagation();lockIt();XT.skipCut()});
  addEventListener('keydown',e=>{if(window.__typing||!window.__cut)return;if(e.code==='Space'||e.code==='Enter'||e.code==='Escape'){e.preventDefault();XT.skipCut()}},true);
- renderer.domElement.addEventListener('click',()=>{if(window.__cut&&window.__cut.skippable){lockIt();XT.skipCut()}});
+ // v81: on a phone the Use button vanishes when a cut scene starts, so the same tap's click landed on the canvas and skipped it at once (the rabbit's ending never played); ignore clicks in the first 0.6 s
+ renderer.domElement.addEventListener('click',()=>{if(window.__cut&&window.__cut.skippable&&(window.__cut.t||0)>.6){lockIt();XT.skipCut()}});
  XT.cutUI=v=>{skipB.hidden=!v;bars.hidden=!v;if(v){overlay.hidden=true;document.getElementById('hud').hidden=true;['need','mon','skipB','hint'].forEach(id=>{const e=document.getElementById(id);if(e)e.hidden=true})}};
  XT.cutEnd=()=>{XT.cutUI(false);if(!document.pointerLockElement&&!window.__touchMode&&!ended&&!window.__dead){overlay.hidden=false;setPaused(true)}};
  // people
@@ -2120,10 +2122,10 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   card.innerHTML='<div class="in"><p class="brand">HUSH</p><p class="tag">Ending '+(ORDER.indexOf(id)+1)+' of '+ORDER.length+' &middot; '+NAMES[id]+'</p><h1>'+(extra&&extra.h&&id==='death'?extra.h:h)+'</h1><p class="desc">'+(DESC[id]||'')+'</p><p class="txt">'+(extra&&extra.p&&id==='death'?extra.p+' ':'')+p+'</p>'+
    '<div class="roll"><div><b>Created by Petra Davis</b>Thanks to my beta tester, Sloane!<b>Hush</b>A night of babysitting<b>Made with</b>Three.js r128<br>The Web Audio API (every sound is generated)<b>Difficulty</b>'+(XT.diffName?XT.diffName():'Normal')+'<b>Night</b>'+(XT.night||1)+'<b>Notes found</b>'+(XT.notes?XT.notes.found.length:0)+' of '+(XT.notes?XT.notes.avail().length:7)+'<b>Calls answered</b>'+(XT.phone?XT.phone.answered:0)+'<b>Thank you</b>for keeping her quiet.<br>Mostly.</div></div>'+
    '<p class="found">Endings found '+g.length+'/'+ORDER.length+': '+ORDER.map(k=>g.includes(k)?NAMES[k]:'???').join(' &middot; ')+'</p><button type="button" id="xBack">Back to the title</button></div>';
-  card.hidden=false;fade.hidden=true;fade.classList.remove('on');card.querySelector('#xBack').onclick=()=>{try{clearSave()}catch(e){}location.reload()};setTimeout(()=>{try{card.querySelector('#xBack').focus()}catch(e){}},50);if(AC)setTimeout(()=>{try{AC.suspend()}catch(e){}},2500)}
+  card.hidden=false;fade.hidden=true;fade.classList.remove('on');card.querySelector('#xBack').onclick=()=>{try{clearSave()}catch(e){}location.reload()};setTimeout(()=>{try{card.querySelector('#xBack').focus()}catch(e){}},50);if(AC)setTimeout(()=>{try{AC.suspend()}catch(e){}},Math.max(2500,(XT.tuneLeft?XT.tuneLeft():0)*1000+400))}
  // v77: record an ending as found without ending the night (multiplayer: only that player dies)
  XT.markEnding=id=>{if(!NAMES[id])return;const g=got();if(!g.includes(id)){g.push(id);XT.ls.set('hushEndings',JSON.stringify(g))}try{drawTitle()}catch(e){console.error(e)}try{XT.achUnlock&&XT.achUnlock(id)}catch(e){console.error(e)}};
- XT.ending=function(id,extra){if(done)return true;if(!NAMES[id])return false;done=id;
+ XT.ending=function(id,extra){if(done)return true;if(!NAMES[id])return false;done=id;try{XT.endTune&&XT.endTune(id)}catch(e){console.error(e)}
   const g=got();if(!g.includes(id)){g.push(id);XT.ls.set('hushEndings',JSON.stringify(g))}
   try{clearSave();clearSave.done=1}catch(e){}ended=true;if(AC&&AC.state==='suspended')AC.resume().catch(()=>{});
   ['need','mon','skipB','hint','sub'].forEach(k=>{const e=document.getElementById(k);if(e)e.hidden=true});
@@ -2723,7 +2725,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 #tc .stick{position:absolute;width:118px;height:118px;margin:-59px 0 0 -59px;border-radius:50%;border:1.5px solid rgba(232,226,214,.28);background:rgba(10,10,14,.25);pointer-events:none}
 #tc .stick i{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(232,226,214,.32)}
 #tc .stick.idle{opacity:.45}
-#tcB{position:absolute;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;grid-template-columns:repeat(3,58px);gap:10px;pointer-events:none}
+#tcB{position:absolute;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;grid-template-columns:58px 58px 76px;gap:10px;pointer-events:none}
 #tc button{pointer-events:auto;touch-action:none;width:58px;height:58px;border-radius:50%;border:1.5px solid rgba(232,226,214,.3);background:rgba(14,14,18,.5);color:#e8e2d6;font:600 .6rem/1.1 var(--ui,system-ui,sans-serif);letter-spacing:.06em;text-transform:uppercase;padding:0;-webkit-tap-highlight-color:transparent}
 #tc button.on{background:rgba(200,164,92,.45);border-color:#c9a45c}#tc button.big{grid-column:3;grid-row:1/3;width:76px;height:126px;border-radius:38px;background:rgba(60,20,20,.55);font-size:.72rem}#tc button.big.tg{background:rgba(120,60,30,.7);border-color:#e0b870}
 #tcLbl{position:absolute;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 150px);max-width:min(15rem,45vw);font:600 .72rem/1.3 var(--ui,system-ui,sans-serif);color:#f0e6d6;background:rgba(14,14,18,.72);border:1px solid rgba(224,184,112,.5);border-radius:6px;padding:.3rem .6rem;text-align:right;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -3406,7 +3408,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const gl=new THREE.Mesh(new THREE.OctahedronGeometry(.012,0),new THREE.MeshBasicMaterial({color:0xfff2c0}));gl.position.set(PB.x-.5,F+.12,PB.z+.2);scene.add(gl);hp.userData.gl=gl;
   const hb=new THREE.Mesh(BG(.32,.22,.32),hitM);hb.position.set(PB.x-.47,F+.12,PB.z+.2);scene.add(hb);hb.userData.i={label:'Something gold in the flowers',act(){safe(take,'pin')}};inter.push(hb);hp.userData.hb=hb}
  function hidePin(){pin=true;hp.visible=false;hp.userData.gl.visible=false;const i=inter.indexOf(hp.userData.hb);if(i>=0)inter.splice(i,1)}
- function take(){if(pin||!XT.live())return;hidePin();tone(1320,1760,.5,.06,'sine');setTimeout(()=>tone(1760,2200,.6,.05,'sine'),120);subtitle("A gold hairpin, light as a leaf, with a little jade at the tips. Someone's gift to someone, a long time ago. You keep it.",4200);ach('hairpin')}
+ // v81: the flowerbed is outside, usually passed before you ever step into the house, and XT.live() stays false until you do; so the pin only checks that a night is running
+ function take(){if(pin||!started||ended||window.__dead||window.__tbc||window.__cut)return;hidePin();tone(1320,1760,.5,.06,'sine');setTimeout(()=>tone(1760,2200,.6,.05,'sine'),120);subtitle("A gold hairpin, light as a leaf, with a little jade at the tips. Someone's gift to someone, a long time ago. You keep it.",4200);ach('hairpin')}
  XT.onUpdate(()=>{if(pin)return;const gl=hp.userData.gl,T=performance.now()/1000;const k=Math.max(0,Math.sin(T*2.1))**12;gl.scale.setScalar(.2+k*1.6);gl.visible=k>.05});
  XT.parts.hairpin={save:()=>pin?1:0,load:v=>{if(v)hidePin()}};
  XT.v79={press,taste,pet,take,plan,cat:C,noteTarget};
@@ -3415,6 +3418,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const hh=XT.hideHunt;if(hh)XT.hideHunt=function(){if(gh())return true;return hh.apply(this,arguments)}},'ghost guard');
  // ===== 5. title screen: "Start Over from Night 1" (resets night progress and the saved night; endings and achievements stay) =====
  safe(()=>{const css=document.createElement('style');css.textContent=`#soB{position:absolute;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 90px);font:600 .78rem var(--ui);letter-spacing:.06em;color:#e8dcc8;background:rgba(20,16,20,.8);border:1px solid #5a4a3a;border-radius:6px;padding:.5rem .9rem;cursor:pointer;z-index:2}#soB:hover,#soB:focus-visible{background:#2a2026;outline:none}
+@media (orientation:portrait) and (max-width:700px){#soB{top:calc(env(safe-area-inset-top,0px) + 286px);bottom:auto;left:16px;right:auto}#achB{top:calc(env(safe-area-inset-top,0px) + 332px)!important;bottom:auto!important;left:16px!important;right:auto!important}}/* v81: in portrait the paper's menu fills the bottom of the screen, and these two buttons sat on top of Difficulty and Play together */
 #soP{position:fixed;inset:0;z-index:11;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(4,4,7,.7)}#soP .pp{width:min(24rem,100%);box-sizing:border-box;background:#efe4cb;color:#1e1a2a;padding:1.1rem 1.2rem;font-family:var(--ui);box-shadow:0 10px 40px rgba(0,0,0,.7)}#soP p{margin:0 0 .9rem;font-size:.9rem;line-height:1.45}#soP .r{display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap}#soP button{font:600 .82rem var(--ui);border-radius:5px;padding:.5rem 1rem;cursor:pointer;color:#f4ecdc;background:#3a1e1a;border:1px solid #5a2e28}#soP button.no{background:transparent;color:#3a1e1a}`;document.head.appendChild(css);
   const t=document.getElementById('title'),b=document.createElement('button');b.id='soB';b.type='button';b.textContent='Start Over from Night 1';t.appendChild(b);
   const P=document.createElement('div');P.id='soP';P.hidden=true;P.innerHTML='<div class="pp" role="alertdialog" aria-label="Start over"><p>Start over from Night 1? Your night progress will reset.</p><div class="r"><button type="button" class="no">Cancel</button><button type="button" class="yes">Start over</button></div></div>';document.body.appendChild(P);
@@ -3439,7 +3443,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // the gate: E (or a tap) opens and shuts it
  const G=XT.props.gate,gs={x0:4.2,x1:5.4,z0:17.7,z1:17.9,y0:F-1,y1:F+1.2};solids.push(gs);OUT.gate={open:false};
  // v79: the bars are thin and the centre ray went between them, so the gate could not be used; a solid invisible panel takes the aim (it swings with the gate)
- {const hp=new THREE.Mesh(new THREE.BoxGeometry(1.15,1.1,.3),hitM);hp.position.set(.575,.5,0);G.add(hp)}
+ // v81: the panel stopped at 1.05 m, under eye height (1.6 m), so looking straight at the gate showed nothing; it now reaches 2.1 m
+ {const hp=new THREE.Mesh(new THREE.BoxGeometry(1.15,2.1,.3),hitM);hp.position.set(.575,1.05,0);G.add(hp)}
  addInter(G,'Garden gate',()=>{OUT.gate.open=!OUT.gate.open});
  // sidewalks, the road, a far fence; walls nobody sees keep you on this stretch of street
  const pav=M(0x55545a),curb=M(0x77767c),dash=new THREE.MeshBasicMaterial({color:0x8a8470});
@@ -3738,6 +3743,13 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   inter.forEach(m=>{let l='';try{l=m.userData.i.label}catch(e){}if(!POS_OK.test(l||''))return;let o=m.parent;if(!o||o===scene||o.type==='Scene')o=m;
    if(seen.has(o))return;_pb.setFromObject(o);_pb.getSize(_ps);if(!isFinite(_ps.x)||Math.max(_ps.x,_ps.y,_ps.z)>1.6)return;seen.add(o);
    POSL.push({o,n:POS_NAME(l),l})});return POSL}
+ // v81: most chairs, toys and appliances are an invisible hit box with the visible pieces placed loose in the scene, so possessing them moved nothing you could see.
+ // Gather the visible pieces that sit inside the hit box and tip them over together around its base.
+ function posParts(p){if(p.parts)return p.parts;let vis=false;p.o.traverse(q=>{if(q.isMesh&&q.material&&q.material.visible!==false)vis=true});if(vis)return p.parts=[];
+  const B=new THREE.Box3().setFromObject(p.o).expandByScalar(.15);B.min.y-=.3;const c=new THREE.Vector3(),s=new THREE.Vector3(),bb=new THREE.Box3(),out=[];
+  scene.children.forEach(q=>{if(q===p.o||q.isLight||q.isCamera)return;let ok=false;q.traverse(m=>{if(m.isMesh&&m.material&&m.material.visible!==false)ok=true});if(!ok)return;
+   bb.setFromObject(q);if(bb.isEmpty())return;bb.getSize(s);if(Math.max(s.x,s.y,s.z)>1.4)return;bb.getCenter(c);if(B.containsPoint(c))out.push(q)});
+  return p.parts=out}
  const pRay=new THREE.Raycaster();let pAim=null,pReady=0;const pHost=new Map();
  function posAim(){if(!MP.active||!MP.ghost)return null;const L=posList();pRay.setFromCamera({x:0,y:0},cam);pRay.far=window.__touchMode?7:6;
   const ms=[];L.forEach((p,i)=>p.o.traverse(q=>{if(q.isMesh){q.userData.posI=i;ms.push(q)}}));const h=pRay.intersectObjects(ms,false)[0];return h?h.object.userData.posI:null}
@@ -3756,7 +3768,16 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   // the lure: she goes to check the noise, so sightings, prowls and the loud-baby hunt aimed at the living are held back for a while
   safe(()=>{const D=DEMON.dbg;D.next=Math.max(D.next,0)+15;if(HUNT.t>0)HUNT.t=Math.max(0,HUNT.t-12);prowlT+=25;MP.lureT=performance.now()+15000},'lure')}
  const pAnim=new Map();
- function playPossess(m){const p=posList()[m.i];if(!p)return;const o=p.o;if(pAnim.has(o))return;const r0=o.rotation.clone(),p0=o.position.clone(),T0=performance.now();
+ function playPossess(m){const p=posList()[m.i];if(!p)return;const o=p.o;if(pAnim.has(o))return;
+  const parts=posParts(p);if(parts.length){pAnim.set(o,1);const bx=new THREE.Box3().setFromObject(o),pv=new THREE.Vector3((bx.min.x+bx.max.x)/2,bx.min.y-.08,(bx.min.z+bx.max.z)/2),ax=new THREE.Vector3(Math.sin(m.dir),0,-Math.cos(m.dir)),Q=new THREE.Quaternion(),T0=performance.now();
+   const st=parts.map(q=>({q,p:q.position.clone(),r:q.quaternion.clone()}));let cr=0;
+   const pose=(a,jx,jy)=>{Q.setFromAxisAngle(ax,a);st.forEach(e=>{const d=e.p.clone().sub(pv).applyQuaternion(Q);e.q.position.copy(pv).add(d);e.q.position.x+=jx;e.q.position.y+=jy;e.q.quaternion.copy(Q).multiply(e.r)})};
+   const step=()=>{const t=(performance.now()-T0)/1000;
+    if(t<.9)pose((Math.random()-.5)*.08,(Math.random()-.5)*.01,Math.abs(Math.sin(t*40))*.015);
+    else if(t<1.25){const k=(t-.9)/.35;pose(1.25*k*k,0,0)}
+    else if(t<7){if(!cr){cr=1;safe(()=>crash(pv.x,pv.z),'crash')}pose(1.25,0,0)}
+    else if(t<8.5){const k=(t-7)/1.5;pose(1.25*(1-k*k*(3-2*k)),0,0)}
+    else{st.forEach(e=>{e.q.position.copy(e.p);e.q.quaternion.copy(e.r)});pAnim.delete(o);return}requestAnimationFrame(step)};step();return}const r0=o.rotation.clone(),p0=o.position.clone(),T0=performance.now();
   pAnim.set(o,1);const ax=Math.cos(m.dir),az=Math.sin(m.dir);
   const w=new THREE.Vector3();o.getWorldPosition(w);
   // a rattle, a fall with a crash, a long still moment, and then it rights itself
@@ -3771,7 +3792,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   // she answers it: a hiss there, a moment later
   setTimeout(()=>safe(()=>{if(XT.demonSfx&&XT.demonSfx.hiss)XT.demonSfx.hiss(x,z,1.2)},'lurehiss'),1600);
   if(!MP.ghost&&d<10)subtitle('(Something fell over. Heavy footsteps turn toward the sound.)',2600)}
- MP.possessables=()=>posList().map((p,i)=>({i,n:p.n,l:p.l}));MP.possess=i=>{pAim=i;possess()};MP.posObj=i=>posList()[i]&&posList()[i].o;
+ MP.possessables=()=>posList().map((p,i)=>({i,n:p.n,l:p.l}));MP.possess=i=>{pAim=i;possess()};MP.posObj=i=>posList()[i]&&posList()[i].o;MP.posParts=i=>posList()[i]?posParts(posList()[i]).length:0;
  renderer.domElement.addEventListener('mousedown',()=>{if(MP.active&&MP.ghost&&document.pointerLockElement){gIdx++;gMode='follow';ghostHud()}});
 
  // ---------- endings: one decision, by the host, for everyone ----------
@@ -3855,8 +3876,9 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  const V={ctx:null,stream:null,muted:false,denied:false,err:'',calls:new Map(),levels:new Map(),myLevel:0,an:null,buf:null,ready:null};
  // the mic is asked for from the Host / Join tap (a user gesture, which Safari needs). Every step has its own try, so a meter that fails
  // (Firefox throws when the mic's sample rate differs from the audio context) never turns a working mic into "denied".
- const MERR={NotAllowedError:'Microphone blocked. Allow it for this site in the address bar, then tap here.',SecurityError:'Microphone blocked. Allow it for this site in the address bar, then tap here.',
-  NotFoundError:'No microphone found. Plug one in, then tap here.',NotReadableError:'The microphone is busy in another app. Close it, then tap here.',OverconstrainedError:'The microphone could not start. Tap here to try again.',
+ // v81: worded for the device's own microphone. "Plug one in" read as if the game wanted an external microphone.
+ const MERR={NotAllowedError:'Voice chat needs your microphone, and permission was denied. Allow the microphone for this site (the icon in the address bar, and your device\'s privacy settings), then tap here.',SecurityError:'Voice chat needs your microphone, and permission was denied. Allow the microphone for this site (the icon in the address bar, and your device\'s privacy settings), then tap here.',
+  NotFoundError:'Your browser could not reach this device\'s microphone. Check that the browser is allowed to use the microphone in your device\'s privacy settings, then tap here.',NotReadableError:'The microphone is busy in another app. Close it, then tap here.',OverconstrainedError:'The microphone could not start. Tap here to try again.',AbortError:'The microphone could not start. Tap here to try again.',
   nomd:'This browser cannot use the microphone here (it needs https). You can still hear everyone.'};
  let gestHooked=false;
  function unlockAudio(){if(V.ctx&&V.ctx.state!=='running')V.ctx.resume().catch(()=>{});V.calls.forEach(r=>{if(r.el&&r.el.paused&&r.el.srcObject)r.el.play().catch(()=>{})})}
@@ -3868,12 +3890,14 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   if(md&&md.getUserMedia)try{gp=md.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},video:false})}catch(e){gp=Promise.reject(e)}
   V.ready=(async()=>{let st=null;
    if(!gp){V.err='nomd'}else try{st=await gp;V.err=''}catch(e){V.err=(e&&e.name)||'NotAllowedError';console.warn('[Hush mp] mic',e)}
+   // v81: if the first ask fails for any reason other than a refusal, ask again for plain audio: whatever microphone the device uses by default (the built-in one on a phone or laptop)
+   if(!st&&gp&&!/NotAllowed|Security/.test(V.err))try{st=await md.getUserMedia({audio:true});V.err=''}catch(e){V.err=(e&&e.name)||V.err;console.warn('[Hush mp] mic (plain)',e)}
    if(st){if(V.stream&&V.denied)safe(()=>V.stream.getTracks().forEach(t=>t.stop()));V.stream=st;V.denied=false;
     if(V.ctx)try{const src=V.ctx.createMediaStreamSource(st);V.an=V.ctx.createAnalyser();V.an.fftSize=512;src.connect(V.an)}catch(e){V.an=null;console.warn('[Hush mp] mic meter',e)}
     // a mic granted after a call went out with the silent stream: swap the real track into every open call
     V.calls.forEach(r=>safe(()=>{const pc=r.call&&r.call.peerConnection;if(!pc)return;const t=st.getAudioTracks()[0];pc.getSenders().forEach(s=>{if(s.track&&s.track.kind==='audio'||!s.track)s.replaceTrack(t)})},'swap'))}
    else{V.denied=true;if(!V.stream&&V.ctx)try{V.stream=V.ctx.createMediaStreamDestination().stream}catch(e){}
-    subtitle((MERR[V.err]||MERR.NotAllowedError).replace(/ Tap here.*$| then tap here\./,'.')+' You can still hear everyone.',5000)}
+    subtitle((MERR[V.err]||MERR.NotAllowedError).replace(/ Tap here.*$|,? then tap here\./,'.')+' You can still hear everyone.',5000)}
    setMute(V.muted);micHud();callMissing()})();return V.ready}
  function retryMic(){if(!V.denied||V.err==='nomd')return;V.ready=null;initMic()}
  function setMute(m){V.muted=V.denied?true:m;if(V.stream)V.stream.getAudioTracks().forEach(t=>t.enabled=!V.muted);micHud()}
@@ -4542,7 +4566,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   const light=el.classList.contains('onLight');if(!light&&L>150)el.classList.add('onLight');else if(light&&L<110)el.classList.remove('onLight');MR.clockL=Math.round(L)}
  // rolling performance log: every 2 s, average and worst frame plus the stage; read back on the next load
  let prevPerf=null;try{prevPerf=JSON.parse(localStorage.getItem('hushPerf')||'null')}catch(e){}window.__lastPerf=prevPerf;
- setInterval(()=>{if(!perf.n)return;const rec={avg:Math.round(perf.sum/perf.n),max:Math.round(perf.max),n:perf.n,stage:window.__phase||'?',calls:MR.calls,t:Date.now(),v:'v79',safe:!!window.__safe};perf.sum=perf.max=perf.n=0;
+ setInterval(()=>{if(!perf.n)return;const rec={avg:Math.round(perf.sum/perf.n),max:Math.round(perf.max),n:perf.n,stage:window.__phase||'?',calls:MR.calls,t:Date.now(),v:'v81',safe:!!window.__safe};perf.sum=perf.max=perf.n=0;
   try{localStorage.setItem('hushPerf',JSON.stringify(rec))}catch(e){}},2000);
  // ?fps=1: a small counter
  if(QP.get('fps')==='1'){const d=document.createElement('div');d.id='fpsC';d.style.cssText='position:fixed;left:8px;top:8px;z-index:2147483646;font:11px/1.3 ui-monospace,Menlo,Consolas,monospace;color:#bfe8a0;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:3px;pointer-events:none;white-space:pre';document.body.appendChild(d);
@@ -4565,7 +4589,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
 })();
 </script>
 <script type="text/x-hush">(function(){const btn=document.getElementById('ovBug'),msg=document.getElementById('bugMsg');if(!btn)return;
-function report(){const L=['Hush bug report','Version: v79','Time: '+new Date().toISOString()];
+function report(){const L=['Hush bug report','Version: v81','Time: '+new Date().toISOString()];
  try{const p=cam.getWorldPosition(new THREE.Vector3());L.push('Position: '+[p.x,p.y,p.z].map(v=>v.toFixed(2)).join(', '))}catch(e){L.push('Position: ?')}
  const m=window.__mp;let mode='Single-player',n=1;try{if(m&&m.active){mode=m.mode==='hunt'?'Hunt':'Co-op';n=m.roster().length;if(m.demon)mode+=' (demon)';else if(m.ghost)mode+=' (ghost)'}}catch(e){}
  L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Safe mode: '+(window.__safe?'on':'off'));try{const F=window.__lastFreeze;L.push('Last session froze at: '+(F?F.s+' ('+new Date(F.t).toISOString()+(F.safe?', safe mode':'')+')':'(no)'));const LP=window.__lastPerf;L.push('Last session speed: '+(LP?LP.avg+' ms/frame avg, '+LP.max+' ms worst, '+LP.calls+' draw calls, stage '+LP.stage+(LP.avg>500?' (very slow)':''):'(no record)'));try{const M=window.__mrg;if(M)L.push('This session: '+M.calls+' draw calls, merged '+M.recs+' meshes into '+M.chunks+', shadows 1/'+M.shadowEvery)}catch(_){}const B=window.__bcLog||[];L.push('Steps this session: '+B.slice(-12).join(' | '))}catch(e){}try{if(m&&m.active&&m.voiceDiag)L.push(m.voiceDiag())}catch(e){}L.push('Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
@@ -4710,7 +4734,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  setInterval(()=>safe(fightIn,'fightIn'),100);
  // ---------- touch: the demon's own buttons, in the same corner and style as the babysitter's ----------
  {const c=document.createElement('style');c.textContent=`body.hDemon #tcB{display:none!important}
-#hTB{position:fixed;z-index:4;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;grid-template-columns:repeat(3,58px);gap:10px;pointer-events:none}
+#hTB{position:fixed;z-index:4;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 14px);display:grid;grid-template-columns:58px 58px 76px;gap:10px;pointer-events:none}
 #hTB button{pointer-events:auto;touch-action:none;width:58px;height:58px;border-radius:50%;border:1.5px solid rgba(232,226,214,.3);background:rgba(14,14,18,.5);color:#e8e2d6;font:600 .56rem/1.1 var(--ui,system-ui,sans-serif);letter-spacing:.05em;text-transform:uppercase;padding:0;-webkit-tap-highlight-color:transparent}
 #hTB button.big{grid-column:3;grid-row:1/3;height:126px;border-radius:29px;background:rgba(90,24,20,.6);border-color:rgba(220,120,100,.5)}#hTB button.on{background:rgba(200,164,92,.45);border-color:#c9a45c}#hTB button.cd,#hTB button.no{opacity:.45}
 #hTB button small{display:block;font-size:.5rem;opacity:.8;margin-top:2px}
@@ -5018,6 +5042,77 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  {const sg=saveGame;saveGame=function(){if(MP.sp)return;return sg.apply(this,arguments)}}
  {const sk=skipHour;skipHour=function(){if(MP.sp&&XT.hour()>=24){subtitle('No skipping after midnight in Hunt.',1800);return}return sk.apply(this,arguments)}}
  XT.hunt={ST,get av(){return av},get skill(){return skI},pickSkill,act,claw,useE,hits,setHiss,huntUnlocked:()=>huntUnlocked()};
+})();
+</script>
+<script type="text/x-hush">
+// ===== v81: a short original tune for each ending (all Web Audio, written for Hush). Plays on the Music bus, so the Music and Master
+// sliders and M (mute) apply; Settings > "Ending music" turns them off. =====
+(function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush tunes] '+(t||''),e)}};
+ let on=true;try{on=localStorage.getItem('hushEndMusic')!=='0'}catch(e){}
+ safe(()=>{const c=document.getElementById('sEndM');if(!c)return;c.checked=on;c.onchange=()=>{on=c.checked;try{localStorage.setItem('hushEndMusic',on?'1':'0')}catch(e){}if(!on)stop()}},'ui');
+ const mf=m=>440*Math.pow(2,(m-69)/12);let bus=null,until=0,playing=null;
+ function stop(){if(bus){const b=bus;try{b.gain.setTargetAtTime(0,AC.currentTime,.15)}catch(e){}setTimeout(()=>{try{b.disconnect()}catch(e){}},900)}bus=null;until=0;playing=null}
+ // one voice: oscillator(s) -> optional filter -> envelope -> bus
+ function V(t,m,d,o){o=o||{};const g=AC.createGain(),pk=o.g||.1,a=o.a||.01,r=o.r||Math.min(.6,d*.6);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(pk,t+a);if(o.sus===undefined)g.gain.exponentialRampToValueAtTime(.0001,t+d+r);else{g.gain.setValueAtTime(pk*o.sus,t+d);g.gain.exponentialRampToValueAtTime(.0001,t+d+r)}
+  let out=g;if(o.f){const f=AC.createBiquadFilter();f.type=o.ft||'lowpass';f.frequency.value=o.f;f.Q.value=o.q||.7;f.connect(g);out=f}
+  (o.det||[0]).forEach(dt=>{const s=AC.createOscillator();s.type=o.w||'triangle';const f0=typeof m==='number'?mf(m):m.f;s.frequency.setValueAtTime(f0,t);s.detune.value=dt;
+   if(o.to)s.frequency.exponentialRampToValueAtTime(Math.max(20,mf(o.to)),t+d);
+   if(o.vib){const l=AC.createOscillator(),lg=AC.createGain();l.frequency.value=o.vib;lg.gain.value=f0*(o.vd||.012);l.connect(lg).connect(s.frequency);l.start(t);l.stop(t+d+r+.05)}
+   s.connect(out);s.start(t);s.stop(t+d+r+.05)});g.connect(o.dest||bus);return g}
+ function noise(t,d,f,g,q,type){const n=AC.createBufferSource(),len=Math.max(1,Math.floor(AC.sampleRate*d)),b=AC.createBuffer(1,len,AC.sampleRate),x=b.getChannelData(0);for(let i=0;i<len;i++)x[i]=Math.random()*2-1;n.buffer=b;
+  const fl=AC.createBiquadFilter();fl.type=type||'bandpass';fl.frequency.value=f;fl.Q.value=q||1;const e=AC.createGain();e.gain.setValueAtTime(g,t);e.gain.exponentialRampToValueAtTime(.0001,t+d);n.connect(fl).connect(e).connect(bus);n.start(t);n.stop(t+d+.02)}
+ const bell=(t,m,d,g)=>{V(t,m,d,{w:'sine',g:g||.09,a:.004,r:d*1.4});V(t,m+24,d*.4,{w:'sine',g:(g||.09)*.18,a:.003});V(t,{f:mf(m)*2.76},d*.3,{w:'sine',g:(g||.09)*.12,a:.003})};
+ const pad=(t,ms,d,g,w)=>ms.forEach(m=>V(t,m,d,{w:w||'triangle',g:g||.03,a:d*.3,r:d*.5,det:[-6,6],f:1400,sus:.8}));
+ const choir=(t,ms,d,g)=>ms.forEach(m=>{[[700,5],[1150,7]].forEach(([fq,q],k)=>V(t,m,d,{w:'sawtooth',g:(g||.05)*(k?.5:1),a:.5,r:.9,det:[-8,8],f:fq,ft:'bandpass',q,vib:5.2,vd:.006,sus:.85}))});
+ const kick=(t,g)=>{V(t,{f:130},.18,{w:'sine',g:g||.3,a:.002,to:28})};
+ const snare=(t,g)=>noise(t,.16,1900,g||.18,.8);
+ const hat=(t,g)=>noise(t,.05,7000,g||.05,1,'highpass');
+ const crash=(t,g)=>noise(t,1.6,5200,g||.14,.4,'highpass');
+ const honk=(t,len,g)=>{[[67,0],[70,6]].forEach(([m])=>V(t,m,len,{w:'square',g:g||.07,a:.01,r:.05,f:1300,sus:.9,det:[-10,10]}))};
+ const kazoo=(t,m,d,g)=>V(t,m,d,{w:'sawtooth',g:g||.05,a:.02,r:.06,f:1100,ft:'bandpass',q:2.5,vib:6.5,vd:.02,sus:.85});
+ const tuba=(t,m,d,g)=>V(t,m,d,{w:'square',g:g||.08,a:.015,r:.08,f:420,sus:.7});
+ const slide=(t,m0,m1,d,g)=>V(t,m0,d,{w:'sine',g:g||.06,a:.02,r:.05,to:m1,vib:7,vd:.01,sus:.9});
+ // each tune: a function of the start time, returns its length in seconds
+ const T={
+  // Six O'Clock: a polite music-box waltz in C major that goes slightly wrong at the end
+  parents(t){const b=.42,M=[[72,1],[76,1],[79,1],[77,2],[76,1],[74,1],[72,1],[74,1],[76,3],[72,1],[76,1],[79,1],[84,2],[83,1],[79,1],[77,1],[76,1],[73,3]];let x=0;
+   M.forEach(([m,l])=>{bell(t+x*b,m,l*b,.08);x+=l});for(let i=0;i<x;i+=3){const c=i<9?[48,55,64]:i<15?[45,52,60]:[49,56,61];V(t+i*b,c[0],b*.9,{w:'triangle',g:.05});V(t+(i+1)*b,c[1],b*.5,{w:'triangle',g:.03});V(t+(i+2)*b,c[2],b*.5,{w:'triangle',g:.03})}
+   pad(t+15*b,[49,56,61,64],3,.025);return x*b+3},
+  // First Light: slow warm chords rising into a bright, hopeful bell line (F -> C -> Dm -> Bb -> F)
+  dawn(t){const C=[[53,57,60,65],[48,55,60,64],[50,57,62,65],[46,53,58,62],[53,60,65,69]];C.forEach((c,i)=>pad(t+i*2.2,c,2.4,.035));
+   const M=[[2.2,72],[2.75,74],[3.3,76],[4.4,77],[5.5,79],[6.6,81],[7.15,79],[7.7,77],[8.8,81],[9.9,84]];M.forEach(([x,m])=>bell(t+x,m,.9,.08));
+   for(let i=0;i<20;i++)V(t+i*.55,[65,69,72,77][i%4]-12,.5,{w:'sine',g:.025,a:.03});return 12.5},
+  // Taken: a tolling low bell over a sinking minor drone, and a music box that slows and stops
+  death(t){for(let i=0;i<5;i++)bell(t+i*2,40-(i>3?1:0),2.5,.14);V(t,33,9,{w:'sawtooth',g:.03,a:2,r:2,f:300,det:[-5,5],sus:.9,to:31});
+   const M=[69,68,65,64,62,61,57];let x=.6;M.forEach((m,i)=>{bell(t+x,m+12,.6,.05);x+=.5+i*.18});return 11},
+  // The Blade: a drummed march that turns from minor to a big major chord
+  secret(t){const b=.3;for(let i=0;i<32;i++){if(i%4===0)kick(t+i*b,.28);if(i%4===2)snare(t+i*b,.12);if(i%8===7)snare(t+i*b+b/2,.08)}
+   const M=[[0,57,2],[2,57,1],[3,60,1],[4,64,3],[7,62,1],[8,60,2],[10,62,1],[11,64,1],[12,65,3],[15,64,1],[16,69,2],[18,67,1],[19,65,1],[20,64,2],[22,62,2],[24,61,4],[28,69,4]];
+   M.forEach(([x,m,l])=>V(t+x*b,m,l*b,{w:'sawtooth',g:.05,a:.03,f:1500,det:[-7,7],sus:.8,r:.15}));[[45,52],[41,48],[43,50],[45,49]].forEach((c,i)=>c.forEach(m=>V(t+i*8*b,m,8*b,{w:'sawtooth',g:.03,f:600,sus:.8})));
+   [57,61,64,69].forEach(m=>V(t+32*b,m,2.6,{w:'sawtooth',g:.045,a:.02,f:2200,det:[-8,8],r:1.2}));kick(t+32*b,.35);crash(t+32*b,.12);return 32*b+3},
+  // Get Run Over by a Car: oom-pah tuba, a kazoo, a slide whistle and a lot of honking
+  car(t){const b=.22;const BASS=[48,55,43,55,48,55,43,55,53,60,48,55,43,50,48,48];BASS.forEach((m,i)=>{tuba(t+i*2*b,m-12,b*.9);V(t+(i*2+1)*b,m+4,b*.5,{w:'square',g:.025,f:900})});
+   const K=[[0,72,1],[1,74,1],[2,76,2],[4,72,1],[5,79,3],[8,77,1],[9,76,1],[10,74,1],[11,72,1],[12,71,2],[14,67,2],[16,72,1],[17,74,1],[18,76,2],[20,79,1],[21,84,1],[22,83,1],[23,79,1],[24,77,2],[26,74,2],[28,72,4]];
+   K.forEach(([x,m,l])=>kazoo(t+x*b,m,l*b*.95));[[3,.18],[3.25,.18],[7,.5],[11,.18],[11.25,.18],[11.5,.18],[15,.6],[23,.18],[23.3,.18],[27,.18],[30,.9]].forEach(([x,l])=>honk(t+x*b*2/2*1,l));
+   slide(t+6*b,60,84,.5);slide(t+14*b,86,58,.6);slide(t+30*b,58,96,.4);for(let i=0;i<32;i+=2)hat(t+i*b,.04);
+   noise(t+32*b,.12,900,.25,2);V(t+32*b+.1,{f:900},.25,{w:'square',g:.04,to:30});crash(t+32*b+.15,.1);tuba(t+32*b+.5,36,.4,.1);tuba(t+32*b+.9,31,.8,.1);return 32*b+2},
+  // You Left: one lonely whistled line over a quiet open fifth, unresolved
+  left(t){V(t,50,9,{w:'sine',g:.03,a:1.5,r:2,sus:.9});V(t,57,9,{w:'sine',g:.02,a:1.5,r:2,sus:.9});
+   const M=[[.8,74,1],[1.8,72,.5],[2.3,69,1.5],[4.2,67,.5],[4.7,69,.5],[5.2,72,1.2],[6.8,74,.4],[7.2,76,2.2]];M.forEach(([x,m,l])=>V(t+x,m,l,{w:'sine',g:.06,a:.08,r:.4,vib:5,vd:.008,sus:.8}));return 11},
+  // The House Collapsed: a tumbling chromatic fall, heavy thuds, then one high bell in the dust
+  collapse(t){for(let i=0;i<18;i++){const m=84-i*2-(i%3);V(t+i*.16,m,.22,{w:'triangle',g:.05,a:.005})}
+   [2.9,3.3,3.55,3.8,4.4].forEach((x,i)=>{kick(t+x,.4);noise(t+x,.6,160-i*15,.25,.7,'lowpass')});V(t+2.8,31,3,{w:'sawtooth',g:.05,f:180,to:24});crash(t+3.3,.12);
+   bell(t+6.2,81,2,.06);bell(t+7.6,80,2.5,.04);return 10.5},
+  // Abstracted: a warbling, detuned arpeggio that keeps losing its key
+  abstracted(t){for(let i=0;i<40;i++){const m=[60,63,67,70,74][i%5]+((i/5|0)%2?1:0)+(Math.random()<.2?(Math.random()<.5?-1:1)*6:0);V(t+i*.2,m,.18,{w:i%3?'square':'triangle',g:.035,a:.005,f:2000+((i*370)%2600),det:[-25+i,25-i],vib:9,vd:.04})}
+   V(t,36,8,{w:'sawtooth',g:.03,a:1,f:400,det:[-30,30],sus:.9,to:30});[1.5,3.1,4.7,6.3].forEach(x=>slide(t+x,90,50,.3,.03));return 9.5},
+  // Family: an organ hymn and a wordless choir in A minor, a little too warm (i - VI - iv - V - i)
+  cult(t){const C=[[45,57,60,64],[41,57,60,65],[38,57,62,65],[40,56,59,64],[45,57,60,64]];C.forEach((c,i)=>{choir(t+i*2.2,c.slice(1),2.4,.035);V(t+i*2.2,c[0],2.3,{w:'sine',g:.07,a:.2,r:.6,sus:.9});c.forEach(m=>V(t+i*2.2,m+12,2.2,{w:'square',g:.008,a:.15,f:900,sus:.9}))});
+   [[0,76],[1.1,74],[2.2,72],[3.3,72],[4.4,74],[5.5,71],[6.6,71],[7.7,69],[8.8,69]].forEach(([x,m])=>bell(t+x,m,1,.04));return 12.5}};
+ XT.endTune=function(id){if(!on||!AC||!musG||muted||!T[id])return 0;stop();bus=AC.createGain();bus.gain.value=.9;bus.connect(musG);playing=id;
+  if(AC.state==='suspended')AC.resume().catch(()=>{});const t=AC.currentTime+.25;let d=8;safe(()=>{d=T[id](t)},'tune '+id);until=performance.now()+(d+.6)*1000;return d};
+ XT.tuneLeft=()=>Math.max(0,(until-performance.now())/1000);XT.tunePlaying=()=>XT.tuneLeft()>0?playing:null;XT.tuneStop=stop;XT.tuneIds=Object.keys(T);
 })();
 </script>
 <script type="text/x-hush">(function(){const el=document.getElementById("ld");if(!el)return;const b=document.getElementById("ldB"),bar=w=>{if(b)b.style.width=w+"%"};const lg=m=>{try{window.__logErr&&__logErr(m)}catch(e){}};
