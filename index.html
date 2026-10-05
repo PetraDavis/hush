@@ -5406,8 +5406,9 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   rbx(.405,.17,.245,P(c.obi),0,.93,0,b);if(c.cord)rbx(.42,.024,.26,D(c.cord),0,.93,0,b);
   if(c.knot)bx(.2,.11,.04,P(c.obi),0,.95,.142,b);
   rig.arms.forEach(a=>{S(.108,.22,.108,0,-.11,0,a);S(.084,.3,.17,0,-.33,.03,a);bx(.088,.024,.15,D(c.inner),0,-.47,.03,a)})}
- // Maomao's hagoromo: a soft flat fabric band, a bit wide, looping behind the back at elbow height and hanging over both forearms (nothing on the shoulders)
- function shawl(b){const pts=[[-.35,.46,-.09],[-.36,.64,-.1],[-.37,.84,-.1],[-.39,.97,-.05],[-.39,1.04,.05],[-.31,1.07,.17],[-.16,1.06,.215],[0,1.05,.225],[.16,1.06,.215],[.31,1.07,.17],[.39,1.04,.05],[.39,.97,-.05],[.37,.84,-.1],[.36,.64,-.1],[.35,.46,-.09]].map(p=>new THREE.Vector3(...p));
+ // Maomao's hagoromo: a soft flat fabric band, a bit wide, looping close behind the back at elbow height and hanging just outside both sleeves
+ // (clear of a haori's sleeves too; nothing on the shoulders)
+ function shawl(b){const pts=[[-.325,.46,-.04],[-.33,.64,-.04],[-.33,.84,-.03],[-.33,.97,0],[-.31,1.04,.08],[-.25,1.07,.15],[-.13,1.06,.172],[0,1.05,.176],[.13,1.06,.172],[.25,1.07,.15],[.31,1.04,.08],[.33,.97,0],[.33,.84,-.03],[.33,.64,-.04],[.325,.46,-.04]].map(p=>new THREE.Vector3(...p));
   const cv=new THREE.CatmullRomCurve3(pts),N=80,W=.12,pos=[],idx=[];
   for(let i=0;i<=N;i++){const t=i/N,p=cv.getPoint(t),tg=cv.getTangent(t),out=new THREE.Vector3(p.x,0,p.z).normalize(),w=new THREE.Vector3().crossVectors(tg,out).normalize();
    // the band droops: fold a little outward at the edges so it reads as cloth
@@ -5427,7 +5428,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   overalls:{n:'Overalls',shirt:0xe6d6a8,legs:0x3c5a86,x:b=>bib(b,0x3c5a86)},
   dress:{n:'Dress',shirt:0x7a4a8a,legs:0,skinLegs:1,x:(b,s)=>{skirt(s,.17,.3,.42,.7,b)}},
   pajamas:{n:'Pajamas',shirt:0xa8c4e0,legs:0xa8c4e0,x:(b,s,r)=>{const w=P(0xf2f2f6);[.95,1.12,1.3].forEach(y=>rbx(.392,.03,.232,w,0,y,0,b));r.legs.forEach(q=>[-.57,-.27].forEach(y=>bx(.125,.03,.135,w,0,y,0,q)))}},
-  maomao:{n:"Maomao's robe",shirt:0xe89ab0,robe:1,x:(b,s,r)=>{robe(b,r,{base:0xe89ab0,inner:0xf6f2ea,collar:0xf6f2ea,obi:0xa8d8a0});const rb=P(0x94c88c);bx(.07,.06,.035,P(0xa8d8a0),.05,.93,-.135,b);bx(.03,.28,.012,rb,.035,.75,-.145,b);bx(.03,.24,.012,rb,.07,.77,-.147,b);shawl(b);sph(.04,P(0xc02030),1,.8,1,.14,.94,-.15,b);sph(.022,P(0x9a1020),1,1,1,.14,.95,-.18,b);bx(.05,.02,.02,P(0x3a8a3a),.18,.92,-.15,b).rotation.z=-.5}},
+  maomao:{n:"Maomao's robe",shirt:0xe89ab0,robe:1,x:(b,s,r)=>{robe(b,r,{base:0xe89ab0,inner:0xf6f2ea,collar:0xf6f2ea,obi:0xa8d8a0});const rb=P(0x94c88c);bx(.07,.06,.035,P(0xa8d8a0),.05,.93,-.135,b);bx(.03,.28,.012,rb,.035,.75,-.129,b);bx(.03,.24,.012,rb,.07,.77,-.131,b);shawl(b);sph(.04,P(0xc02030),1,.8,1,.14,.94,-.15,b);sph(.022,P(0x9a1020),1,1,1,.14,.95,-.18,b);bx(.05,.02,.02,P(0x3a8a3a),.18,.92,-.15,b).rotation.z=-.5}},
   nezuko:{n:"Nezuko's kimono",shirt:0xf2a6bd,robe:1,x:(b,s,r)=>{robe(b,r,{base:0xf2a6bd,tex:TEX.asa(),cell:.12,inner:0xf6f2ea,collar:0x8a3a2a,obi:0x6a2a24,cord:0xe8d870,knot:1})}},
   robes:{n:'Red cult robes',shirt:0x8e1a1e,legs:0x8e1a1e,x:(b,s)=>{skirt(s,.2,.32,.86,.45,b);rbx(.41,.06,.245,P(0x2a0808),0,.86,0,b);bx(.06,.5,.01,P(0xd8b060),0,1.15,-.115,b)}},
   yoveralls:{n:'Yellow overalls',shirt:0xe8c030,skinTop:1,bare:1,legs:0xe8c030,x:b=>bib(b,0xe8c030)},
