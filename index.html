@@ -5307,6 +5307,21 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  function torso(b,m){rbx(.38,.56,.22,m,0,1.12,0,b);rbx(.3,.06,.2,m,0,1.42,0,b);caps(b,m)}
 
  // ---------- hair ----------
+ // Hair that drapes onto the body (Maomao's tails) is fitted to the outfit: each point along the tail is walked up over the shoulders (or, in front of
+ // the chest, forward) until no clothing is above (in front of) it and none is closer than the tail's radius plus a little, so tails rest
+ // on top of haori shoulders, hoods and collars instead of cutting through them, and stay put on slim outfits. FITB is the body being dressed (set by dress()).
+ let FITB=null;const FITD=[];for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++)if(x||y||z)FITD.push(new THREE.Vector3(x,y,z).normalize());
+ function fitOver(h,pts,k,r){const B=FITB;if(!B)return pts;B.updateMatrixWorld(true);const head=h.parent||h,ms=[];
+  B.traverse(c=>{if(!c.isMesh)return;let p=c;while(p&&p!==head)p=p.parent;if(!p)ms.push(c)});if(!ms.length)return pts;
+  const mats=[];ms.forEach(m=>(Array.isArray(m.material)?m.material:[m.material]).forEach(x=>{if(!mats.includes(x))mats.push(x)}));const sides=mats.map(x=>{const s=x.side;x.side=THREE.DoubleSide;return s});
+  const rc=new THREE.Raycaster(),q=h.matrixWorld,qi=new THREE.Matrix4().copy(q).invert(),bq=B.matrixWorld,bi=new THREE.Matrix4().copy(bq).invert(),UP=new THREE.Vector3(0,1,0).transformDirection(bq);
+  const hit=(W,D,far)=>{rc.set(W,D);rc.far=far;return rc.intersectObjects(ms,false).length>0};
+  const FW=new THREE.Vector3(0,0,-1).transformDirection(bq),clear=(W,fr)=>!hit(W,fr?FW:UP,1)&&!FITD.some(D=>hit(W,D.clone().transformDirection(bq),r));
+  const fit=P=>{const W=P.clone().applyMatrix4(q),L=W.clone().applyMatrix4(bi),hr=Math.hypot(L.x,L.z)||1,fr=L.z<-.06,D=(fr?new THREE.Vector3(.2*L.x/hr,0,-1):new THREE.Vector3(.35*L.x/hr,1,.35*L.z/hr)).normalize().transformDirection(bq);
+   for(let i=0;i<50&&!clear(W,fr);i++)W.addScaledVector(D,.004);return W.applyMatrix4(qi)};
+  // fit the control points, then resample the curve densely and fit again, so the spline between points cannot dip back in
+  let out=pts.map(fit);for(let pass=0;pass<2;pass++){const cv=new THREE.CatmullRomCurve3(out);out=cv.getSpacedPoints(pass?32:16).map(fit)}
+  mats.forEach((x,i)=>x.side=sides[i]);return out}
  const cap=(h,m)=>sph(.14,m,1,.75,1.05,0,.05,.02,h);
  const HAIR={
   bald:()=>{},
@@ -5315,10 +5330,19 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   ponytail:(h,m)=>{cap(h,m);sph(.045,m,1,1,1,0,.03,.15,h);bx(.06,.24,.06,m,0,-.1,.18,h)},
   bob:(h,m)=>{cap(h,m);bx(.05,.17,.22,m,-.13,-.04,.01,h);bx(.05,.17,.22,m,.13,-.04,.01,h);bx(.28,.15,.07,m,0,-.04,.11,h);bx(.22,.05,.04,m,0,.07,-.12,h)},
   buns:(h,m)=>{cap(h,m);sph(.06,m,1,1,1,-.11,.13,.02,h);sph(.06,m,1,1,1,.11,.13,.02,h)},
+  // each bun is a looped bun whose loose end droops down on the OUTER side (mirrored); smooth spheres so left and right match
   maomao:(h,m)=>{cap(h,m);bx(.22,.05,.04,m,0,.06,-.12,h);
-   [-1,1].forEach(k=>{bx(.045,.42,.05,m,k*.115,-.2,-.08,h);sph(.045,m,1,1,1,k*.07,.17,.0,h);const g=P(0xe0b040),c=P(0xb07020);
+   [-1,1].forEach(k=>{bx(.04,.18,.06,m,k*.108,-.04,-.07,h);{const bn=new THREE.Mesh(new THREE.SphereGeometry(.045,12,8),m);bn.position.set(k*.07,.17,0);h.add(bn);const lp=new THREE.Mesh(new THREE.SphereGeometry(.028,10,6),m);lp.scale.set(.9,1.4,.9);lp.position.set(k*.118,.122,.012);lp.rotation.z=k*.5;h.add(lp)}const g=P(0xe0b040),c=P(0xb07020);
     [[.095,.145,-.03],[.075,.13,-.045],[.105,.125,-.012]].forEach(([x,y,z])=>{sph(.019,g,1,.8,1,k*x,y,z,h);sph(.006,c,1,1,1,k*(x+.006),y,z-.012,h)})});
-   bx(.27,.2,.07,m,0,-.06,.1,h)},
+   // her two long tails (as in the reference art): from behind each ear, forward over the shoulder, ending at the upper chest, tied near the end with a small dark band and gold bead
+   [-1,1].forEach(k=>{const cv=new THREE.CatmullRomCurve3(fitOver(h,[[.055,-.02,.11],[.09,-.08,.075],[.128,-.15,.0],[.145,-.21,-.085],[.145,-.27,-.116]].map(([x,y,z])=>new THREE.Vector3(k*x,y,z)),k,.042));
+    h.add(new THREE.Mesh(new THREE.TubeGeometry(cv,32,.034,7,false),m));
+    // rounded tip, tie and gold bead follow the fitted curve (tie lies across the tail, bead on its outer face)
+    const e=cv.getPoint(1),te=cv.getTangent(1);sph(.034,m,1,1,1,e.x+te.x*.012,e.y+te.y*.012,e.z+te.z*.012,h);
+    const tp=cv.getPoint(.8),tt=cv.getTangent(.8),tie=new THREE.Mesh(new THREE.CylinderGeometry(.038,.038,.022,8),P(0x2a3a30));tie.position.copy(tp);tie.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tt);h.add(tie);
+    const bo=new THREE.Vector3(k*.4,.2,-1).normalize();sph(.013,P(0xe0b040),1,1,1,tp.x+bo.x*.038,tp.y+bo.y*.038,tp.z+bo.z*.038,h)});
+   // short rounded back hair, ending in a soft, left-right symmetrical arc at the nape (a smooth sphere, so the facets are mirror-even)
+   {const bk=new THREE.Mesh(new THREE.SphereGeometry(.125,16,10),m);bk.scale.set(1.08,.62,.62);bk.position.set(0,-.045,.1);h.add(bk)}},
   nezuko:(h,m)=>{cap(h,m);bx(.22,.05,.04,m,0,.06,-.12,h);bx(.045,.25,.05,m,-.12,-.07,-.08,h);bx(.045,.25,.05,m,.12,-.07,-.08,h);
    for(let i=0;i<6;i++)bx(.3-(i%2)*.012,.18,i<2?.07:.05,m,0,-.05-i*.17,i<2?.12+i*.01:.185,h)},
   // Miku: bangs, side locks, a short back, two long high twin tails with little clips where they attach
@@ -5327,13 +5351,13 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
     for(let i=0;i<5;i++){const t=bx(.085-(i%2)*.008,.26,.075-(i%2)*.006,m,k*(.19+i*.012),.0-i*.25,.07+i*.008,h);t.rotation.z=k*.05}
     const clip=P(0x18161c),acc=P(0xe0407a);bx(.035,.07,.06,clip,k*.165,.13,.05,h).rotation.z=-k*.5;bx(.012,.05,.064,acc,k*.18,.15,.05,h).rotation.z=-k*.5})},
   // Teto: choppy bangs, short side locks, an ahoge, and two big drill ringlets hanging at each side of the face (one smooth spiral cone each)
-  teto:(h,m)=>{cap(h,m);fringe(h,m);[-1,1].forEach(k=>bx(.04,.16,.05,m,k*.125,-.04,-.08,h));bx(.27,.17,.07,m,0,-.05,.1,h);ahoge(h,m);
+  teto:(h,m)=>{cap(h,m);fringe(h,m);[-1,1].forEach(k=>bx(.04,.16,.05,m,k*.125,-.04,-.08,h));ahoge(h,m);
    [-1,1].forEach(k=>{sph(.05,m,1,1,1,k*.15,.07,.02,h);const d=drill(.078,.44,3.5,m);d.position.set(k*.2,.06,.0);d.rotation.z=k*.1;d.rotation.y=k*.6;h.add(d)})},
  };
- // a drill ringlet: a cone whose surface winds in rounded coils down to a point (vertices displaced along a helix)
+ // a drill ringlet (the first coil is extra wide, tapering from there): a cone whose surface winds in rounded coils down to a point (vertices displaced along a helix)
  function drill(R0,L,turns,m){const g=new THREE.CylinderGeometry(1,1,1,16,48),p=g.attributes.position;
   for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),z=p.getZ(i),v=.5-y,a=Math.atan2(z,x),rr=Math.hypot(x,z);if(rr<1e-6){p.setY(i,-v*L);continue}
-   const s=(((a/(Math.PI*2))+v*turns)%1+1)%1,base=R0*Math.pow(Math.max(0,1-v),.75)*(.75+.25*Math.min(1,v*6))+.003,coil=1-.26*Math.pow(2*s-1,2);
+   const s=(((a/(Math.PI*2))+v*turns)%1+1)%1,base=R0*Math.pow(Math.max(0,1-v),.75)*(.9+.1*Math.min(1,v*20))*(1+.4*Math.max(0,1-v*turns))+.003,coil=1-.26*Math.pow(2*s-1,2);
    p.setXYZ(i,Math.cos(a)*base*coil,-v*L,Math.sin(a)*base*coil)}
   g.computeVertexNormals();return new THREE.Mesh(g,m)}
  // choppy bangs: a band across the forehead with pointed locks hanging from it
@@ -5539,7 +5563,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   const rig={arms,legs};of.x(body,s,rig,o);if(o.bat)batBack(body);
   if(o.tie&&o.outfit!=='miku')tieLayer(body);if(o.neck)necklace(body,o.neck);if(o.haori)haori(body,rig,o.haori);
   const h=new THREE.Group();h.position.set(0,1.62,0);body.add(h);sph(.13,sk,.95,1.1,1,0,0,0,h);
-  const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],hm=P(hc==='grad'?0:hc);HAIR[o.hair](hg,hm);
+  FITB=body;const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],hm=P(hc==='grad'?0:hc);HAIR[o.hair](hg,hm);FITB=null;
   if(hc==='grad')gradHair(hg,hm);
   if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.mask)mask(h);
   return{legs,arms,head:h}}
