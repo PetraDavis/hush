@@ -5686,14 +5686,23 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   // Yararara: a baseball bat lying in the grass of the front yard, west of the path (no hide box out here)
   {const g=new THREE.Group(),q=new THREE.Group();q.rotation.set(0,0,Math.PI/2);g.add(q);bat(q);g.rotation.y=.5;
    pickup('bat',g,1.4,-2.86,14.2,[.9,.4,.6,1.4,-2.7,14.2],'A baseball bat','A baseball bat, white with a red-taped grip. "052" is scratched into the knob.')}
-  // Mesmerizer: stare at the mobile over the crib for 10 seconds without looking away. It spins faster and the view swims a little (no swim with reduce flashing)
-  {const mob=window.mobile,v=new THREE.Vector3(),f=new THREE.Vector3(),ov=document.createElement('div');let t=0,spin=0;
-   XT.stareT=()=>t;ov.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(58,98,196,.55) 100%)';document.body.appendChild(ov);
-   if(mob&&!own().stare)XT.onUpdate(dt=>{if(own().stare){ov.remove();return}const play=!window.__dead&&!window.__cut&&pnl.hidden&&typeof cam!=='undefined';
+  // Mesmerizer: stare at the mobile over the crib for 20 seconds without looking away. It spins faster, the view swims a little (no swim with reduce flashing),
+  // and the screen slowly sinks toward a very dark gray while vision blurs. Looking away resets the timer and the effect fades back. Local only.
+  {const mob=window.mobile,v=new THREE.Vector3(),f=new THREE.Vector3(),ov=document.createElement('div'),dk=document.createElement('div'),ST=20;let t=0,spin=0,e=0,h=0;
+   XT.stareT=()=>t;XT.stareFx=()=>e;ov.style.cssText='position:fixed;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,transparent 35%,rgba(58,98,196,.55) 100%)';
+   dk.style.cssText='position:fixed;inset:0;pointer-events:none;opacity:0;background:rgb(22,22,24)';
+   {const be=document.getElementById('blurE');if(be){be.before(dk);be.before(ov)}else{document.body.append(dk,ov)}}
+   const fx=k=>{e=k;dk.style.opacity=(k*.88).toFixed(3);const b=(k*k*10).toFixed(2)+'px';dk.style.backdropFilter=dk.style.webkitBackdropFilter=k>.002?'blur('+b+')':''};
+   // Repeatable: after a completed stare (t>=ST) the effect fades out over 2 s; the timer re-arms once you look away and the fade is done. Only the first completion grants.
+   let done=false;const SX=.75;XT.stareSpin=()=>.15+spin;// base mobile spin is .15 rad/s; extra ramps to .75 (6x total) by 20 s, eases off over 2 s
+   const MSG='The mobile keeps turning after you look away. For a second, you are somewhere bright, on skates, smiling far too wide.';
+   if(mob)XT.onUpdate(dt=>{const play=!window.__dead&&!window.__cut&&pnl.hidden&&typeof cam!=='undefined';
     let on=false;if(play){mob.getWorldPosition(v);v.y-=.15;f.set(0,0,-1).applyQuaternion(cam.quaternion);const d=v.sub(cam.position),L=d.length();on=L<4.5&&L>.3&&d.normalize().dot(f)>.975}
-    t=on?t+dt:Math.max(0,t-dt*3);const k=Math.min(1,t/10),calm=window.__getCalm&&__getCalm();spin=k*k*3;mob.rotation.y+=dt*spin;
+    if(done){fx(Math.max(0,e-dt/2));ov.style.opacity='0';ov.style.transform='';spin=Math.max(0,spin-dt*SX/2);mob.rotation.y+=dt*spin;if(e<=0&&!on){done=false;t=0}return}
+    t=on?t+dt:0;const k=Math.min(1,t/ST),calm=window.__getCalm&&__getCalm();{const tg=on?SX*k:0;spin=tg>=spin?tg:Math.max(tg,spin-dt*SX/2)}mob.rotation.y+=dt*spin;
+    fx(on?k:Math.max(0,e-dt/1.2));
     ov.style.opacity=String(k*(calm?.35:.7));ov.style.filter='';if(!calm&&k>.3)ov.style.transform='rotate('+(Math.sin(performance.now()/400)*k*1.5).toFixed(2)+'deg) scale(1.05)';else ov.style.transform='';
-    if(t>=10){ov.style.opacity='0';give('stare','The mobile keeps turning after you look away. For a second, you are somewhere bright, on skates, smiling far too wide.')}})}
+    if(t>=ST){done=true;ov.style.opacity='0';ov.style.transform='';if(!own().stare)give('stare',MSG);else safe(()=>subtitle(MSG,4800))}})}
   XT.custPick={own}},'pickups');
 
  window.__cust={build,key,clean,mine,open,close,U,dress,eff,LOCK,HINT,get look(){return LOOK}};
