@@ -5694,15 +5694,31 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    {const be=document.getElementById('blurE');if(be){be.before(dk);be.before(ov)}else{document.body.append(dk,ov)}}
    const fx=k=>{e=k;dk.style.opacity=(k*.88).toFixed(3);const b=(k*k*10).toFixed(2)+'px';dk.style.backdropFilter=dk.style.webkitBackdropFilter=k>.002?'blur('+b+')':''};
    // Repeatable: after a completed stare (t>=ST) the effect fades out over 2 s; the timer re-arms once you look away and the fade is done. Only the first completion grants.
-   let done=false;const SX=.75;XT.stareSpin=()=>.15+spin;// base mobile spin is .15 rad/s; extra ramps to .75 (6x total) by 20 s, eases off over 2 s
+   // Mesmerizer music box: a short, slightly off-key minor lullaby, synthesized note by note (each note is a one-shot oscillator that stops itself).
+   // k (0..1) drives tempo (1.7 -> 7 notes/s), pitch (x1 -> x1.5), volume and a growing warble/detune. stop(sec) fades the bus then disconnects it.
+   const stareBox=(ctx,dest)=>{const MEL=[76,72,75,71,72,67,68,71,76,72,75,79,78,74,71,66];let bus=ctx.createGain(),i=0,next=ctx.currentTime+.05,k=0,dead=false;
+    bus.gain.value=0;bus.connect(dest);const st={made:0,ended:0};
+    const note=(tt,f,g)=>{const o=ctx.createOscillator(),o2=ctx.createOscillator(),e=ctx.createGain(),w=k*k*k;o.type='sine';o2.type='triangle';
+     o.frequency.setValueAtTime(f,tt);o2.frequency.setValueAtTime(f*4.02,tt);if(w>.05){o.frequency.linearRampToValueAtTime(f*(1-.03*w),tt+.5);o2.frequency.linearRampToValueAtTime(f*4.02*(1+.02*w),tt+.5)}
+     e.gain.setValueAtTime(0,tt);e.gain.linearRampToValueAtTime(g,tt+.004);e.gain.exponentialRampToValueAtTime(.0005,tt+.9);
+     const e2=ctx.createGain();e2.gain.value=.18;o.connect(e);o2.connect(e2).connect(e);e.connect(bus);st.made+=2;
+     [o,o2].forEach(x=>{x.onended=()=>{st.ended++;try{x.disconnect()}catch(_){}};x.start(tt);x.stop(tt+.95)});setTimeout(()=>{try{e.disconnect();e2.disconnect()}catch(_){}},Math.max(0,(tt-ctx.currentTime+1.1)*1000))};
+    return{st,tick(kk){if(dead)return;k=Math.max(0,Math.min(1,kk));const now=ctx.currentTime;bus.gain.setTargetAtTime(.04+.26*k,now,.15);if(next<now)next=now+.02;
+      while(next<now+.15){const m=MEL[i%MEL.length],off=k*k*(Math.random()-.5)*.06+(i%5===3?.018:0);// off-key: a sour step every few notes, more wobble later
+       const f=440*Math.pow(2,(m-69)/12)*(1+.5*k*k)*(1+off);note(next,f,.35);i++;next+=1/(1.7+5.3*k*k)}},
+     stop(sec){if(dead)return;dead=true;const now=ctx.currentTime;try{bus.gain.cancelScheduledValues(now);bus.gain.setValueAtTime(bus.gain.value,now);bus.gain.linearRampToValueAtTime(0,now+sec)}catch(_){}
+      setTimeout(()=>{try{bus.disconnect()}catch(_){}},(sec+1.2)*1000)}}};
+   let done=false,box=null;const SX=11.85;XT.stareSpin=()=>.15+spin;XT.stareBox=()=>box;// base mobile spin is .15 rad/s; extra ramps (ease-in, k^2.5) to 11.85 (12 rad/s, ~2 turns/s) by 20 s, eases off over 2 s
+   const boxOff=sec=>{if(box){box.stop(sec);XT.stareLastBox=box;box=null}};
    const MSG='The mobile keeps turning after you look away. For a second, you are somewhere bright, on skates, smiling far too wide.';
    if(mob)XT.onUpdate(dt=>{const play=!window.__dead&&!window.__cut&&pnl.hidden&&typeof cam!=='undefined';
     let on=false;if(play){mob.getWorldPosition(v);v.y-=.15;f.set(0,0,-1).applyQuaternion(cam.quaternion);const d=v.sub(cam.position),L=d.length();on=L<4.5&&L>.3&&d.normalize().dot(f)>.975}
-    if(done){fx(Math.max(0,e-dt/2));ov.style.opacity='0';ov.style.transform='';spin=Math.max(0,spin-dt*SX/2);mob.rotation.y+=dt*spin;if(e<=0&&!on){done=false;t=0}return}
-    t=on?t+dt:0;const k=Math.min(1,t/ST),calm=window.__getCalm&&__getCalm();{const tg=on?SX*k:0;spin=tg>=spin?tg:Math.max(tg,spin-dt*SX/2)}mob.rotation.y+=dt*spin;
+    if(done){boxOff(2);fx(Math.max(0,e-dt/2));ov.style.opacity='0';ov.style.transform='';spin=Math.max(0,spin-dt*SX/2);mob.rotation.y+=dt*spin;if(e<=0&&!on){done=false;t=0}return}
+    t=on?t+dt:0;const k=Math.min(1,t/ST),calm=window.__getCalm&&__getCalm();{const tg=on?SX*Math.pow(k,2.5):0;spin=tg>=spin?tg:Math.max(tg,spin-dt*SX/2)}mob.rotation.y+=dt*spin;
     fx(on?k:Math.max(0,e-dt/1.2));
+    safe(()=>{if(on&&t>0&&typeof AC!=='undefined'&&AC&&!muted&&musG&&AC.state!=='closed'){if(!box)box=stareBox(AC,musG);box.tick(k)}else boxOff(.35)},'stareBox');
     ov.style.opacity=String(k*(calm?.35:.7));ov.style.filter='';if(!calm&&k>.3)ov.style.transform='rotate('+(Math.sin(performance.now()/400)*k*1.5).toFixed(2)+'deg) scale(1.05)';else ov.style.transform='';
-    if(t>=ST){done=true;ov.style.opacity='0';ov.style.transform='';if(!own().stare)give('stare',MSG);else safe(()=>subtitle(MSG,4800))}})}
+    if(t>=ST){done=true;boxOff(2);ov.style.opacity='0';ov.style.transform='';if(!own().stare)give('stare',MSG);else safe(()=>subtitle(MSG,4800))}})}
   XT.custPick={own}},'pickups');
 
  window.__cust={build,key,clean,mine,open,close,U,dress,eff,LOCK,HINT,get look(){return LOOK}};
