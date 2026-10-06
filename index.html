@@ -583,8 +583,8 @@ for(let z=11.6;z<17.2;z+=.7)box(1.1,.04,.55,M(0x6a6670),4.8+Math.sin(z*3)*.05,F-
 {const pl=new THREE.PointLight(0xffc070,1.1,9,2);pl.position.set(4.8,F+2.1,10.1);scene.add(pl)}
 box(.08,1.0,.08,mahog,6.8,F+.5,16.4);box(.3,.22,.45,M(0x2a2a30),6.8,F+1.1,16.4);box(.02,.14,.06,M(0xc03030),6.95,F+1.2,16.3);
 [[-4,1.8],[7.1,8.4]].forEach(([a,b])=>{for(let x=a;x<b;x+=.7){const hg=sph(.42,M(0x1e3a26),x+.35,F+.35,6.95,1,.9,.9)}});
-box(9.65,.9,.7,M(0x1e3a26),-.675,F+.45,17.8);box(4.05,.9,.7,M(0x1e3a26),7.475,F+.45,17.8);[-4.9,10.7].forEach(x=>box(.7,.9,11.5,M(0x1e3a26),x,F+.45,12.1));
-solids.push({x0:-8,x1:12,z0:17.4,z1:18.2,y0:F-1,y1:5},{x0:-5.3,x1:-4.5,z0:6.3,z1:17.8,y0:F-1,y1:5},{x0:10.3,x1:11.1,z0:6.3,z1:17.8,y0:F-1,y1:5},{x0:-5.3,x1:-3.9,z0:6.3,z1:6.5,y0:F-1,y1:5},{x0:8.3,x1:11.1,z0:6.3,z1:6.5,y0:F-1,y1:5});
+box(9.65,.9,.7,M(0x1e3a26),-.675,F+.45,17.8);box(4.05,.9,.7,M(0x1e3a26),7.475,F+.45,17.8);box(.7,.9,11.5,M(0x1e3a26),-4.9,F+.45,12.1);box(.7,.9,9.65,M(0x1e3a26),10.7,F+.45,13.025);/* v90: a gap in the east hedge by the house (z 6.5-8.2) is the way round to the back yard */for(let z=7;z<12.5;z+=.75)box(.55,.04,.45,M(0x6a6670),z<8.6?10.7:12.2+(z-8.6)*.2,F-.01,z<8.6?z+.2:7.6-(z-8.6)*1.5);
+solids.push({x0:-8,x1:12,z0:17.4,z1:18.2,y0:F-1,y1:5},{x0:-5.3,x1:-4.5,z0:6.3,z1:17.8,y0:F-1,y1:5},{x0:10.3,x1:11.1,z0:8.2,z1:17.8,y0:F-1,y1:5},/* v90: the grounds' fence (the hedge gap leads round the house; the fence keeps you off the street everywhere but the gate) */{x0:-15.3,x1:24.3,z0:-12.3,z1:-12,y0:F-1,y1:5},{x0:24,x1:24.3,z0:-12.3,z1:18.2,y0:F-1,y1:5},{x0:-15.3,x1:-15,z0:-12.3,z1:18.2,y0:F-1,y1:5},{x0:-15.3,x1:-8,z0:17.4,z1:18.2,y0:F-1,y1:5},{x0:12,x1:24.3,z0:17.4,z1:18.2,y0:F-1,y1:5},/* v90: the basement stairwell's far end, so you cannot walk from the back yard down into the stairs */{x0:5.95,x1:7.35,z0:-8.05,z1:-7.7,y0:F-.3,y1:5},{x0:-5.3,x1:-3.9,z0:6.3,z1:6.5,y0:F-1,y1:5},{x0:8.3,x1:11.1,z0:6.3,z1:6.5,y0:F-1,y1:5});
 // upper-floor facade, porch roof, main roof
 box(14.4,.1,2.2,M(0x2a2228),3.2,-.056,7.55);box(4,.2,1,M(0x2a2228),4.8,-.02,9.05);
 wall('x',8.6,-4,.8,[[-2.6,-1.4,1.0,2.1]],siding,0,H);wall('x',8.6,4,6.05,[[4.6,5.4,1.0,2.0]],hallW,0,H,siding);win('x',8.6,4.6,5.4,1.0,2.0,0);box(.1,H,1.0,siding,6.05,H/2,8.1);
@@ -1600,7 +1600,7 @@ const MUS=(function(){let bus=null,calmG,tenG,chG,duckG,padF,pads=[],strs=[],dis
  return{update,duck,stinger,get lvl(){return{c:+lvl.c.toFixed(2),t:+lvl.t.toFixed(2),h:+lvl.h.toFixed(2)}}}})();
 window.__mus=MUS;
 // ===== exterior: fence + trees around the house =====
-(function(){const {out,E}=window.__ext;const pm=E(0x3a3530);/* v79: the old front run along z 20 sat on Larch Road; the yard now ends at the hedge */const segs=[[-15,-12,24,-12],[24,-12,24,17.4],[-15,12,-15,17.4]];let n=0;segs.forEach(([a,b,c,d])=>n+=Math.ceil(Math.hypot(c-a,d-b)/.6));
+(function(){const {out,E}=window.__ext;const pm=E(0x3a3530);/* v79: the old front run along z 20 sat on Larch Road; the yard now ends at the hedge */const segs=[[-15,-12,24,-12],[24,-12,24,17.4],[-15,-12,-15,17.4],[-15,17.4,-8,17.4],[12,17.4,24,17.4]];let n=0;segs.forEach(([a,b,c,d])=>n+=Math.ceil(Math.hypot(c-a,d-b)/.6));
 const im=new THREE.InstancedMesh(BG(.08,1,.12),pm,n);const o=new THREE.Object3D();let k=0;segs.forEach(([a,b,c,d])=>{const L=Math.hypot(c-a,d-b),m=Math.ceil(L/.6);for(let i=0;i<m;i++){o.position.set(a+(c-a)*i/m,-2.4,b+(d-b)*i/m);o.rotation.y=a==c?0:Math.PI/2;o.updateMatrix();im.setMatrixAt(k++,o.matrix)}
 const r=new THREE.Mesh(BG(.06,.08,L),pm);r.position.set((a+c)/2,-2.05,(b+d)/2);r.rotation.y=a==c?0:Math.PI/2;out.add(r)});out.add(im);
 const tg=new THREE.CylinderGeometry(.14,.2,1.6,5),cg=new THREE.ConeGeometry(1.1,1.4,6),tm=E(0x2a2018),cm=E(0x16241c);
@@ -5332,7 +5332,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   muichiro:(h,m)=>{cap(h,m);bx(.25,.07,.045,m,0,.06,-.118,h);[-1,1].forEach(k=>{bx(.045,.24,.06,m,k*.122,-.09,-.075,h);{const pts=fitOver(h,[[.122,-.18,-.08],[.125,-.28,-.1],[.128,-.38,-.12],[.13,-.48,-.13]].map(([x,y,z])=>new THREE.Vector3(k*x,y,z)),k,.03);pts.unshift(new THREE.Vector3(k*.122,-.15,-.075));const t=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),16,.024,6,false),m);h.add(t);const e=pts[pts.length-1];const tp=new THREE.Mesh(new THREE.ConeGeometry(.024,.04,6),m);tp.rotation.x=Math.PI;tp.position.set(e.x,e.y-.02,e.z);h.add(tp)}bx(.05,.3,.14,m,k*.128,-.1,.02,h)});
    {const bk=new THREE.Mesh(new THREE.SphereGeometry(.135,14,8),m);bk.scale.set(1.08,.9,.78);bk.position.set(0,-.03,.05);h.add(bk)}
    // his side hair (Petra's sketch): at temple height it juts out into a thin shelf a bit wider than the head, then thin curtains sweep backward as they fall and merge into the back hair
-   [-1,1].forEach(k=>{bx(.1,.035,.11,m,k*.17,.035,.03,h);const c=bx(.022,.28,.09,m,k*.21,-.085,.085,h);c.rotation.x=-.45;c.rotation.z=k*.04});
+   [-1,1].forEach(k=>{bx(.1,.035,.11,m,k*.17,.035,.03,h);const c=bx(.022,.28,.09,m,k*.21,-.085,.085,h);c.rotation.x=-.45;c.rotation.z=k*.04;/* v90 (Petra): fill the gap under the shelf so the side hair joins the head */{const w=bx(.1,.2,.1,m,k*.165,-.06,.06,h);w.rotation.x=-.4;w.rotation.z=-k*.18}});
    for(let i=0;i<7;i++){const x=-.105+i*.035,pts=fitOver(h,[[x,0,.12],[x*1.1,-.12,.14],[x*1.2,-.26,.15],[x*1.25,-.42,.15]].map(p=>new THREE.Vector3(...p)),0,.035,1);
     const t=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),12,.026,6,false),m);t.scale.set(1,1,1);h.add(t);const e=pts[pts.length-1];sph(.026,m,1,.6,1,e.x,e.y,e.z,h)}},
   // Shinobu: a short chin-length bob with side-swept bangs
@@ -5840,7 +5840,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   {const g=new THREE.Group(),br=P(0x7a3a2c),dk=P(0x161214),st=P(0x5a4a40);bx(.36,1.0,1.2,br,0,.5,0,g);bx(.06,.62,.72,dk,.16,.33,0,g);bx(.44,.06,1.32,st,.02,1.03,0,g);bx(.42,.04,1.0,st,.2,.02,0,g);
    [[.12,-.08],[.1,.08]].forEach(([x,z])=>{const l=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.4,6),P(0x4a3020));l.rotation.x=Math.PI/2;l.rotation.y=z*3;l.position.set(x+.13,.08,z*.5);g.add(l)});
    const fire=new THREE.Group();fire.visible=false;g.add(fire);const fl=[];[[0xff6a1a,.13,.42,0],[0xffa030,.1,.3,.1],[0xffa030,.1,.32,-.1],[0xffe070,.06,.2,.02]].forEach(([c,r,h,z])=>{const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,6),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.9}));m.position.set(.25,.1+h/2,z);fire.add(m);fl.push(m)});
-   const L=new THREE.PointLight(0xff8a3a,0,5,2);L.position.set(.5,.6,0);g.add(L);XT.place(g,-3.42,-2.9,-.95);let lit=false;
+   const L=new THREE.PointLight(0xff8a3a,0,5,2);L.position.set(.5,.6,0);g.add(L);XT.place(g,-3.42,-2.9,-.95);let lit=false;{const q={x0:-3.66,x1:-3.0,z0:-1.62,z1:-.28,y0:-2.9,y1:-2.9+1.06};q.r={x0:q.x0,x1:q.x1,z0:q.z0,z1:q.z1};solids.push(q)}/* v90: the fireplace is solid */
    const h=new THREE.Mesh(new THREE.BoxGeometry(.5,.9,1.2),hitMat);XT.place(h,-3.3,-2.9+.45,-.95);
    h.userData.i={get label(){return 'Light the fireplace'},act(){if(lit)return;lit=true;fire.visible=true;const j=inter.indexOf(h);if(j>=0)inter.splice(j,1);
     SND((ac,d)=>{const n=ac.createBufferSource(),b=ac.createBuffer(1,ac.sampleRate*1.2,ac.sampleRate),c=b.getChannelData(0);for(let i=0;i<c.length;i++)c[i]=(Math.random()*2-1)*Math.pow(1-i/c.length,2);n.buffer=b;const f=ac.createBiquadFilter();f.type='lowpass';f.frequency.value=900;const e=ac.createGain();e.gain.value=.25;n.connect(f).connect(e).connect(d);n.start()});
@@ -5866,6 +5866,31 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    let lastT=0;XT.onUpdate(()=>{const now=performance.now(),dt=lastT?Math.min(.5,(now-lastT)/1000):0;lastT=now;if(!outdoors()||!nightOn()){wait=Math.max(wait,6+Math.random()*8);return}wait-=dt;if(wait<=0){wait=20+Math.random()*20;strike()}})}
   XT.custPick={own}},'pickups');
 
+ // ---------- SLOTS v90: 3 named outfit save slots in the Customize screen (localStorage 'hushLookSlots' = [{n,lk}|null x3]) ----------
+ safe(()=>{const SK='hushLookSlots',N=3,rd=()=>{let a=null;try{a=JSON.parse(LS.get(SK)||'null')}catch(e){}a=Array.isArray(a)?a:[];const o=[];for(let i=0;i<N;i++){const s=a[i]&&typeof a[i]==='object'?a[i]:{};o.push({n:(typeof s.n==='string'?s.n:'').slice(0,20),lk:s.lk&&typeof s.lk==='object'?clean(s.lk):null})}return o};
+  let S=rd();const wr=()=>LS.set(SK,JSON.stringify(S));
+  const st=document.createElement('style');st.textContent=`#czP .sl{display:flex;flex-direction:column;gap:6px;margin:4px 0 0}
+#czP .sl>div{display:flex;gap:6px;align-items:center;min-width:0}
+#czP .sl input{flex:1 1 auto;min-width:0;font:inherit;font-size:16px;color:#ece4d8;background:#1d1a22;border:1px solid #3a3440;border-radius:6px;padding:7px 10px}
+#czP .sl input:focus{outline:none;border-color:#f2d27a}
+#czP .sl .ch{flex:0 0 auto;min-height:36px;padding:6px 12px}
+#czP .sl .ch:disabled{color:#7a7280;border-style:dashed;cursor:default}
+#czP .sl .e{font-size:11px;color:#7a7280;flex:0 0 auto}
+#czP .sl .e[hidden]{display:none}`;document.head.appendChild(st);
+  const h=document.createElement('h3');h.textContent='Saved outfits';const box=document.createElement('div');box.className='sl';
+  const sec0=pnl.querySelector('.sec');sec0.before(h,box);
+  S.forEach((s,i)=>{const r=document.createElement('div'),inp=document.createElement('input'),sv=document.createElement('button'),ld=document.createElement('button'),e=document.createElement('span');
+   const dn='Slot '+(i+1),nm=()=>inp.value.trim()||dn;
+   inp.type='text';inp.maxLength=20;inp.value=s.n||dn;inp.setAttribute('aria-label','Name of outfit slot '+(i+1));inp.autocomplete='off';inp.enterKeyHint='done';
+   sv.type=ld.type='button';sv.className=ld.className='ch';sv.textContent='Save';ld.textContent='Load';e.className='e';
+   const sync=()=>{ld.disabled=!S[i].lk;e.textContent='empty';e.hidden=!!S[i].lk;sv.setAttribute('aria-label','Save current look to '+nm());ld.setAttribute('aria-label','Load '+nm())};sync();
+   inp.addEventListener('input',()=>{if(inp.value.length>20)inp.value=inp.value.slice(0,20);S[i].n=inp.value.trim();wr();sync()});
+   inp.addEventListener('blur',()=>{if(!inp.value.trim())inp.value=dn});
+   inp.addEventListener('keydown',e2=>{if(e2.key==='Enter'){e2.preventDefault();inp.blur()}});
+   sv.addEventListener('click',()=>{S[i].lk=clean(LOOK);S[i].n=inp.value.trim();wr();sync();msg.textContent='Saved to "'+nm()+'".'});
+   ld.addEventListener('click',()=>{if(!S[i].lk)return;const want=clean(S[i].lk);LOOK=want;LOOK=mine();const lost=JSON.stringify(LOOK)!==JSON.stringify(want);save();rows();redoll();msg.textContent='Loaded "'+nm()+'".'+(lost?' Some items are still locked, so they were left off.':'')});
+   r.append(inp,e,sv,ld);box.appendChild(r)})},'slots');
+ // ---------- end SLOTS v90 ----------
  window.__cust={build,key,clean,mine,open,close,U,dress,eff,LOCK,HINT,get look(){return LOOK}};
 })();
 // ===== end CUSTOMIZE v81 =====
