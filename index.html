@@ -179,7 +179,7 @@ for(let i=0;i<40;i++){const st=new THREE.Mesh(new THREE.OctahedronGeometry(.08,0
 const ml=new THREE.DirectionalLight(0x6070a0,.8);ml.position.set(-30,15,8);ml.target.position.set(-10,-3,0);out.add(ml,ml.target);
 for(let z=-12;z<=12;z+=.6){const pk=new THREE.Mesh(new THREE.BoxGeometry(.08,1,.12),E(0x3a3530));pk.position.set(-15,-2.4,z);out.add(pk)}
 [-1.95,-2.2].forEach(y=>{const r=new THREE.Mesh(new THREE.BoxGeometry(.06,.08,24),E(0x3a3530));r.position.set(-15.03,y,0);out.add(r)});
-[[-9,-4,1.2],[-11,3.5,1],[-18,-7,1.5],[-20,6,1.3],[-13,9,1.1],[-24,-1,1.6]].forEach(([x,z,k])=>{const tr=new THREE.Mesh(new THREE.CylinderGeometry(.12*k,.18*k,1.6*k,5),E(0x2a2018));tr.position.set(x,-2.9+.8*k,z);out.add(tr);
+[[-9,-6.3,1.2],[-12.7,3.5,1],/* v91: moved clear of the garage */[-18,-7,1.5],[-20,6,1.3],[-13,9,1.1],[-24,-1,1.6]].forEach(([x,z,k])=>{const tr=new THREE.Mesh(new THREE.CylinderGeometry(.12*k,.18*k,1.6*k,5),E(0x2a2018));tr.position.set(x,-2.9+.8*k,z);out.add(tr);
 for(let j=0;j<3;j++){const c=new THREE.Mesh(new THREE.ConeGeometry((1.1-j*.25)*k,1.4*k,6),E(0x16241c));c.position.set(x,-2.9+(1.8+j*.8)*k,z);out.add(c)}});
 const hs=new THREE.Mesh(new THREE.BoxGeometry(5,4,7),E(0x14161e));hs.position.set(-26,-.9,-4);out.add(hs);
 const roof=new THREE.Mesh(new THREE.CylinderGeometry(.01,4.4,2.4,4,1),E(0x0e1016));roof.rotation.y=Math.PI/4;roof.scale.set(.85,1,1.2);roof.position.set(-26,2.3,-4);out.add(roof);
@@ -346,7 +346,7 @@ box(3.6,.1,4,bathFloor,7.2,-.05,-1.5);box(4.4,.1,4.8,woodF2,7.6,-.05,2.9);box(3.
 wall('x',-3.5,-4,8.4,[[6.2,7.1,0,2.0]],siding,F,H,livW);
 wall('x',6.5,-4,-1.8,[[-3.4,-2.7,1.5,2.0]],smallFloor,F,H,siding);win('x',6.5,-3.4,-2.7,1.5,2.0,F);
 wall('x',6.5,-1.8,8.4,[[-1.2,.2,1.0,2.1],[4.05,5.5,0,2.6],[7.0,8.1,1.1,2.0]],livW,F,H,siding);win('x',6.5,-1.2,.2,1.0,2.1,F);win('x',6.5,7.0,8.1,1.1,2.0,F);
-wall('z',-4,-3.5,4.2,[[.2,1.6,1.0,2.1]],siding,F,H,livW);win('z',-4,.2,1.6,1.0,2.1,F);wall('z',-4,4.2,6.5,[],siding,F,H,smallFloor);
+wall('z',-4,-3.5,4.2,[[.2,1.6,1.0,2.1],[1.95,2.8,0,2.0]],siding,F,H,livW);win('z',-4,.2,1.6,1.0,2.1,F);wall('z',-4,4.2,6.5,[],siding,F,H,smallFloor);
 wall('z',8.4,-3.5,6.5,[[1.6,2.8,1.0,2.0]],livW,F,H,siding);win('z',8.4,1.6,2.8,1.0,2.0,F);
 wall('z',-1.8,4.2,6.5,[[4.6,5.4,0,2.0]],smallFloor,F,H,livW);wall('x',4.2,-4,-1.8,[],livW,F,H,smallFloor);
 box(12.4,.1,10,woodF,2.2,F-.05,1.5);box(4.4,.01,10,floorTile,6.2,F+.005,1.5);box(2.2,.01,2.3,smallFloor,-2.9,F+.005,5.35);
@@ -510,6 +510,67 @@ sph(.07,M(0xf0e8e0),-1.8,.07,1.9,1,1.2,1);sph(.05,M(0xf0e8e0),-1.8,.18,1.9);box(
 cyl(.2,.17,.35,M(0xe8dcc8),-3.5,.18,2.8,10);box(.3,.08,.3,M(0xb4cce8),-3.5,.38,2.8).rotation.y=.4;plant(-3.6,0,-3.1,.9);
 // ===== seats (E to sit) =====
 const hitM=new THREE.MeshBasicMaterial({visible:false});
+// ===== v91: the garage (Petra). Attached on the west side: x -10.6..-4, z -3.5..3.5, a door from the living room (x -4, z 1.95..2.8),
+// a roll-up door to a gravel drive (front wall z 3.5, x -9.9..-5.1), their other car, a workbench and pegboard, boxes, and one bad bulb.
+const GAR=(function(){const gw=M(0x5e5a52),conc=new THREE.MeshPhongMaterial({color:0x4a4846,shininess:4}),dk=M(0x1e1c1a),rust=M(0x5a3420),card=M(0x7a6040),card2=M(0x6a5236),wb=M(0x4a3422),steel=M(0x6a6e74);
+ const hbx=(w,h,d,x,y,z)=>{const m=new THREE.Mesh(BG(w,h,d),hitM);m.position.set(x,y,z);scene.add(m);return m};
+ const X0=-10.6,X1=-4,Z0=-3.5,Z1=3.5,cx=(X0+X1)/2;
+ box(X1-X0,.1,Z1-Z0,conc,cx,F-.05,0);box(1.6,.004,1.1,M(0x16130f),-7.2,F+.003,-.6);box(.5,.004,.4,M(0x16130f),-6.4,F+.003,.9);
+ [[-.5],[1.6]].forEach(([z])=>box(X1-X0,.01,.02,M(0x3a3836),cx,F+.004,z));
+ wall('x',Z0,X0,X1,[[-9.2,-8.4,1.5,2.1]],siding,F,H,gw);win('x',Z0,-9.2,-8.4,1.5,2.1,F);
+ wall('z',X0,Z0,Z1,[],siding,F,H,gw);
+ wall('x',Z1,X0,X1,[[-9.9,-5.1,0,2.3]],gw,F,H,siding);
+ box(X1-X0+.2,.14,Z1-Z0+.2,M(0x2a2228),cx,F+H+.07,0);box(X1-X0,.02,Z1-Z0,M(0x34322e),cx,F+H-.01,0).receiveShadow=false;
+ [-1.6,0,1.6].forEach(z=>box(X1-X0-.1,.12,.06,wb,cx,F+H-.08,z));
+ // the door from the living room (swings into the garage)
+ const dIn=makeDoor(X1,F,1.95,.85,-1,'Door');
+ // roll-up door: E rolls it up into the drum over the opening; collision is off once it is above head height
+ const rg=new THREE.Group();rg.position.set(-7.5,F+2.3,Z1-.1);scene.add(rg);const pm=M(0x8a8478),pm2=M(0x6c675e);
+ for(let i=0;i<4;i++){box(4.8,.56,.05,pm,0,-.29-i*.575,0,rg);box(4.7,.03,.06,pm2,0,-.575*(i+1)+.01,0,rg)}box(.5,.04,.08,dk,0,-2.05,-.04,rg);
+ cyl(.17,.17,4.9,M(0x4a4842),-7.5,F+2.45,Z1-.12,10).rotation.z=Math.PI/2;
+ [-2.45,2.45].forEach(x=>box(.06,2.3,.08,steel,-7.5+x,F+1.15,Z1-.12));
+ const hp=hbx(4.8,2.3,.4,-7.5,F+1.15,Z1-.1);
+ const gs={x0:-9.9,x1:-5.1,z0:Z1-.16,z1:Z1-.04,y0:F,y1:F+2.3};solids.push(gs);
+ const G={open:false,y:0,dIn,rg,solid:gs};
+ addInter(hp,'Garage door',()=>{G.open=!G.open;try{SND&&SND.door&&SND.door(G.open)}catch(e){}});
+ // the drive: gravel out to the side yard (no road this side: the fence still holds)
+ box(4.6,.02,7.4,M(0x2e2c2a),-7.5,F+.0,7.3);box(.12,.12,.12,M(0x9a9070),-5.05,F+2.55,Z1+.12);
+ // their other car, nose to the door, under a sheet at the back
+ const car=new THREE.Group();car.position.set(-7.55,F,.3);scene.add(car);const cm=new THREE.MeshPhongMaterial({color:0x3a1416,shininess:60,specular:0x605050}),gl=new THREE.MeshPhongMaterial({color:0x07090c,shininess:120}),sh=M(0xb8b2a4);
+ box(1.8,.6,4.2,cm,0,.56,0,car);box(1.64,.5,2.2,gl,0,1.1,-.25,car);box(1.6,.06,2.1,cm,0,1.36,-.25,car);
+ box(1.86,.92,1.6,sh,0,.95,-1.55,car);box(1.9,.5,.7,sh,0,.55,-2.0,car).rotation.x=.12;
+ [[-.82,-1.35],[.82,-1.35],[-.82,1.35],[.82,1.35]].forEach(([x,z])=>{const w=cyl(.33,.33,.22,dk,x,.33,z,12,car);w.rotation.z=Math.PI/2});
+ [-.6,.6].forEach(x=>{box(.32,.14,.04,M(0x3a3a30),x,.66,2.11,car);box(.3,.12,.04,M(0x3a0606),x,.66,-2.11,car)});
+ solids.push({x0:-8.5,x1:-6.6,z0:-1.85,z1:2.45,y0:F,y1:F+1.5});
+ const cH=new THREE.Mesh(BG(1.9,1.5,4.3),hitM);cH.position.set(0,.75,0);car.add(cH);
+ let cN=0;addInter(car,'Car',()=>{const L=["Their other car. The hood is warm.","The keys are in it. The seat is pushed all the way back.","Something small has been sitting in the back seat. There is no car seat.","Through the windscreen: the rear-view mirror is turned to face the house."];subtitle(L[Math.min(cN++,L.length-1)],3600)});
+ // workbench + pegboard on the back wall
+ box(2.6,.08,.58,wb,-8.25,F+.9,-3.13);[-9.45,-7.05].forEach(x=>[-3.35,-2.92].forEach(z=>box(.07,.9,.07,wb,x,F+.45,z)));box(2.5,.04,.5,wb,-8.25,F+.25,-3.13);
+ solids.push({x0:-9.55,x1:-6.95,z0:-3.45,z1:-2.82,y0:F,y1:F+.95});
+ box(2.4,1.0,.03,M(0x8a7454),-8.25,F+1.75,-3.43);for(let i=0;i<11;i++)for(let j=0;j<4;j++)box(.015,.015,.01,dk,-9.35+i*.22,F+1.35+j*.25,-3.41);
+ box(.05,.32,.02,steel,-9.1,F+1.85,-3.4);box(.16,.06,.03,dk,-9.1,F+2.0,-3.4);box(.04,.45,.02,steel,-8.8,F+1.8,-3.4).rotation.z=.2;cyl(.12,.12,.02,steel,-8.4,F+1.8,-3.39,16).rotation.x=Math.PI/2;
+ box(.03,.38,.02,wb,-8.05,F+1.7,-3.4);box(.22,.1,.03,steel,-8.05,F+1.92,-3.4);box(.02,.4,.02,steel,-7.75,F+1.75,-3.4);box(.02,.4,.02,steel,-7.65,F+1.75,-3.4);
+ box(.35,.4,.02,rust,-7.3,F+1.75,-3.4);box(.25,.06,.02,M(0xd0c8b0),-7.3,F+2.0,-3.39);// an empty hook-outline where the saw should be
+ box(.36,.12,.18,M(0x6a1a14),-8.9,F+1.0,-3.0);box(.5,.03,.3,M(0x8a8070),-7.9,F+.955,-2.95);box(.04,.02,.18,steel,-7.7,F+.98,-2.9);box(.18,.2,.18,M(0x3a4a2a),-7.4,F+1.04,-3.15);
+ {const c=new THREE.Mesh(new THREE.PlaneGeometry(.22,.16),new THREE.MeshBasicMaterial({color:0xd8ccb0}));c.position.set(-8.25,F+.945,-2.85);c.rotation.x=-Math.PI/2;c.rotation.z=.3;scene.add(c)}
+ addInter(hbx(2.6,.6,.8,-8.25,F+1.1,-3.0),'Workbench',()=>subtitle('A list in pencil: CANDLES (BLACK). CHALK. SALT. MORE CANDLES.',4200));
+ // shelving + boxes on the west wall, boxes and a chest freezer by the house wall
+ [[-2.6,-.4],[ .4,2.6]].forEach(([a,b])=>{const zc=(a+b)/2,L=b-a;[.05,.75,1.45,2.1].forEach(y=>box(.55,.04,L,steel,-10.25,F+y+.02,zc));[a+.03,b-.03].forEach(z=>box(.04,2.15,.04,steel,-10.0,F+1.07,z));
+  solids.push({x0:-10.55,x1:-9.95,z0:a,z1:b,y0:F,y1:F+2.2})});
+ [[-10.25,.07,-2.2,.5,.4,.45],[-10.25,.07,-1.0,.45,.5,.5],[-10.25,.77,-1.8,.5,.3,.6],[-10.27,1.47,-2.1,.45,.4,.45],[-10.25,.07,1.0,.5,.55,.6],[-10.25,.77,1.6,.5,.35,.7],[-10.25,1.47,.9,.5,.45,.5],[-10.25,2.14,1.9,.45,.3,.5]].forEach(([x,y,z,w,h,d],i)=>{box(w,h,d,i%2?card:card2,x,F+y+h/2,z);box(w+.01,.03,.06,M(0x9a8a60),x,F+y+h-.01,z)});
+ [[-4.5,-3.0,.6,.5,.6,.2],[-4.45,-3.0,.55,.45,.5,1.1-.05],[-4.55,-2.35,.6,.4,.55,-.1],[-5.0,-3.05,.5,.35,.45,.3]].forEach(([x,z,w,h,d,ry],i)=>{const y=i==1?.5:0;const b=box(w,h,d,i%2?card2:card,x,F+y+h/2,z);b.rotation.y=ry});
+ solids.push({x0:-5.3,x1:-4.05,z0:-3.45,z1:-2.0,y0:F,y1:F+1.1});
+ box(.9,.85,.62,M(0xc8c4b8),-5.3,F+.43,-1.3);box(.92,.03,.64,M(0xb0aca0),-5.3,F+.87,-1.3);box(.02,.06,.4,dk,-5.76,F+.75,-1.3);
+ solids.push({x0:-5.78,x1:-4.82,z0:-1.65,z1:-.95,y0:F,y1:F+.9});
+ addInter(hbx(.95,.9,.7,-5.3,F+.45,-1.3),'Freezer',()=>subtitle(Math.random()<.5?'The padlock is new. Something inside hums a tune you almost know.':'Frost has grown into the shape of a spiral on the lid.',3800));
+ // the bulb: bare, on a cord, and not well
+ cyl(.006,.006,.35,dk,-7.6,F+H-.18,-1.2,4);const bm=new THREE.MeshBasicMaterial({color:0xffe0a8});sph(.06,bm,-7.6,F+H-.4,-1.2);
+ const bl=new THREE.PointLight(0xffc888,.75,9,1.7);bl.position.set(-7.6,F+H-.5,-1.2);bl.userData.base=.75;scene.add(bl);
+ let fk=0,fT=0;function update(dt,t){
+  G.y+=((G.open?2.2:0)-G.y)*Math.min(1,dt*1.6);rg.scale.y=Math.max(.03,1-G.y/2.3);gs.off=G.y>1.5;if(!G.open&&G.y<1.6)gs.off=false;
+  fT-=dt;if(fT<=0){fk=Math.random()<.18?Math.random()*.25:.75+Math.random()*.25;fT=.04+Math.random()*(fk<.3?.12:.9)}
+  const v=.75*fk;bl.userData.base=v;bl.intensity=v;bm.color.setHex(fk<.3?0x3a3226:0xffe0a8)}
+ return{G,car,light:bl,update}})();window.__gar=GAR;
 function seat(x,y,z,yw,w=.5,d=.5){const hb=new THREE.Mesh(BG(w,.5,d),hitM);hb.position.set(x,y+.1,z);scene.add(hb);addInter(hb,'Sit',()=>sitAt(hb.position.x,y+.72,hb.position.z,yw));return hb}
 (function(){const g=new THREE.Group();g.position.set(1.75,0,-1.35);g.rotation.order='YXZ';g.rotation.y=-2.2;scene.add(g);window.__glider=g;const up=M(0xc8e4d8),wd=mats.wood;
 box(.8,.12,.7,wd,0,.1,0,g);box(.7,.25,.6,up,0,.36,.02,g);box(.72,.7,.18,up,0,.8,-.28,g).rotation.x=-.12;[-.4,.4].forEach(x=>{box(.12,.35,.66,up,x,.55,0,g);box(.14,.04,.68,wd,x,.74,0,g)});
@@ -1700,7 +1761,7 @@ doors.forEach(d=>{const tg=d.open?1.45*d.dir:0;if(d.sp&&(Math.abs(tg-d.pv.rotati
  // a door closing on you (E in the doorway, a slam) stays passable until you step clear, so it can never lock you inside its slab
  if(!sw&&d.solid.off&&d.solid.x0!==undefined&&!seated){d.solid.off=false;if(ov(d.solid,cam.position.x,cam.position.z,R)&&d.solid.y1>fy+.36&&d.solid.y0<fy+PH())d.solid.off=true}else d.solid.off=sw});
 {const o=noteOpen||CARE.busy()||(window.__mp&&(__mp.ghost||__mp.demon))?null:seated?{label:'Stand up'}:(document.pointerLockElement||window.__touchMode||window.__noLock)?(target()||CARE.free()):null;hint.hidden=!o;if(o)hint.textContent='[E] '+o.label}
-CARE.update(dt,t);atmos(dt,t);VFX.update(dt,t);SND.update(dt,t);BSM.update(dt,t);HUNT.update(dt);try{MUS.update(dt)}catch(e){console.error(e)}CARE.post(dt);TRAP.update(dt);RLM.update(dt);if(!TRAP.on&&!RLM.on)DEMON.update(dt);DEMON.pre();CARE.render();DEMON.post();try{window.__xt&&__xt.update(dt)}catch(e){if(__loopErr++<20)console.error('[Hush] ext error:',e)}requestAnimationFrame(loop)}
+CARE.update(dt,t);atmos(dt,t);VFX.update(dt,t);SND.update(dt,t);BSM.update(dt,t);HUNT.update(dt);try{MUS.update(dt)}catch(e){console.error(e)}CARE.post(dt);TRAP.update(dt);RLM.update(dt);if(!TRAP.on&&!RLM.on)DEMON.update(dt);DEMON.pre();try{GAR.update(dt,t)}catch(e){if(__loopErr++<20)console.error('[Hush] garage:',e)}CARE.render();DEMON.post();try{window.__xt&&__xt.update(dt)}catch(e){if(__loopErr++<20)console.error('[Hush] ext error:',e)}requestAnimationFrame(loop)}
 // ===== title screen: the parents' note on the dining table by candlelight; the menu is written on the note =====
 const TITLE=(function(){const el=document.getElementById('title'),setEl=document.getElementById('tset');
  const sc=new THREE.Scene();sc.background=new THREE.Color(0x020203);sc.fog=new THREE.FogExp2(0x020203,.35);
