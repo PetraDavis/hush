@@ -1330,7 +1330,7 @@ function post(dt){flicker(dt||1/60);const dk=fx.dark;if(fx.early>.005)fxEl.style
 return{update,render,post,warp,busy,free,jump(){if(window.__mp&&__mp.demon)return;if((window.__mp&&__mp.active)&&!__mp.host){try{__mp.send({t:'jump'})}catch(e){}return}noise=Math.min(1,noise+.015);const bp=babyPos();if(asleep&&Math.hypot(cam.position.x-bp.x,cam.position.z-bp.z)<3.5&&Math.random()<.3)wake('Your footsteps woke her.')},lullaby(v){lull=v},
  skip(sec){const st=20;let cried=0;for(let k=0;k<sec;k+=st){N.hunger+=st*RATE.hunger*(asleep?.35:1);N.diaper+=st*RATE.diaper*(asleep?.4:1);if(asleep){napT-=st;if(napT<=0){asleep=false;N.sleepy=0}}else{N.sleepy+=st*RATE.sleepy;N.bored+=st*RATE.bored*(carrying?.5:1);if(top()[1]>CRY_AT-.1)cried+=st}if(N.burp>0)N.burp+=st/90;for(const q in N)N[q]=Math.min(1,N[q])}
   eyes2.forEach(e=>e.scale.y=asleep?.15:1);const v=top()[1];if(cried>0||(!asleep&&v>.75)){noise=Math.min(.9,noise+.25+.5*Math.min(1,cried/sec));return cried>sec*.4?'She cried for most of that hour. The house heard every minute of it.':'She fussed while you waited.'}return asleep?'She slept through it.':'The hour passes quietly.'},
- dbg:{RATE,get babyP(){return babyPos()},get calm(){return calm},get sK(){return MAP.k},get fov(){return cam.fov},carry(){carrying=true;inArms()},N,stats,fx,EV,EVENTS,get noise(){return noise},set noise(v){noise=v},get carrying(){return carrying},get inSeat(){return inSeat},SEAT,get asleep(){return asleep},set asleep(v){asleep=v},get bottle(){return bottleS},set bottle(v){bottleS=v},anim:{feed:()=>feedAnim(()=>{}),burp:()=>burpAnim(()=>{}),play:()=>playAnim(()=>{stats.plays++}),diaper:()=>diaperAnim(()=>{})},get busy(){return !!act},forceIdle(){act=null;progEl.hidden=true;resetAnim();if(carrying)inArms();else if(inSeat)toSeat();else inCrib()},rockStart(){if(!asleep){N.sleepy=Math.max(N.sleepy,.35);subtitle(lull?'You rock her gently while the music box plays.':'You rock her gently. (The music box helps.)',3000)}},get warm(){return warmS},mp:{get carrying(){return carrying},set carrying(v){carrying=v},get inSeat(){return inSeat},set inSeat(v){inSeat=v},get seatAt(){return seatAt},set seatAt(v){if(SEATS[v]){seatAt=v;SEAT.x=SEATS[v].x;SEAT.z=SEATS[v].z}},inCrib,inArms,toSeat,bb,endEvent,get napT(){return napT},set napT(v){napT=v},get warmT(){return warmT},set warmT(v){warmT=v},get warmS(){return warmS},set warmS(v){if(v===warmS)return;warmS=v;warmLed.material.color.setHex(v===1?0xff3018:v===2?0x30ff60:0x301010)},get lull(){return lull},get act(){return act},scream,inGlider,inNursery,get dread(){return dread},set dread(v){dread=v},EV,EVENTS},startEvent,drips,pics,seep,skipWarm(){warmT=0}}}})();
+ dbg:{RATE,bb,eyes2,mouth,set eyeO(v){eyeO=v},get babyP(){return babyPos()},get calm(){return calm},get sK(){return MAP.k},get fov(){return cam.fov},carry(){carrying=true;inArms()},N,stats,fx,EV,EVENTS,get noise(){return noise},set noise(v){noise=v},get carrying(){return carrying},get inSeat(){return inSeat},SEAT,get asleep(){return asleep},set asleep(v){asleep=v},get bottle(){return bottleS},set bottle(v){bottleS=v},anim:{feed:()=>feedAnim(()=>{}),burp:()=>burpAnim(()=>{}),play:()=>playAnim(()=>{stats.plays++}),diaper:()=>diaperAnim(()=>{})},get busy(){return !!act},forceIdle(){act=null;progEl.hidden=true;resetAnim();if(carrying)inArms();else if(inSeat)toSeat();else inCrib()},rockStart(){if(!asleep){N.sleepy=Math.max(N.sleepy,.35);subtitle(lull?'You rock her gently while the music box plays.':'You rock her gently. (The music box helps.)',3000)}},get warm(){return warmS},mp:{get carrying(){return carrying},set carrying(v){carrying=v},get inSeat(){return inSeat},set inSeat(v){inSeat=v},get seatAt(){return seatAt},set seatAt(v){if(SEATS[v]){seatAt=v;SEAT.x=SEATS[v].x;SEAT.z=SEATS[v].z}},inCrib,inArms,toSeat,bb,endEvent,get napT(){return napT},set napT(v){napT=v},get warmT(){return warmT},set warmT(v){warmT=v},get warmS(){return warmS},set warmS(v){if(v===warmS)return;warmS=v;warmLed.material.color.setHex(v===1?0xff3018:v===2?0x30ff60:0x301010)},get lull(){return lull},get act(){return act},scream,inGlider,inNursery,get dread(){return dread},set dread(v){dread=v},EV,EVENTS},startEvent,drips,pics,seep,skipWarm(){warmT=0}}}})();
 window.__care=CARE.dbg;
 // ===== the demon: a snake demon (masked human torso on a serpent tail). Brief glimpses before 9 PM, real scares after 9 PM / the basement; more often the louder she is =====
 const DEMON=(function(){const C=CARE.dbg,pics=C.pics,g=new THREE.Group();g.visible=false;scene.add(g);
@@ -2148,9 +2148,9 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 })();
 // ---------- 7. endings, exit cutscenes, credits ----------
 (function(){const XT=window.__xt;
- const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted',joyride:'Joyride'},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride'];
+ const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted',joyride:'Joyride',pacifier:'Pacifier'},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier'];
  // v79: one line under every ending card's title (Petra)
- const DESC={parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back.",joyride:"You found the keys, pulled off the sheet and drove. You never checked the back seat."};
+ const DESC={parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back.",joyride:"You stole their car. Honestly? Fair.",pacifier:"It worked. She hasn't made a sound since. She hasn't blinked, either."};
  const got=()=>{try{const a=JSON.parse(XT.ls.get('hushEndings')||'[]');return Array.isArray(a)?a.filter(k=>NAMES[k]):[]}catch(e){return[]}};
  XT.endInfo=()=>({order:ORDER.slice(),names:NAMES,desc:DESC,got:got()});
  const css=document.createElement('style');css.textContent=`#xfade{position:fixed;inset:0;z-index:8;background:#000;opacity:0;pointer-events:none;transition:opacity 1.2s;display:flex;align-items:center;justify-content:center;padding:0 16px;text-align:center;font-family:var(--display);font-style:italic;font-size:1.6rem;color:#d8cfc4}#xfade.on{opacity:1}
@@ -2179,7 +2179,8 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   left:["You Left","You walk away down Larch Road and you do not look back. Behind you a light comes on in the nursery window. You never find out who turned it on."],
   collapse:["The House Collapsed","The doors bang, and bang, and the old house finally gives up: beams, plaster, the chandelier. In the morning the firemen find the crib under it all, untouched, and empty."],
   abstracted:["Abstracted.","The black came in from the edges, and the eyes came with it: too many, all the wrong colours, all of them looking for you. Somewhere very far away a baby is crying. You can't remember which way is up."],
-  joyride:["Joyride.","The car knows the way. It takes you past your turn, past the edge of town, down a road that is not on any map, and the woman in the red robe in the back seat hums along with the radio. Every few years the Order of the Low Door needs a new driver. They were never short of sitters."],
+  joyride:["Joyride.","You drive off down Larch Road with the windows down and the radio on. The tank is full, the seats are heated, and nobody is in the car but you. You are not getting paid for tonight, but you figure this about covers it."],
+  pacifier:["Pacifier.","She never cries again. Not that night, and not in the morning, when her parents lift her out of the crib with delighted, shaking hands. She breathes slow and easy around the little bone pacifier, warm and perfectly well, and she watches. Whoever is in the room, wherever they stand, her eyes find them and stay. The Order of the Low Door carved it for the quiet ones. Something under the house has stopped waiting to be let out. It is already looking."],
   cult:["Welcome home.","They wrap you in the third robe. It fits. The Order of the Low Door has a new sister, and the Deep has its gift, and nobody ever asks the sitter's name again."]};
  function showCard(id,extra){const [h,p]=TXT[id];const g=got();if(document.pointerLockElement)document.exitPointerLock();
   card.innerHTML='<div class="in"><p class="brand">HUSH</p><p class="tag">Ending '+(ORDER.indexOf(id)+1)+' of '+ORDER.length+' &middot; '+NAMES[id]+'</p><h1>'+(extra&&extra.h&&id==='death'?extra.h:h)+'</h1><p class="desc">'+(DESC[id]||'')+'</p><p class="txt">'+(extra&&extra.p&&id==='death'?extra.p+' ':'')+p+'</p>'+
@@ -2200,7 +2201,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  // helpers for the cut scenes
  const say=(L,t,st)=>{while(st.i<L.length&&t>=L[st.i][0]){const [,k,txt,d]=L[st.i];subtitle(txt,d*1000);if(k&&XT.voice)XT.voice(txt.replace(/\(.*?\)/g,''),k,d*.85,.4);st.i++}};
  const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
- const CUT={car:()=>null,left:()=>null,collapse:()=>null,joyride:()=>XT.joyCut?XT.joyCut():null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
+ const CUT={car:()=>null,left:()=>null,collapse:()=>null,joyride:()=>XT.joyCut?XT.joyCut():null,pacifier:()=>null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
   parents(){if(window.__rlm&&__rlm.on)return null;const {mom,dad}=XT.props;mom.visible=dad.visible=true;subtitle('',1);
    const L=[[2.6,'mom',"We're home! Oh... you're still here.",2.6],[5.6,'mom',"She was so quiet. Wasn't she quiet? We could hear how quiet she was.",3.6],[9.6,'dad',"Thank you. We'll take it from here.",2.6],[12.6,null,"(Their smiles are much too wide. Neither of them blinks.)",3]],st={i:0};
    fadeTo(false);
@@ -3530,7 +3531,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function noise(dur,vol,fr){if(!AC||!master)return;const n=AC.sampleRate*dur,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=fr||300;g.gain.value=vol;s.connect(f);f.connect(g);g.connect(master);s.start()}
  // the end of it: single-player gets the ending; in multiplayer only you die (and the ending is still counted)
  let over=false;
- function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You took their car, and you did not check the back seat.']}[id];
+ function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You stole their car. Nobody is coming after you.'],pacifier:['She is quiet now.','She has not looked away from you once.']}[id];
   window.__noMove=0;if(window.__mp&&__mp.active){safe(()=>XT.markEnding(id),'mark');safe(()=>__mp.die(T[0],T[1]),'die');flash('#000',0,900);over=false;return}
   XT.ending(id);setTimeout(()=>flash('#000',0,10),400)}
  OUT.finish=finish;OUT.park=()=>{T.on=false;T.armed=false;car.visible=false;if(beam)beam.intensity=0;if(eng)eng.g.gain.value=0};
@@ -4460,6 +4461,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   {id:'collapse',n:'The House Collapsed',d:'Find the ending in the doors.',h:1},
   {id:'abstracted',n:'Abstracted',d:'Press the rabbit.',h:1},
   {id:'joyride',n:'Joyride',d:'Find the ending in the garage.',h:1},
+  {id:'pacifier',n:'Pacifier',d:'Find the ending on the garage shelves.',h:1},
   {id:'poison',n:'Poison Taster',d:'Taste the unlabeled bottle in the bathroom cabinet.',h:1},
   {id:'hairpin',n:"Jinshi's Gift",d:'Find the gold hairpin hidden outside.'}];
  const ls={get(){try{return JSON.parse(localStorage.getItem('hushAch')||'{}')||{}}catch(e){return{}}},set(v){try{localStorage.setItem('hushAch',JSON.stringify(v))}catch(e){}}};
@@ -4503,7 +4505,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   if(mp&&mp.active&&mp.started&&safe(()=>mp.dbg.roster().length,'n')>=4)unlock('four')},'watch'),250);
  const oe=XT.ending;
  XT.ending=function(id,extra){const r=oe.apply(this,arguments);
-  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride'].includes(id))unlock(id);
+  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier'].includes(id))unlock(id);
    const won=id==='parents'||id==='dawn'||id==='secret';
    if(won){unlock('night1');if((XT.night||1)>=3)unlock('night3');if(XT.diffKey&&XT.diffKey()==='nightmare')unlock('nightmare');if(!run.hid)unlock('nohide');if(!run.cried)unlock('nocry');
     if(window.__mp&&__mp.active)unlock('together')}
@@ -4568,7 +4570,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  [.4,-.4].forEach(x=>{box(.5,.12,.5,seatM,x,.92,.0,car);box(.5,.55,.1,seatM,x,1.15,-.27,car)});box(1.4,.12,.5,seatM,0,.92,-1.0,car);box(1.4,.5,.1,seatM,0,1.13,-1.28,car);
  const heap=new THREE.Group();[[0,.05,0,.9,.1,.7,.2],[.25,.12,.15,.5,.1,.4,-.4],[-.2,.1,-.2,.6,.12,.5,.9]].forEach(([x,y,z,w,h,d,r])=>{const b=box(w,h,d,M(0xb8b2a4),x,y,z,heap);b.rotation.y=r});heap.visible=false;XT.place(heap,-9.3,F,-1.3);
  const ci=car.children.find(c=>c.userData&&c.userData.i).userData.i,carAct=ci.act;
- function pullSheet(){S.sheet=false;shM.forEach(m=>m.visible=false);heap.visible=true;safe(()=>noise2(),'n');subtitle('You drag the dust sheet off. Underneath, the paint is perfect, and the back seat has been lined with red cloth.',4600)}
+ function pullSheet(){S.sheet=false;shM.forEach(m=>m.visible=false);heap.visible=true;safe(()=>noise2(),'n');subtitle('You drag the dust sheet off. Underneath, the paint is perfect. It is a much nicer car than yours.',4600)}
  function noise2(){if(!AC||!master)return;const n=AC.sampleRate*.7|0,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.sin(Math.PI*i/n);const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=1800;g.gain.value=.25;s.connect(f);f.connect(g);g.connect(master);s.start()}
  const myAct=()=>{if(S.sheet){pullSheet();return}carAct()};ci.act=myAct;
  const door=new THREE.Mesh(new THREE.BoxGeometry(.3,1.5,1.5),hitM);door.position.set(1.0,1.2,.2);car.add(door);
@@ -4591,15 +4593,14 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  function pathAt(s){if(s<ZT-Z0)return{x:X0,z:Z0+s,r:0};s-=ZT-Z0;if(s<A){const a=s/RT;return{x:CX-RT*Math.cos(a),z:ZT+RT*Math.sin(a),r:a}}s-=A;return{x:CX+s,z:ZT+RT,r:Math.PI/2}}
  const V3=THREE.Vector3;
  function look(x,y,z){const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)}
- XT.joyCut=function(){const rider=XT.person(0x4a0a10,0x5a2a14,.85);rider.userData.L.forEach(p=>p.rotation.x=-Math.PI/2);rider.userData.A.forEach(p=>p.rotation.x=-.5);
-  scene.remove(rider);car.add(rider);rider.position.set(-.32,.5-.86,-1.25);rider.rotation.set(0,0,0);rider.visible=false;
+ XT.joyCut=function(){/* v94: nobody in the back seat any more, just a stolen car */
   const P0={x:car.position.x,z:car.position.z,r:car.rotation.y};const st={i:0};let s=0,v=0;DG.force=true;engineStart();
   // headlights, so the driveway and the road read at night (the cut scene drives the gate itself: ordinary updates are paused)
   const beams=[-.6,.6].map(x=>{const sp=new THREE.SpotLight(0xfff0c8,2.2,46,.42,.5,1.3);sp.position.set(x,.72,2.1);sp.target.position.set(x,.1,16);car.add(sp);car.add(sp.target);return sp});
   const lamps=[-.6,.6].map(x=>box(.3,.13,.03,new THREE.MeshBasicMaterial({color:0xfff2d0}),x,.66,2.12,car));
   const glow=new THREE.PointLight(0xffe6b0,.5,7,2);glow.position.set(0,.9,2.2);car.add(glow);
   const lines=[[.6,null,'(The key turns. The engine catches at once, as if it has been waiting for you.)',3.4],[4.4,null,'(Down the driveway, through the gate, out onto Larch Road. Nobody comes after you.)',3.6],
-   [9.4,null,'(The rear-view mirror is still turned toward the house. You reach up to fix it.)',3],[12.6,'mom',"Left at the end of the road, dear. It knows the way.",3.2],[16,null,'(She has been sitting in the back the whole time.)',2.6]];
+   [9.4,null,'(The tank is full. The radio still works. Nobody is in the car but you.)',3.2],[13,null,'(You are not going back for your jacket.)',3]];
   const fadeEl=document.getElementById('xfade');
   return{step(dt,t){
     // speed: idle, pull out, slow through the gate and the turn, then away
@@ -4610,15 +4611,63 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
     const inside=t<3.4||t>9.2;
     if(inside){const e=car.localToWorld(new V3(.42,1.14,-.34));cam.position.copy(e);
       let f=car.localToWorld(new V3(.42,1.22,7));
-      if(t>13){const k=sm((t-13)/1.2)-sm((t-15.6)/1);const b=car.localToWorld(new V3(-.3,1.2,-1.0));f=new V3().lerpVectors(f,b,k)}
       look(f.x,f.y,f.z)}
     else{cam.position.set(-4.2,F+1.55,24.4);look(car.position.x,F+.9,car.position.z)}
-    if(t>11.5)rider.visible=true;
     while(st.i<lines.length&&t>=lines[st.i][0]){const [,k,txt,d]=lines[st.i];subtitle(txt,d*1000);if(k&&XT.voice)safe(()=>XT.voice(txt,k,d*.85,.4),'voice');st.i++}
     if(t>17.2&&fadeEl&&!fadeEl.classList.contains('on')){fadeEl.hidden=false;fadeEl.textContent='';requestAnimationFrame(()=>fadeEl.classList.add('on'))}
     return t>18.6},
-   end(){engineStop();rider.visible=false;car.remove(rider);beams.forEach(b=>{car.remove(b);car.remove(b.target)});lamps.forEach(m=>car.remove(m));car.remove(glow);LA.rotation.y=LB.rotation.y=0;DG.force=false;car.position.set(P0.x,F,P0.z);car.rotation.y=P0.r;car.visible=false}}};
+   end(){engineStop();beams.forEach(b=>{car.remove(b);car.remove(b.target)});lamps.forEach(m=>car.remove(m));car.remove(glow);LA.rotation.y=LB.rotation.y=0;DG.force=false;car.position.set(P0.x,F,P0.z);car.rotation.y=P0.r;car.visible=false}}};
  XT.joy=S;
+})();
+</script>
+<script type="text/x-hush">
+// ===== v94: Pacifier ending (no hints anywhere). A carved bone pacifier in a small black box on the garage shelves; given to her in the crib, she goes silent and stares. =====
+(function(){'use strict';const XT=window.__xt,OUT=window.__out,C=window.__care;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush pacifier] '+(t||''),e)}};
+ if(!XT||!OUT||!C||!C.bb)return;const bb=C.bb,eyes2=C.eyes2,mouth=C.mouth,N=C.N;
+ const S={has:false,used:false};
+ // the box: black wood, a spiral carved into the lid, wedged on the floor between the padlocked freezer and the stacked boxes
+ const bx=new THREE.Group(),bw=M(0x141012);box(.34,.14,.26,bw,0,.07,0,bx);box(.36,.025,.28,M(0x1e1618),0,.15,0,bx);
+ {const sp=new THREE.Mesh(new THREE.RingGeometry(.03,.045,18,1,0,Math.PI*1.6),new THREE.MeshBasicMaterial({color:0x6a5a48,side:THREE.DoubleSide}));sp.rotation.x=-Math.PI/2;sp.position.y=.165;bx.add(sp);
+  const sp2=new THREE.Mesh(new THREE.RingGeometry(.012,.02,14,1,0,Math.PI*1.5),sp.material);sp2.rotation.x=-Math.PI/2;sp2.position.y=.166;bx.add(sp2)}
+ XT.place(bx,-5.35,F,-1.9);bx.rotation.y=.2;
+ const bh=new THREE.Mesh(new THREE.BoxGeometry(.5,.4,.3),hitM);XT.place(bh,-5.35,F+.15,-1.9);
+ function chime(f,g,d){safe(()=>{if(!AC||!master)return;const o=AC.createOscillator(),gg=AC.createGain(),t=AC.currentTime;o.type='sine';o.frequency.value=f;gg.gain.setValueAtTime(g,t);gg.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(gg);gg.connect(master);o.start(t);o.stop(t+d+.05)},'pchime')}
+ function take(){if(S.has||S.used)return;S.has=true;const i=inter.indexOf(bh);if(i>=0)inter.splice(i,1);
+  subtitle('Wedged between the freezer and the boxes: a small black box with a spiral carved into the lid. Inside, on red felt: a pacifier carved from old yellow bone. It hums, very faintly, when you hold it.',5200);chime(55,.05,1.6)}
+ addInter(bh,'Small black box',()=>{if(S.has||S.used)return;take()});
+ // the baby's eyes: white with dark pupils that follow you (added only when she takes it)
+ const eW=new THREE.MeshBasicMaterial({color:0xf4f0e8}),eP=new THREE.MeshBasicMaterial({color:0x080606});
+ let whites=null,pups=null,pac=null;
+ function build(){if(whites)return;whites=eyes2.map(e=>{const w=sph(.017,eW,0,0,0);bb.remove(w);scene.remove(w);w.position.copy(e.position);w.position.x-=.002;bb.add(w);return w});
+  pups=eyes2.map(e=>{const p=sph(.009,eP,0,0,0);scene.remove(p);bb.add(p);return p});
+  pac=new THREE.Group();const bone=M(0xd8ccaa);// a small bone teat and a narrow ring handle below the lips
+  const tt=sph(.008,bone,0,0,0);scene.remove(tt);pac.add(tt);const r=new THREE.Mesh(new THREE.TorusGeometry(.014,.003,6,14),bone);r.position.set(0,-.02,0);pac.add(r);
+  pac.position.set(-.322,-.016,0);pac.rotation.y=Math.PI/2;bb.add(pac)}
+ function unbuild(){if(!whites)return;whites.concat(pups).forEach(m=>bb.remove(m));bb.remove(pac);whites=pups=pac=null}
+ const inCribNow=()=>!C.carrying&&!C.inSeat&&bb.parent===scene&&Math.hypot(bb.position.x-crib.x,bb.position.z-crib.z)<.8;
+ const can=()=>S.has&&!S.used&&XT.live()&&!(window.__mp&&(__mp.ghost||__mp.demon||(__mp.active&&__mp.heldByOther()))) &&!(window.__rlm&&__rlm.on)&&inCribNow();
+ // hook the crib: while you carry the pacifier and she is lying in the crib, E gives it to her
+ const cm=inter.find(m=>m.position&&m.position.x===crib.x&&m.position.y===.85&&m.position.z===crib.z&&m.userData.i);
+ if(cm){const o=cm.userData.i;cm.userData.i={get label(){return can()?'Give her the pacifier':o.label},act(){if(can()){give();return}o.act()}}}
+ let hum=null,stare=0,duck=null;
+ function give(){S.used=true;S.has=false;build();window.__pacStare=1;stare=.001;
+  for(const k in N)N[k]=0;C.noise=0;C.asleep=false;C.eyeO=1;
+  subtitle('You touch the pacifier to her lips. She takes it at once. The crying stops in the middle of a breath.',4200);
+  setTimeout(()=>{if(stare)subtitle('(She does not close her eyes. She does not blink. Wherever you move, her eyes are already there.)',4200)},4300);
+  safe(()=>{if(!AC||!master)return;const t=AC.currentTime;duck=master.gain.value;master.gain.cancelScheduledValues(t);master.gain.setValueAtTime(duck,t);master.gain.linearRampToValueAtTime(duck*.15,t+1.2);
+   const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=61;g.gain.value=0;o.connect(g);g.connect(outG||master);o.start();g.gain.setTargetAtTime(.05,t,.6);hum={o,g}},'pduck');
+  setTimeout(endIt,8800)}
+ function endIt(){safe(()=>{if(hum){hum.g.gain.setTargetAtTime(0,AC.currentTime,.3);const h=hum;hum=null;setTimeout(()=>{try{h.o.stop()}catch(e){}},1500)}if(duck!=null&&AC&&master){master.gain.cancelScheduledValues(AC.currentTime);master.gain.setValueAtTime(duck,AC.currentTime);duck=null}},'pundo');
+  stare=0;window.__pacStare=0;
+  if(window.__mp&&__mp.active){window.__noMove=1;const fx=document.getElementById('outFx');if(fx){fx.style.transition='opacity 1.6s';fx.style.background='#000';fx.style.opacity=1}setTimeout(()=>{safe(()=>OUT.finish('pacifier'),'pfin');setTimeout(unbuild,1200)},1800);return}
+  OUT.finish('pacifier')}
+ const V3=new THREE.Vector3();
+ XT.onUpdate(dt=>{if(!stare)return;stare+=dt;
+  for(const k in N)N[k]=0;C.noise=0;C.asleep=false;C.eyeO=1;eyes2.forEach(e=>{e.scale.y=1});mouth.scale.set(.35,.3,1);
+  // pupils follow the camera
+  if(pups){bb.updateMatrixWorld(true);V3.copy(cam.position);bb.worldToLocal(V3);pups.forEach((p,i)=>{const w=whites[i].position,d=V3.clone().sub(w).normalize();p.position.copy(w).addScaledVector(d,.011)})}});
+ XT.parts.pacifier={save:()=>({h:S.has?1:0,u:S.used?1:0}),load:v=>{if(!v)return;if((v.h||v.u)&&!S.has&&!S.used){S.has=!!v.h;S.used=!!v.u;const i=inter.indexOf(bh);if(i>=0)inter.splice(i,1)}}};
+ XT.pac={S,give,can,inCribNow,hooked:!!cm,get lbl(){return cm&&cm.userData.i.label}};
 })();
 </script>
 
@@ -5292,6 +5341,9 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    [0,.9,1.7,2.4].forEach((x,i)=>{noise(t+x,.7,600+i*700,.06,1.5);V(t+x+.2,{f:300+i*260},.4,{w:'sine',g:.02,to:70+i*3})});
    [[3.2,[57,60,64]],[4.8,[53,57,60]],[6.4,[50,53,57]],[8,[52,56,59]]].forEach(([x,c])=>{c.forEach(m=>V(t+x,m,1.5,{w:'triangle',g:.03,a:.2,f:1100,det:[-10,10],vib:4,vd:.01,sus:.85,r:.6}));noise(t+x,1.4,2400,.012,.6)});
    bell(t+9.8,69,2.4,.05);return 12.5},
+  // Pacifier (v94): almost nothing. One faint low hum, a music box that slows and stops, then silence and a single soft tick
+  pacifier(t){V(t,{f:61},9,{w:'sine',g:.03,a:1.2,sus:.9,r:2.5,vib:3,vd:.004});V(t,{f:91.5},9,{w:'sine',g:.012,a:1.6,sus:.9,r:2.5});
+   [[.6,79],[1.3,76],[2.1,72],[3.1,74],[4.4,71],[6.2,67]].forEach(([x,m])=>bell(t+x,m,1.4,.035));bell(t+9.2,96,.4,.02);return 10.5},
   // Family: an organ hymn and a wordless choir in A minor, a little too warm (i - VI - iv - V - i)
   cult(t){const C=[[45,57,60,64],[41,57,60,65],[38,57,62,65],[40,56,59,64],[45,57,60,64]];C.forEach((c,i)=>{choir(t+i*2.2,c.slice(1),2.4,.035);V(t+i*2.2,c[0],2.3,{w:'sine',g:.07,a:.2,r:.6,sus:.9});c.forEach(m=>V(t+i*2.2,m+12,2.2,{w:'square',g:.008,a:.15,f:900,sus:.9}))});
    [[0,76],[1.1,74],[2.2,72],[3.3,72],[4.4,74],[5.5,71],[6.6,71],[7.7,69],[8.8,69]].forEach(([x,m])=>bell(t+x,m,1,.04));return 12.5}};
@@ -5395,8 +5447,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   left(q,W,H){q.fillStyle='#0a0c14';q.fillRect(0,0,W,H);q.fillStyle='#1c1c22';q.beginPath();q.moveTo(W*.42,H*.35);q.lineTo(W*.58,H*.35);q.lineTo(W,H);q.lineTo(0,H);q.fill();q.fillStyle='#14121a';q.fillRect(W*.47,H*.55,14,34);q.beginPath();q.arc(W*.47+7,H*.52,7,0,7);q.fill();q.fillStyle='#2a2630';q.fillRect(W*.04,H*.1,60,50);q.fillStyle='#f0c070';q.fillRect(W*.04+22,H*.1+16,16,14)},
   collapse(q,W,H){q.fillStyle='#0e0c0c';q.fillRect(0,0,W,H);q.fillStyle='#3a3230';q.beginPath();q.moveTo(W*.15,H*.9);q.lineTo(W*.3,H*.5);q.lineTo(W*.45,H*.62);q.lineTo(W*.6,H*.38);q.lineTo(W*.72,H*.58);q.lineTo(W*.85,H*.9);q.fill();q.strokeStyle='#6a5a50';q.lineWidth=5;[[.2,.7,.5,.45],[.55,.8,.8,.5],[.35,.85,.65,.6]].forEach(([a,b,c,d])=>{q.beginPath();q.moveTo(W*a,H*b);q.lineTo(W*c,H*d);q.stroke()});q.fillStyle='rgba(180,170,160,.25)';for(let i=0;i<30;i++){q.beginPath();q.arc((i*53)%W,H*.4+((i*29)%60),3+(i%4),0,7);q.fill()}},
   joyride(q,W,H){q.fillStyle='#07070b';q.fillRect(0,0,W,H);q.fillStyle='#16151b';q.beginPath();q.moveTo(W*.46,H*.42);q.lineTo(W*.54,H*.42);q.lineTo(W*.9,H);q.lineTo(W*.1,H);q.fill();const g=q.createRadialGradient(W*.5,H*.62,4,W*.5,H*.62,120);g.addColorStop(0,'rgba(255,240,190,.55)');g.addColorStop(1,'rgba(255,240,190,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
-   q.fillStyle='#0c0b0e';q.fillRect(0,0,W,H*.16);q.fillRect(0,H*.8,W,H*.2);q.fillStyle='#1c1a20';q.fillRect(W*.34,H*.05,W*.32,H*.16);q.fillStyle='#2a1012';q.fillRect(W*.37,H*.07,W*.26,H*.12);q.fillStyle='#8a1418';q.beginPath();q.arc(W*.5,H*.2,12,Math.PI,0);q.fill();q.fillStyle='#e8dcc8';[-4,4].forEach(k=>q.fillRect(W*.5+k-1,H*.14,2,2));
+   q.fillStyle='#0c0b0e';q.fillRect(0,0,W,H*.16);q.fillRect(0,H*.8,W,H*.2);q.fillStyle='#1c1a20';q.fillRect(W*.34,H*.05,W*.32,H*.16);q.fillStyle='#141a26';q.fillRect(W*.37,H*.07,W*.26,H*.12);q.fillStyle='#07080c';q.fillRect(W*.46,H*.12,W*.08,H*.07);q.beginPath();q.moveTo(W*.45,H*.12);q.lineTo(W*.5,H*.085);q.lineTo(W*.55,H*.12);q.fill();q.fillStyle='#f0c070';q.fillRect(W*.485,H*.14,4,4);
    q.strokeStyle='#2a2830';q.lineWidth=7;q.beginPath();q.arc(W*.3,H*.98,40,Math.PI*1.1,Math.PI*1.9);q.stroke()},
+  pacifier(q,W,H){q.fillStyle='#08070a';q.fillRect(0,0,W,H);for(let i=0;i<9;i++){q.fillStyle='#15121a';q.fillRect(30+i*30,0,6,H)}q.fillStyle='#e8dccc';q.beginPath();q.ellipse(W*.5,H*.62,74,62,0,0,7);q.fill();
+   [-1,1].forEach(k=>{q.fillStyle='#fbf8f2';q.beginPath();q.ellipse(W*.5+k*28,H*.52,17,13,0,0,7);q.fill();q.fillStyle='#120e10';q.beginPath();q.arc(W*.5+k*28+5,H*.52,8,0,7);q.fill();q.fillStyle='#fff';q.beginPath();q.arc(W*.5+k*28+8,H*.49,2,0,7);q.fill()});
+   q.fillStyle='#cfc2a0';q.beginPath();q.ellipse(W*.5,H*.8,20,13,0,0,7);q.fill();q.strokeStyle='#3a2a20';q.lineWidth=1.6;q.beginPath();for(let a=0;a<14;a+=.2){const r=1+a*.75;q.lineTo(W*.5+Math.cos(a)*r,H*.8+Math.sin(a)*r*.6)}q.stroke()},
   abstracted(q,W,H){q.fillStyle='#060408';q.fillRect(0,0,W,H);const C=['#ff3fa4','#29d7ff','#7cff4a','#ff8a1f','#b66bff','#ffe23a'];for(let i=0;i<9;i++){const x=30+((i*97)%260),y=30+((i*61)%140),r=12+(i%3)*6;q.fillStyle='#fbf6ee';q.beginPath();q.ellipse(x,y,r,r*.7,0,0,7);q.fill();q.fillStyle=C[i%6];q.beginPath();q.arc(x+(i%2?3:-3),y,r*.45,0,7);q.fill();q.fillStyle='#000';q.beginPath();q.arc(x+(i%2?3:-3),y,r*.2,0,7);q.fill()}}};
  const LOCKD=(q,W,H)=>{q.fillStyle='#0c0a0e';q.fillRect(0,0,W,H);q.fillStyle='#2a2430';q.font='bold 46px Georgia';q.textAlign='center';q.textBaseline='middle';q.fillText('?',W/2,H/2);q.textAlign='left';q.textBaseline='alphabetic'};
  const t=document.getElementById('title');const b=document.createElement('button');b.id='galB';b.type='button';t.appendChild(b);
