@@ -6159,9 +6159,9 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // HAT v97 (Petra): a black magician's top hat, free by default. Full size it is measured from what is already on the head (hair, cap, headband):
  // every vertex above the brim line widens the crown (up to a limit, kept small and narrow: Petra v97 'make it smaller', 'less wide'; wide hair shows under the brim)
  // and raises its floor, so it fits over every hairstyle, buns and spikes included.
- // look.ths = size 40..100 (% of that full hat, slider in Customize); look.thp = position: 0 on top (centred), 1 on the side (left side of the head, tilted 20 degrees).
+ // look.ths = size 40..100 (% of that full hat, slider in Customize); look.thp = position: 0 on top (centred), 1 on the side (the model's right, +x, which is the viewer's left when facing the model; tilted 20 degrees. Petra 01:37).
  // Smaller hats are the same hat scaled down, seated by rays cast at the head from outside: on top, rays straight down around the crown's footprint
- // (it rests on the highest hair it meets, sunk a little); on the side, one ray in from up-and-left (it rests on the hair there, sunk a little so it looks clipped in).
+ // (it rests on the highest hair it meets, sunk a little); on the side, one ray in from up-and-right (it rests on the hair there, sunk a little so it looks clipped in).
  function hatParts(q,r,H,b,lw,bh){const blk=new THREE.MeshPhongMaterial({color:0x121016,shininess:35,specular:0x2c2a34}),sat=new THREE.MeshPhongMaterial({color:0x6e0f1e,shininess:90,specular:0x8a5a62});
   const cr=new THREE.Mesh(new THREE.CylinderGeometry(r*1.04,r,H,28),blk);cr.position.y=H/2;q.add(cr);
   const br=new THREE.Mesh(new THREE.CylinderGeometry(r+b,r+b,lw*1.7,32),blk);br.scale.z=1.08;br.position.y=lw*.85;q.add(br);
@@ -6173,8 +6173,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(m);if(v.y<=y0)continue;const d=Math.hypot(v.x,v.z-.01);if(d<.26){r=Math.max(r,d+.006);top=Math.max(top,v.y)}}});
   r=Math.min(r,.125);top=Math.min(top,.21);const H=Math.max(.15,top-y0+.04),q=new THREE.Group();q.scale.setScalar(s);
   const rc=new THREE.Raycaster(),cast=(from,dir)=>{rc.set(from.clone().applyMatrix4(h.matrixWorld),dir.clone().transformDirection(h.matrixWorld));const x=rc.intersectObjects(ms,false)[0];return x?x.point.clone().applyMatrix4(inv):null};
-  if(side){const a=.6,dL=new THREE.Vector3(-Math.sin(a),Math.cos(a),0),oL=new THREE.Vector3(0,.03,0),hit=cast(oL.clone().addScaledVector(dL,.6),dL.clone().negate());
-   const P=hit||oL.clone().addScaledVector(dL,.15);P.addScaledVector(dL,-(.01+.025*t));q.position.copy(P);q.rotation.set(-.08,0,.35)}
+  if(side){const a=.6,dL=new THREE.Vector3(Math.sin(a),Math.cos(a),0),oL=new THREE.Vector3(0,.03,0),hit=cast(oL.clone().addScaledVector(dL,.6),dL.clone().negate());
+   const P=hit||oL.clone().addScaledVector(dL,.15);P.addScaledVector(dL,-(.01+.025*t));q.position.copy(P);q.rotation.set(-.08,0,-.35)}
   else{const rho=r*s*.75;let hy=-1;[[0,0],[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dz])=>{const x=cast(new THREE.Vector3(dx*rho,.6,.01+dz*rho),new THREE.Vector3(0,-1,0));if(x)hy=Math.max(hy,x.y)});
    q.position.set(0,Math.max(y0,hy-(.012+.06*t)),.01);q.rotation.x=.06}
   h.add(q);hatParts(q,r,H,.032,.007,.03)}
