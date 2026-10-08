@@ -1214,6 +1214,7 @@ function startEvent(e){const r=(a)=>a[0]+Math.random()*(a[1]-a[0]);EV.cur={e,t:0
 function endEvent(broken,pid){const e=EV.cur.e;if(e.end){try{e.end(broken)}catch(x){console.error(x)}}EV.cur=null;EV.next=(70+Math.random()*60)*(18+clockT/HOUR_SEC<24?2.5:1.5)/(.45+creep);if(e.id==='whisper')e.src=null;
  if((window.__mp&&__mp.active)){try{__mp.evEnd(e.id,broken,pid)}catch(x){console.error(x)}if(broken&&pid)return}
  if(broken&&window.__trap&&__trap.start(e))return;
+ if(broken&&e.emerge){try{e.emerge()}catch(x){console.error(x)}}
  if(broken)scream();
  else subtitle(e.endCap||(e.id==='knock'?'(The knocking stops.)':e.id==='steps'?'(The footsteps fade.)':e.id==='whisper'?'(The whispering stops.)':'(The scratching stops.)'),3000)}
 // ---- escalation visuals: bleeding walls, red lights, glitching, demonic pictures, stretching halls ----
@@ -1469,7 +1470,7 @@ const TRAP=(function(){const DM=DEMON.dbg,g=DM.g;let S=null;const deadEl=documen
  function lunge(dd){const f=new THREE.Vector3();cam.getWorldDirection(f);f.y=0;f.normalize();g.visible=true;g.scale.setScalar(1);g.rotation.set(0,0,0);g.position.set(cam.position.x+f.x*dd,cam.position.y-2.25,cam.position.z+f.z*dd);g.lookAt(cam.position.x,g.position.y,cam.position.z)}
  function gameOver(h,p){if((window.__mp&&__mp.active)){try{if(__mp.die(h,p))return}catch(e){console.error(e)}}if(h){deadEl.querySelector('h1').textContent=h;deadEl.querySelector('p').textContent=p||''}window.__dead=true;g.visible=false;try{if(window.__xt&&__xt.ending('death',{h,p}))return}catch(err){console.error(err)}deadEl.hidden=false;if(document.pointerLockElement)document.exitPointerLock();if(AC)setTimeout(()=>AC&&AC.suspend(),1500)}
  document.getElementById('restart').onclick=()=>location.reload();document.getElementById('tbcR').onclick=()=>location.reload();
- return{start,update,gameOver,get cfg(){return S&&{bx:S.P.x,bz:S.P.z,sx:S.sx,sz:S.sz,k:S.K}},get on(){return !!S&&!S.out},get state(){if(!S)return null;const D=doorW();return{K:+S.K.toFixed(2),door:+Math.hypot(cam.position.x-D.x,cam.position.z-D.z).toFixed(2),demon:+S.G.toFixed(2),t:+S.t.toFixed(1),dead:!!S.dead,out:!!S.out,ex:S.ex.bas?'basement':doors.indexOf(S.ex.d)}}}})();
+ return{start,update,gameOver,cancel(){if(!S)return;S=null;g.visible=false},get cfg(){return S&&{bx:S.P.x,bz:S.P.z,sx:S.sx,sz:S.sz,k:S.K}},get on(){return !!S&&!S.out},get state(){if(!S)return null;const D=doorW();return{K:+S.K.toFixed(2),door:+Math.hypot(cam.position.x-D.x,cam.position.z-D.z).toFixed(2),demon:+S.G.toFixed(2),t:+S.t.toFixed(1),dead:!!S.dead,out:!!S.out,ex:S.ex.bas?'basement':doors.indexOf(S.ex.d)}}}})();
 window.__trap=TRAP;
 // ===== the demon realm: a broken, twisted copy of the house floating in red fog, reached through the ritual portal.
 // Follow the crying to the twisted nursery, take her soul from the crib of bones, and carry it back to the portal before it catches you. =====
@@ -2148,9 +2149,10 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 })();
 // ---------- 7. endings, exit cutscenes, credits ----------
 (function(){const XT=window.__xt;
- const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted',joyride:'Joyride',pacifier:'Pacifier',roof:'Jump Off the Roof',phone:'Call the Parents 10 Times',lights:'Lights Party',derby:'Weapon of Choice: Car',bath:'Bath Time',arson:'A Is for Arson',water:'You... burnt.... the water?'},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water'];
+ const FRIEND_NAME='Bottle Buddies';// v97 (Petra): the befriend-the-demon ending's name. Change it here; everything else reads NAMES.friend
+ const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted',joyride:'Joyride',pacifier:'Pacifier',roof:'Jump Off the Roof',phone:'Call the Parents 10 Times',lights:'Lights Party',derby:'Weapon of Choice: Car',bath:'Bath Time',arson:'A Is for Arson',water:'You... burnt.... the water?',friend:FRIEND_NAME},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water','friend'];
  // v79: one line under every ending card's title (Petra)
- const DESC={parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back.",joyride:"You stole their car. Honestly? Fair.",pacifier:"It worked. She hasn't made a sound since. She hasn't blinked, either.",roof:"You fell off a roof and got demoted to baby. The new sitter is very good at her job.",phone:"Ten calls. Nine voicemails. One very short conversation.",lights:"One switch. A hundred flicks. One demon with a migraine.",derby:"You dropped a house on it. Then you ran it over. It was having a bad night.",bath:"Who leaves a bath running? You. You do.",arson:"B is for Babysitter. F is for Fired.",water:"I am sorry but how the <span class=\"redact\" aria-label=\"(redacted)\" style=\"display:inline-block;width:5ch;height:1em;background:#fff;vertical-align:-0.12em\"></span> did you BURN THE WATER!!!!!"};
+ const DESC={parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back.",joyride:"You stole their car. Honestly? Fair.",pacifier:"It worked. She hasn't made a sound since. She hasn't blinked, either.",roof:"You fell off a roof and got demoted to baby. The new sitter is very good at her job.",phone:"Ten calls. Nine voicemails. One very short conversation.",lights:"One switch. A hundred flicks. One demon with a migraine.",derby:"You dropped a house on it. Then you ran it over. It was having a bad night.",bath:"Who leaves a bath running? You. You do.",arson:"B is for Babysitter. F is for Fired.",water:"I am sorry but how the <span class=\"redact\" aria-label=\"(redacted)\" style=\"display:inline-block;width:5ch;height:1em;background:#fff;vertical-align:-0.12em\"></span> did you BURN THE WATER!!!!!",friend:"Turns out it was just hungry."};
  const got=()=>{try{const a=JSON.parse(XT.ls.get('hushEndings')||'[]');return Array.isArray(a)?a.filter(k=>NAMES[k]):[]}catch(e){return[]}};
  XT.endInfo=()=>({order:ORDER.slice(),names:NAMES,desc:DESC,got:got()});
  const css=document.createElement('style');css.textContent=`#xfade{position:fixed;inset:0;z-index:8;background:#000;opacity:0;pointer-events:none;transition:opacity 1.2s;display:flex;align-items:center;justify-content:center;padding:0 16px;text-align:center;font-family:var(--display);font-style:italic;font-size:1.6rem;color:#d8cfc4}#xfade.on{opacity:1}
@@ -2188,10 +2190,11 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   bath:["Bath Time.","You left the bath running. Then the bathroom ran over, then the hallway, then the stairs, which made a surprisingly nice waterfall. The living room has a tide now. Lilith is perfectly fine and perfectly dry, bundled in a towel on the porch with the plumber, who keeps laughing and taking photos. The house is not fine. The house will never be fine again."],
   arson:["A Is for Arson.","It started with the TV remote and ended with the house. The fire department carried you out over one shoulder and Lilith out in the crook of the other arm, wearing a tiny plastic fire helmet, absolutely delighted and not one hair singed. The captain asked who was in charge. You raised your hand. He said, \"You're fired,\" and the whole crew laughed for a full minute. He had been waiting his entire career to say that."],
   water:["You... burnt.... the water?","You poured old motor oil into the bath and tossed in a match, and the water caught fire. Not the house. The water. Four firefighters stood in the bathroom doorway staring at a burning bathtub while one of them, who grew up in Cleveland, nodded like a man who had seen this before. Lilith watched from the hall in a tiny plastic fire helmet, perfectly fine and thrilled about it. The captain told you that you were fired. Then he told you that water is not supposed to do that."],
+  friend:[FRIEND_NAME+".","You held out a baby bottle to the thing from under the floor, and it took it. It drank the whole bottle in one go, burped hard enough to rattle the windows, and spent the rest of the night following you from room to room like a very large, very scaly puppy. Lilith slept through all of it, warm and perfectly fine. At six o'clock her parents found the demon curled up on the nursery rug while you scratched it under the chin. Nobody knew what to say. You still got paid."],
   cult:["Welcome home.","They wrap you in the third robe. It fits. The Order of the Low Door has a new sister, and the Deep has its gift, and nobody ever asks the sitter's name again."]};
  function showCard(id,extra){const [h,p]=TXT[id];const g=got();if(document.pointerLockElement)document.exitPointerLock();
   card.innerHTML='<div class="in"><p class="brand">HUSH</p><p class="tag">Ending '+(ORDER.indexOf(id)+1)+' of '+ORDER.length+' &middot; '+NAMES[id]+'</p><h1>'+(extra&&extra.h&&id==='death'?extra.h:h)+'</h1><p class="desc">'+(DESC[id]||'')+'</p><p class="txt">'+(extra&&extra.p&&id==='death'?extra.p+' ':'')+p+'</p>'+
-   '<div class="roll"><div><b>Created by Petra Davis</b>Thanks to my beta tester, Sloane!<b>Hush</b>A night of babysitting<b>Made with</b>Three.js r128<br>The Web Audio API (every sound is generated)<b>Difficulty</b>'+(XT.diffName?XT.diffName():'Normal')+'<b>Night</b>'+(XT.night||1)+'<b>Notes found</b>'+(XT.notes?XT.notes.found.length:0)+' of '+(XT.notes?XT.notes.avail().length:7)+'<b>Calls answered</b>'+(XT.phone?XT.phone.answered:0)+'<b>Thank you</b>for keeping her quiet.<br>Mostly.</div></div>'+
+   '<div class="roll"><div><b>Created by Petra Davis</b>Thanks to my beta testers, Sloane and Frida!<b>Hush</b>A night of babysitting<b>Made with</b>Three.js r128<br>The Web Audio API (every sound is generated)<b>Difficulty</b>'+(XT.diffName?XT.diffName():'Normal')+'<b>Night</b>'+(XT.night||1)+'<b>Notes found</b>'+(XT.notes?XT.notes.found.length:0)+' of '+(XT.notes?XT.notes.avail().length:7)+'<b>Calls answered</b>'+(XT.phone?XT.phone.answered:0)+'<b>Thank you</b>for keeping her quiet.<br>Mostly.</div></div>'+
    '<p class="found">Endings found '+g.length+'/'+ORDER.length+': '+ORDER.map(k=>g.includes(k)?NAMES[k]:'???').join(' &middot; ')+'</p><button type="button" id="xBack">Back to the title</button></div>';
   card.hidden=false;fade.hidden=true;fade.classList.remove('on');card.querySelector('#xBack').onclick=()=>{try{clearSave()}catch(e){}location.reload()};setTimeout(()=>{try{card.querySelector('#xBack').focus()}catch(e){}},50);if(AC)setTimeout(()=>{try{AC.suspend()}catch(e){}},Math.max(2500,(XT.tuneLeft?XT.tuneLeft():0)*1000+400))}
  // v77: record an ending as found without ending the night (multiplayer: only that player dies)
@@ -2208,7 +2211,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  // helpers for the cut scenes
  const say=(L,t,st)=>{while(st.i<L.length&&t>=L[st.i][0]){const [,k,txt,d]=L[st.i];subtitle(txt,d*1000);if(k&&XT.voice)XT.voice(txt.replace(/\(.*?\)/g,''),k,d*.85,.4);st.i++}};
  const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
- const CUT={car:()=>null,left:()=>null,collapse:()=>null,joyride:()=>XT.joyCut?XT.joyCut():null,pacifier:()=>null,roof:()=>XT.sixCut?XT.sixCut('roof'):null,phone:()=>XT.sixCut?XT.sixCut('phone'):null,lights:()=>XT.sixCut?XT.sixCut('lights'):null,derby:()=>XT.sixCut?XT.sixCut('derby'):null,bath:()=>XT.sixCut?XT.sixCut('bath'):null,arson:()=>XT.sixCut?XT.sixCut('arson'):null,water:()=>XT.waterCut?XT.waterCut():null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
+ const CUT={car:()=>null,left:()=>null,collapse:()=>null,joyride:()=>XT.joyCut?XT.joyCut():null,pacifier:()=>null,roof:()=>XT.sixCut?XT.sixCut('roof'):null,phone:()=>XT.sixCut?XT.sixCut('phone'):null,lights:()=>XT.sixCut?XT.sixCut('lights'):null,derby:()=>XT.sixCut?XT.sixCut('derby'):null,bath:()=>XT.sixCut?XT.sixCut('bath'):null,arson:()=>XT.sixCut?XT.sixCut('arson'):null,water:()=>XT.waterCut?XT.waterCut():null,friend:()=>XT.friendCut?XT.friendCut():null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
   parents(){if(window.__rlm&&__rlm.on)return null;const {mom,dad}=XT.props;mom.visible=dad.visible=true;subtitle('',1);
    const L=[[2.6,'mom',"We're home! Oh... you're still here.",2.6],[5.6,'mom',"She was so quiet. Wasn't she quiet? We could hear how quiet she was.",3.6],[9.6,'dad',"Thank you. We'll take it from here.",2.6],[12.6,null,"(Their smiles are much too wide. Neither of them blinks.)",3]],st={i:0};
    fadeTo(false);
@@ -2337,7 +2340,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  const view=document.createElement('div');view.id='hideV';view.innerHTML='<i></i>';document.body.appendChild(view);const red=view.querySelector('i');
  const bEl=document.createElement('div');bEl.id='breath';bEl.hidden=true;bEl.innerHTML='<span>breath [shift]</span><i><b></b></i>';document.body.appendChild(bEl);const bBar=bEl.querySelector('b'),bTxt=bEl.querySelector('span');
  // --- state ---
- let hid=null,B=1,gasp=0,pant=0,brT=2,S=null,prowl=null,prowlT=260+Math.random()*200,holdPrev=false;
+ let hid=null,B=1,gasp=0,pant=0,brT=2,S=null,prowl=null,prowlT=150+Math.random()*110/* v97 (Petra): searches about 1.75x as often (was 260+rnd*200) */,holdPrev=false;
  const holding=()=>!!hid&&gasp<=0&&B>0&&!!(keys.ShiftLeft||keys.ShiftRight||window.__holdBreath);
  // --- sounds ---
  function pan(x,z,g){const d=Math.hypot(x-cam.position.x,z-cam.position.z),o=AC.createGain();o.gain.value=g/(1+d*d*.12);const p=AC.createStereoPanner?AC.createStereoPanner():null;
@@ -2404,7 +2407,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   // prowling after midnight: something walks the house and you'd better be hidden when it reaches you
   if(!(window.__mp&&__mp.active)&&!S&&!prowl&&XT.hour()>=24&&!TRAP.on&&!(window.__rlm&&__rlm.on)&&HUNT.t<10&&!DEMON.dbg.active){prowlT-=dt*agg()*nk();if(prowlT<=0){prowl={t:0,T:13+Math.random()*4,stT:0};subtitle('(Slow, heavy footsteps somewhere in the house. Coming closer. Hide.)',4500);sfx.growl(cam.position.x+6,cam.position.z)}}
   if(prowl){prowl.t+=dt;prowl.stT-=dt;const k=prowl.t/prowl.T;if(prowl.stT<=0){prowl.stT=.7-.25*k;const a=1.3;sfx.step(cam.position.x+Math.cos(a)*(10-8*k),cam.position.z+Math.sin(a)*(10-8*k),.5+.6*k)}
-   if(prowl.t>=prowl.T){prowl=null;prowlT=(240+Math.random()*220);
+   if(prowl.t>=prowl.T){prowl=null;prowlT=(140+Math.random()*120/* v97: was 240+rnd*220 */);
     if(hid)search('prowl');else if(XT.invOn&&XT.invOn()){/*SIA*/subtitle('(It slides right past you, tasting the air. It cannot see you.)',3500)}else{safe(()=>DEMON.dbg.show('scare'),'pscare');CARE.dbg.noise=Math.min(1,CARE.dbg.noise+.15);setTimeout(()=>subtitle('(It passes right through you. It wanted you to see it.)',3000),900)}}}
   // the search itself
   if(S&&!S.found){S.t+=dt;DEMON.dbg.next=Math.max(DEMON.dbg.next,20);const c=camW(hid||{cam:[iX(S.c.x),S.c.y,iZ(S.c.z)]});
@@ -2700,8 +2703,22 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
    broke:()=>inNurs()},
   {id:'crawl',night:3,cap:'(Something is crawling inside the walls. It is keeping pace with you.)',endCap:'(The crawling fades into the walls.)',pos:null,dur:[22,32],gap:[1.1,2],
    play(e,g){const a=Math.random()*6.28;if(XT.demonSfx)XT.demonSfx.skitter(cam.position.x+Math.cos(a)*1.6,cam.position.z+Math.sin(a)*1.6,.7+.5*g);if(Math.random()<.4)burst(AC.currentTime,2600,4,.05,.08,'bandpass')},
-   broke(){const now=performance.now(),p=cam.position;if(this.mx===undefined||Math.hypot(p.x-this.mx,p.z-this.mz)>.35){this.mx=p.x;this.mz=p.z;this.mt=now}return now-this.mt>4500},
-   end(){this.mx=undefined}}];
+   // v97 (Petra): "when it's in the walls and you stop moving, nothing happens". It used to compare cam.position (which the loud-baby hall stretch
+   // remaps every frame, so standing still could keep 'moving') against wall-clock time (pause counted), and gave no warning at all before the
+   // single check fired; when the rule-break trap could not start (note not read, basement, a trap already running) all you got was a scream line.
+   // Now: your real floor position (RP) and game time; stop and it creeps up behind the wall beside you (1.2 s), claws at it (2.6 s), and at 4 s it
+   // comes out (the rule-break trap, or, when that can't start, a lunge). Moving again makes it back off along the wall, but only a little at a time.
+   broke(){const now=performance.now(),dt=this.lt?Math.min(.1,Math.max(0,(now-this.lt)/1000)):0,p=RP;this.lt=now;
+    if(this.mx===undefined){this.mx=p.x;this.mz=p.z;this.still=0;this.st=0;this.sn=0}
+    if(Math.hypot(p.x-this.mx,p.z-this.mz)>.3){this.mx=p.x;this.mz=p.z;this.still=Math.max(0,this.still-1.2)}else this.still+=dt;
+    const s=this.still,sfx=XT.demonSfx,a=Math.random()*6.28,cx=cam.position.x,cz=cam.position.z;
+    if(s>1.2&&this.st<1){this.st=1;subtitle('(The crawling stops. Right behind the wall beside you.)',2600)}
+    if(s>2.6&&this.st<2){this.st=2;subtitle('(Claws drag down the inside of the wall. Plaster dust trickles out. Move.)',2600);if(AC){const t0=AC.currentTime;for(let i=0;i<7;i++)burst(t0+i*.12+Math.random()*.04,2400+Math.random()*1100,4,.16,.09,'bandpass')}}
+    if(this.st>0&&s<.4){this.st=0;subtitle('(It skitters off along the wall, keeping pace.)',2200)}
+    this.sn-=dt;if(this.st>0&&this.sn<=0&&AC){this.sn=this.st>1?.35:.7;if(sfx)sfx.skitter(cx+Math.cos(a)*.7,cz+Math.sin(a)*.7,this.st>1?1.6:1.1);if(this.st>1)burst(AC.currentTime,2600,4,.12,.08,'bandpass')}
+    return s>4},
+   emerge(){safe(()=>{DEMON.dbg.show('scare');CARE.dbg.noise=Math.min(1,CARE.dbg.noise+.2);setTimeout(()=>subtitle('(It tears out of the wall beside you, right into your face, and is gone again.)',3200),700)},'emerge')},
+   end(){this.mx=undefined;this.lt=0}}];
  const PS={2:['If the television turns itself on, don\'t look at it.','If someone outside calls your name, stay away from the windows.'],3:['If you hear humming in the nursery, stay out until it stops.','If something follows you inside the walls, don\'t stop moving.']};
  const noteP=document.querySelector('#note .paper');
  function apply(){const n=XT.night;
@@ -3538,7 +3555,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function noise(dur,vol,fr){if(!AC||!master)return;const n=AC.sampleRate*dur,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=fr||300;g.gain.value=vol;s.connect(f);f.connect(g);g.connect(master);s.start()}
  // the end of it: single-player gets the ending; in multiplayer only you die (and the ending is still counted)
  let over=false;
- function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You stole their car. Nobody is coming after you.'],pacifier:['She is quiet now.','She has not looked away from you once.'],roof:['You fell off the roof.','Somebody else is babysitting you now.'],phone:['You got fired.','Over the phone, on call ten.'],lights:['Lights party.','The demon has a migraine.'],derby:['Weapon of choice: car.','The house came down. You drove out.'],bath:['The house flooded.','You left the bath running.'],arson:['The house burned down.','You fed the fireplace.'],water:['The water is on fire.','You set the bath water on fire.']}[id];
+ function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You stole their car. Nobody is coming after you.'],pacifier:['She is quiet now.','She has not looked away from you once.'],roof:['You fell off the roof.','Somebody else is babysitting you now.'],phone:['You got fired.','Over the phone, on call ten.'],lights:['Lights party.','The demon has a migraine.'],derby:['Weapon of choice: car.','The house came down. You drove out.'],bath:['The house flooded.','You left the bath running.'],arson:['The house burned down.','You fed the fireplace.'],water:['The water is on fire.','You set the bath water on fire.'],friend:['You made a friend.','It drank the whole bottle.']}[id];
   window.__noMove=0;if(window.__mp&&__mp.active){safe(()=>XT.markEnding(id),'mark');safe(()=>__mp.die(T[0],T[1]),'die');flash('#000',0,900);over=false;return}
   XT.ending(id);setTimeout(()=>flash('#000',0,10),400)}
  OUT.finish=finish;OUT.park=()=>{T.on=false;T.armed=false;car.visible=false;if(beam)beam.intensity=0;if(eng)eng.g.gain.value=0};
@@ -3726,7 +3743,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    safe(()=>f.set(v),'intent '+f.k)}}
 
  // ---------- players: reports and the predicates the host's simulation asks ----------
- let prowlT=260+Math.random()*200;
+ let prowlT=150+Math.random()*110/* v97 (Petra): searches about 1.75x as often (was 260+rnd*200) */;
  function myReport(){const RL=!!(window.__rlm&&__rlm.on),c=cam.position,B=XT.bladeFight&&XT.bladeFight.S;
   return{x:+(RL?c.x:iX(c.x)).toFixed(2),z:+(RL?c.z:iZ(c.z)).toFixed(2),y:+fy.toFixed(2),cy:+c.y.toFixed(2),yaw:+yaw.toFixed(3),pi:+pitch.toFixed(3),cr:crouch?1:0,
    hid:XT.hide&&XT.hide.hid?1:0,gh:gone()?1:0,tor:XT.torch&&XT.torch.on?1:0,ar:RL?'r':'h',gl:CD.mp.carrying&&CD.mp.inGlider()?1:0,nu:CD.mp.inNursery()?1:0,
@@ -4052,7 +4069,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'sight':if(!MP.ghost&&!TRAP.on&&!(window.__rlm&&__rlm.on)&&!DEMON.dbg.active)safe(()=>DEMON.dbg.localSight(!!m.sc),'sight');break;
   case 'hunt':if(!MP.ghost)safe(()=>HUNT.fire(),'hunt');break;
   case 'prowl':if(!MP.ghost)safe(()=>XT.hide.prowlStart(),'prowl');break;
-  case 'trap':{const e=CD.mp.EVENTS.find(x=>x.id===m.ev);let ok=false;if(e&&!MP.ghost)ok=!!safe(()=>window.__trap.start(e),'trap');if(!ok)send({t:'nottrap'});break}
+  case 'trap':{const e=CD.mp.EVENTS.find(x=>x.id===m.ev);let ok=false;if(e&&!MP.ghost)ok=!!safe(()=>window.__trap.start(e),'trap');if(!ok&&e&&e.emerge&&!MP.ghost)safe(()=>e.emerge(),'emerge');if(!ok)send({t:'nottrap'});break}
   case 'evend':{const e=CD.mp.EVENTS.find(x=>x.id===m.id);if(MP.host)break;if(e){safe(()=>e.end&&e.end(!!m.broken),'end');if(e.id==='whisper')e.src=null}cEV=null;sEV=null;
    if(m.by===MP.id&&m.broken)break;subtitle(m.broken?'(Someone broke a house rule. Everything goes still. Then, upstairs, she starts to scream.)':(e&&e.endCap)||(m.id==='knock'?'(The knocking stops.)':m.id==='steps'?'(The footsteps fade.)':m.id==='whisper'?'(The whispering stops.)':'(The scratching stops.)'),3500);break}
   case 'chat':safe(()=>chatShow(m),'chat');break;
@@ -4142,7 +4159,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const kh=MP.k('hunt');if(kh!==1&&HUNT.t>0)HUNT.t+=dt*(kh-1);
   // prowls after midnight, aimed at someone who is alive
   if(XT.hour()>=24&&!TRAP.on&&HUNT.t<10&&!D.active){const agg=XT.diff?XT.diff().agg:1,nk=XT.nightK?XT.nightK():1;prowlT-=dt*Math.min(agg*nk*MP.k('prowl'),Math.max(agg*nk,2.4));
-   if(prowlT<=0){prowlT=240+Math.random()*220;const id=pickAlive();if(id===MP.id)safe(()=>XT.hide.prowlStart(),'prowl');else if(id)sendTo(id,{t:'prowl'})}}});
+   if(prowlT<=0){prowlT=140+Math.random()*120/* v97: was 240+rnd*220 */;const id=pickAlive();if(id===MP.id)safe(()=>XT.hide.prowlStart(),'prowl');else if(id)sendTo(id,{t:'prowl'})}}});
 
  // ---------- sessions ----------
  const ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';const genCode=()=>Array.from({length:5},()=>ALPH[Math.floor(Math.random()*ALPH.length)]).join('');
@@ -4476,6 +4493,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   {id:'bath',n:'Bath Time',d:'Find the ending in the bathtub.',h:1},
   {id:'arson',n:'A Is for Arson',d:'Find the ending in the fireplace.',h:1},
   {id:'water',n:'You... burnt.... the water?',d:'Find the ending in the bathtub. The other one.',h:1},
+  {id:'friend',n:(XT.endInfo?XT.endInfo().names.friend:'Bottle Buddies'),d:'Share something warm with something cold.',h:1},
   {id:'poison',n:'Poison Taster',d:'Taste the unlabeled bottle in the bathroom cabinet.',h:1},
   {id:'hairpin',n:"Jinshi's Gift",d:'Find the gold hairpin hidden outside.'}];
  const ls={get(){try{return JSON.parse(localStorage.getItem('hushAch')||'{}')||{}}catch(e){return{}}},set(v){try{localStorage.setItem('hushAch',JSON.stringify(v))}catch(e){}}};
@@ -4519,7 +4537,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   if(mp&&mp.active&&mp.started&&safe(()=>mp.dbg.roster().length,'n')>=4)unlock('four')},'watch'),250);
  const oe=XT.ending;
  XT.ending=function(id,extra){const r=oe.apply(this,arguments);
-  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water'].includes(id))unlock(id);
+  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water','friend'].includes(id))unlock(id);
    const won=id==='parents'||id==='dawn'||id==='secret';
    if(won){unlock('night1');if((XT.night||1)>=3)unlock('night3');if(XT.diffKey&&XT.diffKey()==='nightmare')unlock('nightmare');if(!run.hid)unlock('nohide');if(!run.cried)unlock('nocry');
     if(window.__mp&&__mp.active)unlock('together')}
@@ -4969,6 +4987,78 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
     say(L,t,st);if(t>23.6)fadeOut();return t>25},
    end(){scene.remove(grp);fx(null,0,10)}}};
  XT.erie={S,ignite,draw,get burn(){return burn}};
+})();
+</script>
+<script type="text/x-hush">
+// ===== v97 (Petra): the befriend ending (name: FRIEND_NAME in the endings block, id 'friend'). When the demon is right there in front of you
+// (a sighting in a doorway / hallway / window, the trap walking you down, the ceiling crawler...) and you are holding the baby bottle, look at it
+// and press E: it takes the bottle, drinks the whole thing, burps, and becomes your friend. Wholesome and goofy; Lilith is never in danger.
+// No hints anywhere. Goes through OUT.finish like the v95/v96 endings (multiplayer: that player is out and the ending is still counted).
+(function(){'use strict';const XT=window.__xt,OUT=window.__out;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush friend] '+(t||''),e)}};
+ if(!XT||!OUT||typeof DEMON==='undefined')return;const DM=DEMON.dbg,g=DM.g;
+ const RANGE=5,CONE=.6;let over=false;
+ const busy=()=>!!(window.__cut||ended||window.__dead||window.__tbc||seated||CARE.busy()||(XT.hide&&XT.hide.hid)||(window.__mp&&(__mp.ghost||__mp.demon))||(window.__rlm&&__rlm.on));
+ const sm=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
+ const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
+ const say=(L,t,st)=>{while(st.i<L.length&&t>=L[st.i][0]){const [,k,txt,d]=L[st.i];subtitle(txt,d*1000);if(k&&XT.voice)safe(()=>XT.voice(txt.replace(/\(.*?\)/g,''),k,d*.85,.4),'voice');st.i++}};
+ const fadeOut=()=>{const f=document.getElementById('xfade');if(f&&!f.classList.contains('on')){f.hidden=false;f.textContent='';requestAnimationFrame(()=>f.classList.add('on'))}};
+ function tone(f,d,gn,type,f1,lp){if(!AC||!master||muted)return;const t=AC.currentTime,o=AC.createOscillator(),e=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);e.gain.setValueAtTime(gn,t);e.gain.exponentialRampToValueAtTime(.001,t+d);
+  if(lp){const fl=AC.createBiquadFilter();fl.type='lowpass';fl.frequency.value=lp;o.connect(fl);fl.connect(e)}else o.connect(e);e.connect(master);o.start(t);o.stop(t+d+.05)}
+ const glug=()=>{tone(260,.16,.12,'sine',120);setTimeout(()=>tone(200,.14,.08,'sine',100),120)};
+ const burp=()=>{tone(78,1.1,.35,'sawtooth',42,420);tone(110,.9,.18,'square',55,300)};
+ // where is it, and are you looking at it?
+ function near(){if(!g.visible)return null;const a=DM.active;if(a==='painting'||a==='mirror'||a==='monitor')return null;
+  const dx=g.position.x-cam.position.x,dz=g.position.z-cam.position.z,L=Math.hypot(dx,dz);if(L>RANGE||L<.15)return null;const dy=g.position.y-fy;if(dy<-1||dy>3.2)return null;
+  const f=new THREE.Vector3();cam.getWorldDirection(f);const fl=Math.hypot(f.x,f.z)||1;if((dx*f.x+dz*f.z)/(L*fl)<Math.cos(CONE))return null;return{dx:dx/L,dz:dz/L,L}}
+ // an invisible target between you and it, so E reaches it from a few metres away
+ const hit=new THREE.Mesh(new THREE.BoxGeometry(1,1.9,.3),hitM);hit.visible=false;scene.add(hit);
+ hit.userData.i={get label(){return 'Hold out the baby bottle'},act(){if(over||busy()||!(CARE.dbg.bottle>0)||!near())return;start()}};
+ XT.onUpdate(()=>safe(()=>{const n=!over&&!busy()&&CARE.dbg.bottle>0?near():null,i=inter.indexOf(hit);
+  if(n){const d=Math.min(1.3,n.L-.1);hit.position.set(cam.position.x+n.dx*d,cam.position.y-.3,cam.position.z+n.dz*d);hit.lookAt(cam.position.x,hit.position.y,cam.position.z);hit.updateMatrixWorld();if(i<0)inter.push(hit)}
+  else if(i>=0)inter.splice(i,1)},'near'));
+ let P0=null,G0=null;
+ function start(){over=true;window.__noMove=1;const i=inter.indexOf(hit);if(i>=0)inter.splice(i,1);
+  P0={x:cam.position.x,y:cam.position.y,z:cam.position.z,fy};G0={x:g.position.x,z:g.position.z};
+  safe(()=>{if(TRAP.cancel)TRAP.cancel()},'trap');safe(()=>DM.stop(),'stop');safe(()=>{CARE.dbg.bottle=0},'bottle');
+  subtitle('(You hold out the baby bottle. Your hand is shaking. It stops.)',2600);
+  if(window.__mp&&__mp.active){setTimeout(()=>{safe(()=>OUT.finish('friend'),'mp');over=false;window.__noMove=0},1600);return}
+  setTimeout(()=>safe(()=>OUT.finish('friend'),'fin'),300)}
+ // the bottle in its claws, and the hearts
+ const bot=new THREE.Group();{const gl=new THREE.MeshPhongMaterial({color:0xf4f8ff,transparent:true,opacity:.75,shininess:90});const mk=new THREE.MeshPhongMaterial({color:0xfff6e4});
+  bot.add(new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.15,10),gl));const m=new THREE.Mesh(new THREE.CylinderGeometry(.031,.031,.11,10),mk);m.position.y=-.015;bot.add(m);m.name='milk';
+  const cap=new THREE.Mesh(new THREE.CylinderGeometry(.038,.038,.03,10),new THREE.MeshPhongMaterial({color:0x8ad0f0}));cap.position.y=.09;bot.add(cap);
+  const nip=new THREE.Mesh(new THREE.ConeGeometry(.018,.05,8),new THREE.MeshPhongMaterial({color:0xf0c890}));nip.position.y=.13;bot.add(nip)}
+ bot.visible=false;scene.add(bot);
+ const heartT=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const q=c.getContext('2d');q.fillStyle='#ff5a8a';q.beginPath();q.moveTo(32,56);q.bezierCurveTo(4,36,6,10,22,10);q.bezierCurveTo(28,10,32,16,32,20);q.bezierCurveTo(32,16,36,10,42,10);q.bezierCurveTo(58,10,60,36,32,56);q.fill();return new THREE.CanvasTexture(c)})();
+ const hearts=[];
+ XT.friendCut=()=>{const st={i:0},calm=window.__getCalm&&__getCalm();const P=P0||{x:cam.position.x,y:cam.position.y,z:cam.position.z,fy};
+  // it stands about 1.7 m in front of you (pulled closer if a wall is in the way), facing you
+  let dx=(G0?G0.x:P.x+1)-P.x,dz=(G0?G0.z:P.z)-P.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let D=1.7;while(D>.9&&!losClear(P.x,P.z,P.x+dx*(D+.3),P.z+dz*(D+.3),P.fy))D-=.1;
+  const gx=P.x+dx*D,gz=P.z+dz*D;g.visible=true;g.scale.setScalar(1);g.rotation.set(0,0,0);g.position.set(gx,P.fy,gz);g.lookAt(P.x,P.fy,P.z);XT.demon.force='stand';
+  const hv=new THREE.Vector3(),fw=new THREE.Vector3();
+  const L2=[[.2,null,'(It goes very still. Its head tilts. Its tongue flicks out at the bottle.)',2.8],[3.2,null,'(It takes the bottle, very carefully, in two long clawed fingers.)',2.6],
+   [6,null,'(Glug. Glug. Glug.)',2.2],[8.6,null,'(It drinks the whole thing. Then it burps, so loudly a picture falls off the wall downstairs.)',3.2],
+   [12,null,'(Upstairs, Lilith giggles in her sleep. She is fine. She is better than fine.)',3],[15.2,null,'(It curls up at your feet like an enormous, scaly cat and purrs. You have a friend now.)',3.4],
+   [18.8,null,'(It would like another bottle.)',2.2]];
+  return{step(dt,t){const T=performance.now()/1000;cam.position.set(P.x,P.fy+1.6,P.z);
+    // the bottle: in your hand, then in its claws, then up at its mouth, then empty
+    g.updateMatrixWorld(true);const head=DM.J&&DM.J.head;if(head)head.getWorldPosition(hv);else hv.set(gx,P.fy+1.9,gz);
+    bot.visible=t<12;const milk=bot.getObjectByName('milk');
+    if(t<3.2){const k=sm((t-.2)/2.6);bot.position.set(P.x+dx*(.45+.5*k),P.fy+1.3+.1*k,P.z+dz*(.45+.5*k));bot.rotation.set(0,0,-.3)}
+    else if(t<6){const k=sm((t-3.2)/2.4);bot.position.set(P.x+dx*(.95+(D-.95-.25)*k),P.fy+1.4+(hv.y-.08-1.4-P.fy)*k,P.z+dz*(.95+(D-.95-.25)*k));bot.rotation.set(0,0,-.3-1.2*k)}
+    else{bot.position.set(hv.x-dx*.2,hv.y-.12,hv.z-dz*.2);const up=.25+.9*Math.min(1,(t-6)/2.4);bot.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(dx,up,dz).normalize());if(milk)milk.scale.y=Math.max(.02,1-(t-6)/2.6)}
+    if(t>6&&t<8.6&&(!st.gl||t-st.gl>.55)){st.gl=t;glug()}
+    if(t>8.6&&!st.b){st.b=1;burp();XT.demon.force='scare';st.bt=t}
+    if(st.bt&&t>st.bt+.7&&!st.b2){st.b2=1;XT.demon.force='stand'}
+    // hearts
+    if(t>9.4&&t<18&&Math.random()<dt*(calm?2:5)){const s=new THREE.Sprite(new THREE.SpriteMaterial({map:heartT,transparent:true,depthWrite:false}));s.scale.setScalar(.18);s.position.set(hv.x+(Math.random()-.5)*.5,hv.y+.1,hv.z+(Math.random()-.5)*.5);s.userData.v=.3+Math.random()*.3;scene.add(s);hearts.push(s)}
+    for(let i=hearts.length-1;i>=0;i--){const s=hearts[i];s.position.y+=s.userData.v*dt;s.material.opacity-=dt*.35;if(s.material.opacity<=0){scene.remove(s);hearts.splice(i,1)}}
+    // curling up at your feet
+    if(t>14.8){const k=sm((t-14.8)/1.6);XT.demon.force='crawl';g.position.set(gx-dx*.6*k,P.fy,gz-dz*.6*k);g.lookAt(P.x,P.fy,P.z)}
+    const ty=t<14.8?hv.y-.1:P.fy+.5;if(!st.lk)st.lk=new THREE.Vector3(gx,ty,gz);st.lk.lerp(fw.set(t<14.8?gx:gx-dx*.6,ty,t<14.8?gz:gz-dz*.6),Math.min(1,dt*2.5));look(st.lk.x,st.lk.y,st.lk.z);
+    say(L2,t,st);if(t>20.6)fadeOut();return t>22},
+   end(){bot.visible=false;hearts.forEach(s=>scene.remove(s));hearts.length=0;XT.demon.force=null;g.visible=false}}};
+ XT.friend={get near(){return !!near()},start,get over(){return over},hit};
 })();
 </script>
 
@@ -5670,6 +5760,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   water(t){for(let i=0;i<30;i++)noise(t+Math.random()*8,.04,2500+Math.random()*3000,.05,1);
    [[.6,67],[1,67],[1.4,64],[1.8,62],[2.4,60],[3,62],[3.4,64],[3.8,60],[4.6,59],[5.2,55]].forEach(([x,m])=>kazoo(t+x,m,.35));
    for(let i=0;i<8;i++)tuba(t+.6+i*.6,i%2?43:36,.25,.06);slide(t+6,74,81,.5,.05);slide(t+6.5,81,74,.5,.05);crash(t+7.2,.1);return 9},
+  // v97 Bottle Buddies: a music-box waltz in C, three glugs, one enormous tuba burp, then the waltz again with a little heart-bell on top
+  friend(t){const b=.32,mel=[[0,72],[1,76],[2,79],[3,77],[4,76],[5,74],[6,72],[8,74],[9,76],[10,74],[11,72]];
+   mel.forEach(([x,m])=>bell(t+x*b,m,b*1.6,.06));[48,43,45,41].forEach((m,i)=>{for(let k=0;k<3;k++)V(t+i*3*b+k*b,k?m+19:m+12,b*.8,{w:'triangle',g:k?.025:.05,f:1800})});
+   [0,1,2].forEach(i=>slide(t+4.1+i*.32,64,55,.22,.05));tuba(t+5.2,31,.2,.12);slide(t+5.2,43,31,1.1,.08);
+   mel.forEach(([x,m])=>bell(t+6.8+x*b,m+12,b*1.4,.05));pad(t+6.8,[60,64,67],3.6,.025);bell(t+10.6,84,1.6,.06);bell(t+10.75,88,1.6,.05);return 12.5},
   arson(t){for(let i=0;i<40;i++)noise(t+Math.random()*9,.04,2500+Math.random()*3000,.05,1);
    for(let i=0;i<3;i++){slide(t+i*1.2,74,81,.6,.05);slide(t+i*1.2+.6,81,74,.6,.05)}
    const b=.22;for(let i=0;i<16;i++){tuba(t+3.6+i*b*2,[48,55,53,55][i%4]-12,b*.9,.08);V(t+3.6+i*b*2+b,[64,67,65,67][i%4],b*.5,{w:'square',g:.025,f:900})}
@@ -5801,6 +5896,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   water(q,W,H){q.fillStyle='#0a0c14';q.fillRect(0,0,W,H);q.fillStyle='#e8e4dc';q.beginPath();q.moveTo(W*.12,H*.55);q.lineTo(W*.88,H*.55);q.quadraticCurveTo(W*.86,H*.92,W*.5,H*.92);q.quadraticCurveTo(W*.14,H*.92,W*.12,H*.55);q.fill();
    q.fillStyle='rgba(80,140,200,.9)';q.fillRect(W*.15,H*.55,W*.7,10);for(let i=0;i<12;i++){q.fillStyle=['#ff4a10','#ff9a20','#ffd040'][i%3];const x=W*.18+i*W*.055,h=30+(i*37)%40;q.beginPath();q.moveTo(x-9,H*.56);q.quadraticCurveTo(x,H*.56-h*1.6,x+9,H*.56);q.fill()}
    q.fillStyle='#b8261e';q.fillRect(W*.04,H*.66,26,36);q.fillStyle='#f2d03a';q.fillRect(W*.04,H*.72,26,12);q.fillStyle='#f0e8c8';q.font='bold 20px sans-serif';q.fillText('H₂O?!',W*.62,H*.2)},
+  friend(q,W,H){q.fillStyle='#120e14';q.fillRect(0,0,W,H);const g=q.createRadialGradient(W*.5,H*.55,10,W*.5,H*.55,170);g.addColorStop(0,'rgba(255,190,120,.28)');g.addColorStop(1,'rgba(255,190,120,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
+   q.fillStyle='#c8a848';q.beginPath();q.ellipse(W*.5,H*.86,W*.34,H*.07,0,0,7);q.fill();q.fillStyle='#e0c060';q.beginPath();q.ellipse(W*.47,H*.38,26,30,0,0,7);q.fill();q.fillRect(W*.47-14,H*.5,28,H*.32);
+   q.fillStyle='#120e14';q.fillRect(W*.47-11,H*.34,6,5);q.fillRect(W*.47+5,H*.34,6,5);q.fillStyle='#8a0a1a';q.fillRect(W*.47-2,H*.47,3,10);
+   q.save();q.translate(W*.47+20,H*.42);q.rotate(-1.1);q.fillStyle='rgba(240,248,255,.85)';q.fillRect(-6,-18,12,30);q.fillStyle='#fff6e4';q.fillRect(-5,0,10,10);q.fillStyle='#8ad0f0';q.fillRect(-7,-22,14,5);q.fillStyle='#f0c890';q.fillRect(-3,-28,6,6);q.restore();
+   const ht=(x,y,s)=>{q.fillStyle='#ff5a8a';q.beginPath();q.moveTo(x,y+s);q.bezierCurveTo(x-s*1.4,y+s*.2,x-s*1.1,y-s*.9,x,y-s*.3);q.bezierCurveTo(x+s*1.1,y-s*.9,x+s*1.4,y+s*.2,x,y+s);q.fill()};ht(W*.66,H*.2,9);ht(W*.74,H*.32,6);ht(W*.6,H*.1,5);ht(W*.3,H*.22,7)},
   arson(q,W,H){q.fillStyle='#0c0608';q.fillRect(0,0,W,H);const g=q.createRadialGradient(W*.5,H*.7,10,W*.5,H*.7,200);g.addColorStop(0,'rgba(255,140,40,.6)');g.addColorStop(1,'rgba(255,60,20,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
    q.fillStyle='#1a1214';q.beginPath();q.moveTo(W*.2,H*.9);q.lineTo(W*.2,H*.5);q.lineTo(W*.5,H*.28);q.lineTo(W*.8,H*.5);q.lineTo(W*.8,H*.9);q.fill();
    for(let i=0;i<14;i++){q.fillStyle=['#ff4a10','#ff9a20','#ffd040'][i%3];const x=W*.18+i*16,h=30+(i*37)%50;q.beginPath();q.moveTo(x-10,H*.9);q.quadraticCurveTo(x,H*.9-h*1.6,x+10,H*.9);q.fill()}
@@ -6307,6 +6407,24 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  function duck(b){const g=new THREE.Group();g.position.set(.18,1.52,.0);g.rotation.y=.3;g.scale.setScalar(1.3);b.add(g);const y=P(0xf6d232);sph(.05,y,1.15,.8,1,0,0,0,g);sph(.032,y,1,1,1,0,.055,-.03,g);
   const bk=new THREE.Mesh(new THREE.ConeGeometry(.012,.03,6),P(0xf08a1a));bk.rotation.x=-Math.PI/2;bk.position.set(0,.05,-.07);bk.scale.set(1.4,1,.6);g.add(bk);[-1,1].forEach(k=>sph(.006,B(0x101010),1,1,1,k*.016,.066,-.055,g));
   const tl=new THREE.Mesh(new THREE.ConeGeometry(.02,.04,5),y);tl.rotation.x=-1.1;tl.position.set(0,.03,.055);g.add(tl);g.name='duck'}
+ // v97 (Petra): Baby snake buddy, the Bottle Buddies reward (Seen It All). A little yellow snake in the demon's own scale colours (scM / belM / rgM)
+ // wraps once round your neck like a scarf and rests its head on your right shoulder; it sways gently and flicks a forked tongue.
+ function snek(b){const sc=P(0xf3e58a,{emissive:0x4a4218,specular:0xfffbe0,shininess:50}),bl=P(0xfaf3d0,{specular:0x8a7a40,shininess:20}),rg=P(0xb8a650,{specular:0xd8c880,shininess:30});
+  const g=new THREE.Group();g.position.set(0,1.465,0);g.name='snek';b.add(g);const N=26,R=.152;
+  for(let i=0;i<=N;i++){const k=i/N,a=Math.PI*.5+k*Math.PI*1.5,r=.03-.008*k,y=.02*Math.sin(k*Math.PI)-.012*k;const x=Math.cos(a)*R,z=Math.sin(a)*R;
+   sph(r,i%4===0?rg:sc,1,1,1,x,y,z,g);if(i%2===0)sph(r*.7,bl,1,.7,1,x*.86,y-r*.35,z*.86,g)}
+  // the tail tip, trailing down the back
+  const tt=new THREE.Mesh(new THREE.ConeGeometry(.018,.09,6),sc);tt.position.set(Math.cos(Math.PI*.5)*R,-.04,Math.sin(Math.PI*.5)*R);tt.rotation.x=Math.PI;g.add(tt);
+  // the head on the right shoulder, looking forward
+  const hp=new THREE.Group();hp.position.set(-.185,.012,-.04);g.add(hp);const hd=new THREE.Group();hp.add(hd);
+  sph(.036,sc,1,.72,1.35,0,0,-.02,hd);sph(.026,bl,1,.5,1.2,0,-.012,-.03,hd);
+  [-1,1].forEach(k=>{sph(.009,B(0x141008),1,1,1,k*.022,.012,-.045,hd);sph(.003,B(0xffffff),1,1,1,k*.023,.016,-.051,hd)});
+  sph(.006,P(0xf0a0a8),1,.6,1,-.026,-.002,-.05,hd);sph(.006,P(0xf0a0a8),1,.6,1,.026,-.002,-.05,hd);
+  const tg=new THREE.Group();tg.position.set(0,-.008,-.068);hd.add(tg);const tm=B(0x8a0a1a);
+  {const a=new THREE.Mesh(new THREE.BoxGeometry(.004,.002,.04),tm);a.position.z=-.02;tg.add(a);[-1,1].forEach(k=>{const f=new THREE.Mesh(new THREE.BoxGeometry(.003,.002,.016),tm);f.position.set(k*.004,0,-.045);f.rotation.y=-k*.45;tg.add(f)})}
+  tg.scale.z=.05;
+  anim(hd.children[0],t=>{hd.rotation.y=Math.sin(t*1.1)*.35;hd.rotation.x=Math.sin(t*.8)*.12-.05;hp.position.y=.012+Math.sin(t*1.6)*.006;g.rotation.y=Math.sin(t*.7)*.04;
+   const c=t%2.6,f=c<.32?Math.sin(c/.32*Math.PI):0;tg.scale.z=.05+.95*f;tg.rotation.x=f*Math.sin(t*40)*.25})}
  // a lighter clipped to the waist: red body, steel cap and a little belt clip
  function lighter(b){const g=new THREE.Group();g.position.set(-.155,.9,-.13);g.scale.setScalar(1.4);b.add(g);bx(.03,.05,.014,P(0xc8202e,{shininess:60,specular:0x666666}),0,0,0,g);bx(.03,.016,.014,P(0xc8ccd4,{shininess:120,specular:0xffffff}),0,.033,0,g);
   sph(.005,P(0x3a3a40),1,1,1,.006,.044,0,g);bx(.012,.05,.004,P(0x9aa0aa,{shininess:100,specular:0xffffff}),0,.012,.009,g)}
@@ -6380,7 +6498,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // what unlocks what (keys of U())
  const LOCK={hair:{maomao:'pin',nezuko:'blade',miku:'miku',teto:'tetoh',shinobu:'shinobu',mitsuri:'mitsuri',muichiro:'muichiro'},hc:{jade:'pin',grad:'blade',teal:'miku',teto:'teto',shinobu:'shinobu',mitsuri:'mitsuri',inosuke:'inosuke',zenitsu:'zenitsu',muichiro:'muichiro'},bfly:'shinobu',omask:'obanai',boar:'inosuke',cape:'rengoku',mouth:{snake:'snake',shark:'stare'},eyes:{mesm:'stare',ydots:'abst',headlight:'seen'},skin:{purple:'abst'},cap:'bat',bat:'bat',hb:'stare',
   outfit:{maomao:'pin',nezuko:'blade',robes:'cult',yoveralls:'abst',scales:'snake',miku:'miku',teto:'teto',yara:'bat',mesm:'stare',muichiro:'muichiro',suit:'closet',suitskirt:'closet',evening:'closet',cardigan:'closet'},
-  haori:{tanjiro:'blade',nezuko:'blade'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen'};
+  haori:{tanjiro:'blade',nezuko:'blade'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen'};
  const HINT={pin:'A gift someone lost, somewhere outside.',blade:'Prove yourself with a blade.',cult:'Some families never let you leave.',snake:'Something scaly hides down below.',abst:'Follow something that is not really there.',
   miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',seen:'Find every ending.'};
  // DS v89: Demon Slayer unlocks. ONE place to change the triggers: each key is unlocked when hushCustU[key] is set (by the secret pickups/events below).
@@ -6392,11 +6510,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),seen:!!a.seenall||SIA_DBG}}
  const lockKey=(k,v)=>{const L=LOCK[k];if(!L)return null;if(typeof L==='string')return v?L:null;return L[v]||null};
  const isOpen=(k,v,u)=>{const q=lockKey(k,v);return !q||!!(u||U())[q]};
- const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,that:0,ths:100,thp:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0};
+ const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,that:0,ths:100,thp:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -6415,7 +6533,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   FITB=body;const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],gr=GRAD[hc],hm=P(gr?0:hc);HAIR[o.hair](hg,hm);FITB=null;
   if(gr)gradHair(hg,hm,gr);
   if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.that)topHat(h,o);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.cape)cape(body);
-  if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.invis)seeThrough(body,INV_OP,1);
+  if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.invis)seeThrough(body,INV_OP,1);
   return{legs,arms,head:h}}
  // Nezuko's gradient, fitted to each hairstyle's own height (like her real hair): black at the crown/roots, starting to fade about 30% of the way down
  // (around ear/shoulder height), clearly orange over the lower ~55%, brightest at the tips. Only meshes using the hair material are recoloured,
@@ -6476,7 +6594,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   if(o.that)grp('Top hat position','thp',[{v:0,n:'On top'},{v:1,n:'On the side'}]);
   if(o.ears!=null)grp('Bunny ear color','earc',EARC.map(c=>({v:c,n:'',c})));
   grp('Jewelry','neck',Object.keys(NECK).map(v=>({v,n:NECK[v]})).concat([{v:'pin',n:'Silver hairpin',c:0xd4d8e0,tog:1}]));
-  grp('Seen It All','tog',[['invis','See-through skin (invisible) [I]',0xbfe6ff],['roof','Roof',0xb8502e],['phone','Phone',0x5ab0ff],['disco','Disco ball',0xd8dce4],['tire','Tire tracks',0x222024],['duck','Rubber duck',0xf6d232],['lighter','Lighter',0xc8202e],['keys','Car keys',0xc8ccd4],['demon','Snake demon',0xf3e58a],['fpud','Fire puddles',0xff7a1a]].map(([v,n,c])=>({v,n,c})));
+  grp('Seen It All','tog',[['invis','See-through skin (invisible) [I]',0xbfe6ff],['roof','Roof',0xb8502e],['phone','Phone',0x5ab0ff],['disco','Disco ball',0xd8dce4],['tire','Tire tracks',0x222024],['duck','Rubber duck',0xf6d232],['lighter','Lighter',0xc8202e],['keys','Car keys',0xc8ccd4],['demon','Snake demon',0xf3e58a],['fpud','Fire puddles',0xff7a1a],['snek','Baby snake buddy',0xf3e58a]].map(([v,n,c])=>({v,n,c})));
   sec.innerHTML='';G.forEach(g=>{const h=document.createElement('h3');h.textContent=g.t;sec.appendChild(h);const r=document.createElement('div');r.className='row';sec.appendChild(r);
    g.items.forEach(it=>{const b=document.createElement('button');b.type='button';b.className='ch';
     const lkK=g.k==='tog'||it.tog?it.v:g.k==='earc'?null:g.k,lv=g.k==='tog'||it.tog?1:it.v,locked=lkK&&!isOpen(lkK,lv,u);
