@@ -5934,6 +5934,35 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    plait(h,m,[[0,-.08,.15],[0,-.2,.16],[0,-.36,.16],[0,-.54,.16],[0,-.66,.16]],.052,13,1);
    [-1,1].forEach(k=>plait(h,m,fitOver(h,[[.1,.04,.03],[.135,-.06,.0],[.15,-.17,-.05],[.155,-.3,-.09],[.15,-.44,-.1]].map(([x,y,z])=>new THREE.Vector3(k*x,y,z)),k,.06),.052,11,0))},
   short:(h,m)=>{cap(h,m)},
+  // HAIR v97 (Petra: "more boy haircuts"): six short styles, free by default. They stay close to the head so hats, headbands and masks still sit on top,
+  // every piece uses the hair material (so colours and gradients work), and the only long-ish strands (the wolf cut's nape) are fitted over the outfit's collar.
+  buzz:(h,m)=>{sph(.137,m,1,.74,1.04,0,.05,.012,h)},
+  messy:(h,m)=>{cap(h,m);bx(.16,.035,.035,m,0,.085,-.114,h);
+   [[-.085,-.4],[-.04,.25],[.005,-.15],[.05,.35],[.09,-.3]].forEach(([x,r],i)=>{const c=new THREE.Mesh(new THREE.ConeGeometry(.028,i%2?.075:.095,4),m);c.rotation.set(Math.PI,Math.PI/4,r);c.scale.z=.5;c.position.set(x,.03-(i%2)*.012,-.124);h.add(c)});
+   [[0,.165,-.05,-.5,.3],[-.06,.16,.0,.3,.5],[.065,.158,.01,-.3,-.45],[.0,.165,.06,.5,-.2],[-.075,.13,-.075,-.4,.7],[.085,.125,-.065,-.6,-.6],[-.04,.14,.1,.7,.3],[.05,.14,.1,.6,-.4]].forEach(([x,y,z,a,b])=>{const c=new THREE.Mesh(new THREE.ConeGeometry(.04,.075,4),m);c.rotation.set(a,0,b);c.position.set(x,y,z);h.add(c)});
+   {const bk=new THREE.Mesh(new THREE.SphereGeometry(.13,12,8),m);bk.scale.set(1.04,.62,.66);bk.position.set(0,-.02,.06);h.add(bk)}
+   [-1,1].forEach(k=>{const c=new THREE.Mesh(new THREE.ConeGeometry(.026,.09,4),m);c.rotation.set(Math.PI,0,k*.15);c.scale.x=.5;c.position.set(k*.128,-.01,-.05);h.add(c)})},
+  sidepart:(h,m)=>{cap(h,m);
+   {const s=new THREE.Mesh(new THREE.SphereGeometry(.1,14,8),m);s.scale.set(1.12,.42,1.18);s.position.set(.025,.125,-.01);s.rotation.z=-.12;h.add(s)}
+   {const sw=new THREE.Mesh(new THREE.SphereGeometry(.07,12,8),m);sw.scale.set(1.3,.5,.7);sw.position.set(.03,.1,-.09);sw.rotation.set(-.35,0,-.22);h.add(sw)}
+   
+   {const bk=new THREE.Mesh(new THREE.SphereGeometry(.13,12,8),m);bk.scale.set(1.04,.6,.64);bk.position.set(0,-.02,.06);h.add(bk)}},
+  curtain:(h,m)=>{cap(h,m);
+   {const bk=new THREE.Mesh(new THREE.SphereGeometry(.13,14,8),m);bk.scale.set(1.06,.72,.72);bk.position.set(0,-.025,.06);h.add(bk)}
+   [-1,1].forEach(k=>{const pts=[[.004,.13,-.1],[.035,.1,-.13],[.075,.05,-.128],[.108,.0,-.108],[.122,-.04,-.08]].map(([x,y,z])=>new THREE.Vector3(k*x,y,z));
+    const cv=new THREE.CatmullRomCurve3(pts),t=new THREE.Mesh(new THREE.TubeGeometry(cv,20,.026,7,false),m);t.scale.set(1,1,1);h.add(t);
+    const e=cv.getPoint(1);sph(.026,m,1,1,1,e.x,e.y,e.z,h);
+    const s=bx(.035,.14,.08,m,k*.124,-.03,-.04,h);s.rotation.z=k*.06})},
+  spiky:(h,m)=>{cap(h,m);
+   [[0,.14,-.08,-.9,0,.11],[-.06,.135,-.07,-.8,.45,.1],[.06,.135,-.07,-.8,-.45,.1],[0,.165,-.01,-.35,0,.12],[-.075,.145,0,-.2,.75,.11],[.075,.145,0,-.2,-.75,.11],[-.04,.15,.07,.45,.4,.11],[.04,.15,.07,.45,-.4,.11],[0,.11,.12,1.15,0,.1],[-.1,.09,-.04,-.3,1.1,.08],[.1,.09,-.04,-.3,-1.1,.08],[-.08,.08,.1,.9,.8,.09],[.08,.08,.1,.9,-.8,.09]].forEach(([x,y,z,a,b,l])=>{const c=new THREE.Mesh(new THREE.ConeGeometry(.038,l,5),m);c.rotation.set(a,0,b);c.position.set(x,y,z);h.add(c)});
+   {const bk=new THREE.Mesh(new THREE.SphereGeometry(.13,12,8),m);bk.scale.set(1.03,.58,.62);bk.position.set(0,-.02,.06);h.add(bk)}},
+  wolf:(h,m)=>{cap(h,m);bx(.16,.035,.035,m,0,.088,-.114,h);
+   [[-.085,-.25,.075],[-.042,.1,.06],[0,-.05,.075],[.042,.15,.055],[.085,.25,.07]].forEach(([x,r,l])=>{const c=new THREE.Mesh(new THREE.ConeGeometry(.03,l,4),m);c.rotation.set(Math.PI,Math.PI/4,r);c.scale.z=.5;c.position.set(x,.06,-.124);h.add(c)});
+   [[0,.165,.0,.5,0],[-.06,.155,.04,.6,.4],[.06,.155,.04,.6,-.4],[0,.14,.09,1,0]].forEach(([x,y,z,a,b])=>{const c=new THREE.Mesh(new THREE.ConeGeometry(.045,.08,5),m);c.rotation.set(a,0,b);c.position.set(x,y,z);h.add(c)});
+   {const bk=new THREE.Mesh(new THREE.SphereGeometry(.13,14,8),m);bk.scale.set(1.06,.85,.74);bk.position.set(0,-.035,.06);h.add(bk)}
+   [-1,1].forEach(k=>{const c=new THREE.Mesh(new THREE.ConeGeometry(.032,.17,4),m);c.rotation.set(Math.PI,0,-k*.12);c.scale.x=.55;c.position.set(k*.128,-.07,-.04);h.add(c)});
+   [-.09,-.045,0,.045,.09].forEach((x,i)=>{const L=i%2?.15:.165,pts=fitOver(h,[[x,-.06,.12],[x*1.1,-.12,.14],[x*1.25,-L,.15]].map(p=>new THREE.Vector3(...p)),0,.03,1);
+    const cv=new THREE.CatmullRomCurve3(pts),t=new THREE.Mesh(new THREE.TubeGeometry(cv,10,.032,6,false),m);h.add(t);const e=cv.getPoint(1),tp=new THREE.Mesh(new THREE.ConeGeometry(.032,.045,6),m);tp.rotation.x=Math.PI;tp.position.set(e.x,e.y-.022,e.z);h.add(tp)})},
   long:(h,m)=>{cap(h,m);bx(.27,.36,.08,m,0,-.12,.1,h);bx(.05,.26,.16,m,-.125,-.07,.03,h);bx(.05,.26,.16,m,.125,-.07,.03,h)},
   ponytail:(h,m)=>{cap(h,m);sph(.045,m,1,1,1,0,.03,.15,h);bx(.06,.24,.06,m,0,-.1,.18,h)},
   bob:(h,m)=>{cap(h,m);bx(.05,.17,.22,m,-.13,-.04,.01,h);bx(.05,.17,.22,m,.13,-.04,.01,h);bx(.28,.15,.07,m,0,-.04,.11,h);bx(.22,.05,.04,m,0,.07,-.12,h)},
@@ -6127,6 +6156,28 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   const br=bx(.2,.014,.13,m,0,.045,-.18,h);br.rotation.x=-.12;sph(.016,m,1,.6,1,0,.16,0,h);
   const c=document.createElement('canvas');c.width=128;c.height=64;const q=c.getContext('2d');q.fillStyle='#fff';q.font='bold 50px system-ui,Arial,sans-serif';q.textAlign='center';q.textBaseline='middle';q.fillText('052',64,36);
   const t=new THREE.Mesh(new THREE.PlaneGeometry(.12,.06),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:true,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));t.position.set(0,.11,-.142);t.rotation.set(-.5,Math.PI,0,'YXZ');h.add(t)}
+ // HAT v97 (Petra): a black magician's top hat, free by default. Full size it is measured from what is already on the head (hair, cap, headband):
+ // every vertex above the brim line widens the crown (up to a limit, kept small and narrow: Petra v97 'make it smaller', 'less wide'; wide hair shows under the brim)
+ // and raises its floor, so it fits over every hairstyle, buns and spikes included.
+ // look.ths = size 40..100 (% of that full hat, slider in Customize); look.thp = position: 0 on top (centred), 1 on the side (left side of the head, tilted 20 degrees).
+ // Smaller hats are the same hat scaled down, seated by rays cast at the head from outside: on top, rays straight down around the crown's footprint
+ // (it rests on the highest hair it meets, sunk a little); on the side, one ray in from up-and-left (it rests on the hair there, sunk a little so it looks clipped in).
+ function hatParts(q,r,H,b,lw,bh){const blk=new THREE.MeshPhongMaterial({color:0x121016,shininess:35,specular:0x2c2a34}),sat=new THREE.MeshPhongMaterial({color:0x6e0f1e,shininess:90,specular:0x8a5a62});
+  const cr=new THREE.Mesh(new THREE.CylinderGeometry(r*1.04,r,H,28),blk);cr.position.y=H/2;q.add(cr);
+  const br=new THREE.Mesh(new THREE.CylinderGeometry(r+b,r+b,lw*1.7,32),blk);br.scale.z=1.08;br.position.y=lw*.85;q.add(br);
+  [-1,1].forEach(k=>{const lip=new THREE.Mesh(new THREE.TorusGeometry(r+b*.9,lw,6,32,Math.PI*.55),blk);lip.rotation.set(Math.PI/2,0,k>0?-Math.PI*.275:Math.PI*.725);lip.scale.y=1.08;lip.position.y=lw*2;q.add(lip)});
+  const bd=new THREE.Mesh(new THREE.CylinderGeometry(r*1.008+.002,r+.002,bh,28,1,true),sat);bd.position.y=lw*1.7+bh*.6;q.add(bd)}
+ function topHat(h,o){o=o||{};const s=Math.max(40,Math.min(100,o.ths==null?100:+o.ths||100))/100,side=!!o.thp,t=(s-.4)/.6;
+  h.updateMatrixWorld(true);const inv=new THREE.Matrix4().copy(h.matrixWorld).invert(),v=new THREE.Vector3(),y0=.085,ms=[];let r=.105,top=.15;
+  h.traverse(c=>{if(!c.isMesh||!c.geometry||!c.geometry.attributes.position)return;ms.push(c);const m=new THREE.Matrix4().multiplyMatrices(inv,c.matrixWorld),p=c.geometry.attributes.position;
+   for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).applyMatrix4(m);if(v.y<=y0)continue;const d=Math.hypot(v.x,v.z-.01);if(d<.26){r=Math.max(r,d+.006);top=Math.max(top,v.y)}}});
+  r=Math.min(r,.125);top=Math.min(top,.21);const H=Math.max(.15,top-y0+.04),q=new THREE.Group();q.scale.setScalar(s);
+  const rc=new THREE.Raycaster(),cast=(from,dir)=>{rc.set(from.clone().applyMatrix4(h.matrixWorld),dir.clone().transformDirection(h.matrixWorld));const x=rc.intersectObjects(ms,false)[0];return x?x.point.clone().applyMatrix4(inv):null};
+  if(side){const a=.6,dL=new THREE.Vector3(-Math.sin(a),Math.cos(a),0),oL=new THREE.Vector3(0,.03,0),hit=cast(oL.clone().addScaledVector(dL,.6),dL.clone().negate());
+   const P=hit||oL.clone().addScaledVector(dL,.15);P.addScaledVector(dL,-(.01+.025*t));q.position.copy(P);q.rotation.set(-.08,0,.35)}
+  else{const rho=r*s*.75;let hy=-1;[[0,0],[1,0],[-1,0],[0,1],[0,-1]].forEach(([dx,dz])=>{const x=cast(new THREE.Vector3(dx*rho,.6,.01+dz*rho),new THREE.Vector3(0,-1,0));if(x)hy=Math.max(hy,x.y)});
+   q.position.set(0,Math.max(y0,hy-(.012+.06*t)),.01);q.rotation.x=.06}
+  h.add(q);hatParts(q,r,H,.032,.007,.03)}
  // Mesmerizer's little blue pinstripe diner cap (garrison style, worn tilted) with a big red and white striped bow
  function headband(h){const q=new THREE.Group();q.position.set(-.03,.15,-.01);q.rotation.set(-.15,.0,.22);h.add(q);const pm=()=>patMat(TEX.pin(),1,1,1);
   const c=new THREE.Mesh(new THREE.BoxGeometry(.22,.07,.11),pm());q.add(c);const t=new THREE.Mesh(new THREE.BoxGeometry(.2,.035,.04),pm());t.position.y=.045;q.add(t);
@@ -6322,7 +6373,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const GRAD={grad:[0x121010,0xe8742a,0xffa448],shinobu:[0x141018,0x6a3a9a,0xa070d8,.5,.7],mitsuri:[0xf07aa8,0x7ac06a,0xa4e08a,.5,.68],inosuke:[0x12142a,0x1f3f8f,0x2a4fa8,.62,.82],muichiro:[0x121418,0x2a8a7a,0x6ad0b8],zenitsu:[0xf2c838,0xe8962a,0xf07a1a,.6,.8]};
  const SKIN={peach:['Peach',0xe2c0a0],porcelain:['Porcelain',0xf0d8c4],honey:['Honey',0xc8956a],umber:['Umber',0x8a5a3a],deep:['Deep',0x5a3a26],purple:['Rabbit purple',0x8a5ac8]};
  const SLOT=[0xe0705a,0x4fb3a9,0xe0b84a,0x9a7ad8],SLOTH=['bark','chestnut','ink','wheat'];
- const HAIRN={bald:'Bald',short:'Short',long:'Long',ponytail:'Ponytail',bob:'Bob with bangs',buns:'Twin buns',maomao:"Maomao's buns",nezuko:"Nezuko's long hair",miku:"Miku's twin tails",teto:"Teto's drill twin tails",braid:'Long braid',shinobu:"Shinobu's bob",mitsuri:"Mitsuri's braids",muichiro:"Muichiro's long hair"};
+ const HAIRN={bald:'Bald',short:'Short',long:'Long',ponytail:'Ponytail',bob:'Bob with bangs',buns:'Twin buns',maomao:"Maomao's buns",nezuko:"Nezuko's long hair",miku:"Miku's twin tails",teto:"Teto's drill twin tails",braid:'Long braid',shinobu:"Shinobu's bob",mitsuri:"Mitsuri's braids",muichiro:"Muichiro's long hair",buzz:'Buzz cut',messy:'Short messy',sidepart:'Side part',curtain:'Curtain bangs',spiky:'Spiky',wolf:'Wolf cut'};
  const EYEN={dots:'Dots',ydots:'Yellow dots (rabbit)',wide:'Wide',sleepy:'Sleepy',mesm:'Big round (Mesmerizer)',lashes:'Lashes',headlight:'Headlights'},MOUTHN={none:'None',smile:'Smile',flat:'Flat',oh:'Gasp',snake:'Snake grin',shark:'Open smile'};
  const NECK={'':'None',pearl:'Pearl necklace',gold:'Gold necklace',silver:'Small silver necklace'},HAORI={'':'None',tanjiro:"Tanjiro's haori",nezuko:'Black haori'};
  const EARC=[0xf2ece4,0x5a2a4a,0x141010,0xf0b0c0,0x8ab0d8,0xe8c030,0x7a9a4a,0xc02030];
@@ -6341,11 +6392,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),seen:!!a.seenall||SIA_DBG}}
  const lockKey=(k,v)=>{const L=LOCK[k];if(!L)return null;if(typeof L==='string')return v?L:null;return L[v]||null};
  const isOpen=(k,v,u)=>{const q=lockKey(k,v);return !q||!!(u||U())[q]};
- const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0};
+ const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,that:0,ths:100,thp:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -6363,7 +6414,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   const h=new THREE.Group();h.position.set(0,1.62,0);body.add(h);sph(.13,sk,.95,1.1,1,0,0,0,h);
   FITB=body;const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],gr=GRAD[hc],hm=P(gr?0:hc);HAIR[o.hair](hg,hm);FITB=null;
   if(gr)gradHair(hg,hm,gr);
-  if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.cape)cape(body);
+  if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.that)topHat(h,o);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.cape)cape(body);
   if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.invis)seeThrough(body,INV_OP,1);
   return{legs,arms,head:h}}
  // Nezuko's gradient, fitted to each hairstyle's own height (like her real hair): black at the crown/roots, starting to fade about 30% of the way down
@@ -6421,7 +6472,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   grp('Mouth','mouth',Object.keys(MOUTH).map(v=>({v,n:MOUTHN[v]})));
   grp('Outfit','outfit',Object.keys(OUTFIT).map(v=>({v,n:OUTFIT[v].n,c:OUTFIT[v].shirt==null?SLOT[0]:OUTFIT[v].shirt})));
   grp('Haori (over any outfit)','haori',Object.keys(HAORI).map(v=>({v,n:HAORI[v],c:v==='tanjiro'?0x2a7a52:v?0x18161a:null})));
-  grp('Layers (over any outfit)','tog',[['muzzle','Bamboo muzzle',0x7a9a4a],['sheath','Sword sheath',0x1a1a1e],['mask','Snake mask',0x5f8a4a],['tie','Teal tie',0x2ab5ac],['ears','Bunny ears',o.ears==null?0xf2ece4:o.ears],['cap','Red "052" cap',0xc8202e],['hb','Pinstripe cap with bow',0x3a62c4],['bat','Baseball bat (on back)',0xf2f0ee],['bfly','Butterfly hairclip',0xa070d8],['omask','Striped bandage mask',0xeeeae2],['boar','Boar head mask',0x6e6862],['cape','Flame cape',0xe8602a]].map(([v,n,c])=>({v,n,c})));
+  grp('Layers (over any outfit)','tog',[['muzzle','Bamboo muzzle',0x7a9a4a],['sheath','Sword sheath',0x1a1a1e],['mask','Snake mask',0x5f8a4a],['tie','Teal tie',0x2ab5ac],['ears','Bunny ears',o.ears==null?0xf2ece4:o.ears],['cap','Red "052" cap',0xc8202e],['hb','Pinstripe cap with bow',0x3a62c4],['bat','Baseball bat (on back)',0xf2f0ee],['bfly','Butterfly hairclip',0xa070d8],['omask','Striped bandage mask',0xeeeae2],['boar','Boar head mask',0x6e6862],['cape','Flame cape',0xe8602a],['that',"Magician's top hat",0x121016]].map(([v,n,c])=>({v,n,c})));
+  if(o.that)grp('Top hat position','thp',[{v:0,n:'On top'},{v:1,n:'On the side'}]);
   if(o.ears!=null)grp('Bunny ear color','earc',EARC.map(c=>({v:c,n:'',c})));
   grp('Jewelry','neck',Object.keys(NECK).map(v=>({v,n:NECK[v]})).concat([{v:'pin',n:'Silver hairpin',c:0xd4d8e0,tog:1}]));
   grp('Seen It All','tog',[['invis','See-through skin (invisible) [I]',0xbfe6ff],['roof','Roof',0xb8502e],['phone','Phone',0x5ab0ff],['disco','Disco ball',0xd8dce4],['tire','Tire tracks',0x222024],['duck','Rubber duck',0xf6d232],['lighter','Lighter',0xc8202e],['keys','Car keys',0xc8ccd4],['demon','Snake demon',0xf3e58a],['fpud','Fire puddles',0xff7a1a]].map(([v,n,c])=>({v,n,c})));
@@ -6432,7 +6484,9 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
     b.setAttribute('aria-pressed',on&&!locked?'true':'false');if(locked){b.classList.add('lk');b.title='Locked: '+HINT[lockKey(lkK,lv)]}
     b.innerHTML=locked?'Locked ???':(it.c!=null?'<span class="sw" style="background:'+swc(it.c)+'"></span>':'')+(it.n||'');if(!it.n)b.setAttribute('aria-label','Color '+hex(it.c));
     b.dataset.k=it.tog?'tog':g.k;b.dataset.v=String(it.v);r.appendChild(b);
-    b.addEventListener('click',()=>pick(b.dataset.k,it.v,locked?HINT[lockKey(lkK,lv)]:null))})});siaActs(u)}
+    b.addEventListener('click',()=>pick(b.dataset.k,it.v,locked?HINT[lockKey(lkK,lv)]:null))})});hatSize();siaActs(u)}
+ function hatSize(){if(!LOOK.that)return;const r0=sec.querySelector('[data-k="thp"]');if(!r0)return;const h2=document.createElement('h3');h2.textContent='Top hat size';const w=document.createElement('div');w.className='row';const rg=document.createElement('input');rg.type='range';rg.id='czThs';rg.min='40';rg.max='100';rg.step='5';rg.value=String(LOOK.ths==null?100:LOOK.ths);rg.setAttribute('aria-label','Top hat size');rg.style.cssText='flex:1 1 220px;min-width:0;accent-color:#c8202e;touch-action:none';const out=document.createElement('span');out.className='e';out.style.cssText='font-size:12px;color:#a49aa8;min-width:3em';out.textContent=rg.value+'%';
+  rg.addEventListener('input',()=>{LOOK.ths=+rg.value;out.textContent=rg.value+'%';redoll()});rg.addEventListener('change',()=>{LOOK.ths=+rg.value;save()});w.append(rg,out);r0.parentNode.after(h2,w)}
  function pick(k,v,lockedHint){if(lockedHint){msg.textContent='Locked. '+lockedHint;return}msg.textContent='';const o=LOOK;
   if(k==='tog'){if(v==='ears')o.ears=o.ears==null?0xf2ece4:null;else o[v]=o[v]?0:1;if(v==='duck'&&o.duck)squeak()}else if(k==='earc')o.ears=v;else o[k]=v;
   save();rows();redoll();const f=sec.querySelector('[data-k="'+k+'"][data-v="'+String(v)+'"]');if(f)f.focus()}
