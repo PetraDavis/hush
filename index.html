@@ -2148,9 +2148,9 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 })();
 // ---------- 7. endings, exit cutscenes, credits ----------
 (function(){const XT=window.__xt;
- const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted',joyride:'Joyride',pacifier:'Pacifier',roof:'Jump Off the Roof',phone:'Call the Parents 10 Times',lights:'Lights Party',derby:'Weapon of Choice: Car',bath:'Bath Time',arson:'A Is for Arson'},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson'];
+ const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted',joyride:'Joyride',pacifier:'Pacifier',roof:'Jump Off the Roof',phone:'Call the Parents 10 Times',lights:'Lights Party',derby:'Weapon of Choice: Car',bath:'Bath Time',arson:'A Is for Arson',water:'You... burnt.... the water?'},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water'];
  // v79: one line under every ending card's title (Petra)
- const DESC={parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back.",joyride:"You stole their car. Honestly? Fair.",pacifier:"It worked. She hasn't made a sound since. She hasn't blinked, either.",roof:"You fell off a roof and got demoted to baby. The new sitter is very good at her job.",phone:"Ten calls. Nine voicemails. One very short conversation.",lights:"One switch. A hundred flicks. One demon with a migraine.",derby:"You dropped a house on it. Then you ran it over. It was having a bad night.",bath:"Who leaves a bath running? You. You do.",arson:"B is for Babysitter. F is for Fired."};
+ const DESC={parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back.",joyride:"You stole their car. Honestly? Fair.",pacifier:"It worked. She hasn't made a sound since. She hasn't blinked, either.",roof:"You fell off a roof and got demoted to baby. The new sitter is very good at her job.",phone:"Ten calls. Nine voicemails. One very short conversation.",lights:"One switch. A hundred flicks. One demon with a migraine.",derby:"You dropped a house on it. Then you ran it over. It was having a bad night.",bath:"Who leaves a bath running? You. You do.",arson:"B is for Babysitter. F is for Fired.",water:"I am sorry but how the <span class=\"redact\" aria-label=\"(redacted)\" style=\"display:inline-block;width:5ch;height:1em;background:#fff;vertical-align:-0.12em\"></span> did you BURN THE WATER!!!!!"};
  const got=()=>{try{const a=JSON.parse(XT.ls.get('hushEndings')||'[]');return Array.isArray(a)?a.filter(k=>NAMES[k]):[]}catch(e){return[]}};
  XT.endInfo=()=>({order:ORDER.slice(),names:NAMES,desc:DESC,got:got()});
  const css=document.createElement('style');css.textContent=`#xfade{position:fixed;inset:0;z-index:8;background:#000;opacity:0;pointer-events:none;transition:opacity 1.2s;display:flex;align-items:center;justify-content:center;padding:0 16px;text-align:center;font-family:var(--display);font-style:italic;font-size:1.6rem;color:#d8cfc4}#xfade.on{opacity:1}
@@ -2187,6 +2187,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   derby:["Weapon of Choice: Car.","You brought the house down on it. The only things left standing were the garage, which you were in, and the crib, where Lilith slept through the whole thing without a scratch. The demon crawled out of the rubble absolutely furious. Their car started with no keys at all, because it wanted this too. Bonk. Nobody pays you for tonight, but nobody presses charges either. Who would believe them?"],
   bath:["Bath Time.","You left the bath running. Then the bathroom ran over, then the hallway, then the stairs, which made a surprisingly nice waterfall. The living room has a tide now. Lilith is perfectly fine and perfectly dry, bundled in a towel on the porch with the plumber, who keeps laughing and taking photos. The house is not fine. The house will never be fine again."],
   arson:["A Is for Arson.","It started with the TV remote and ended with the house. The fire department carried you out over one shoulder and Lilith out in the crook of the other arm, wearing a tiny plastic fire helmet, absolutely delighted and not one hair singed. The captain asked who was in charge. You raised your hand. He said, \"You're fired,\" and the whole crew laughed for a full minute. He had been waiting his entire career to say that."],
+  water:["You... burnt.... the water?","You poured old motor oil into the bath and tossed in a match, and the water caught fire. Not the house. The water. Four firefighters stood in the bathroom doorway staring at a burning bathtub while one of them, who grew up in Cleveland, nodded like a man who had seen this before. Lilith watched from the hall in a tiny plastic fire helmet, perfectly fine and thrilled about it. The captain told you that you were fired. Then he told you that water is not supposed to do that."],
   cult:["Welcome home.","They wrap you in the third robe. It fits. The Order of the Low Door has a new sister, and the Deep has its gift, and nobody ever asks the sitter's name again."]};
  function showCard(id,extra){const [h,p]=TXT[id];const g=got();if(document.pointerLockElement)document.exitPointerLock();
   card.innerHTML='<div class="in"><p class="brand">HUSH</p><p class="tag">Ending '+(ORDER.indexOf(id)+1)+' of '+ORDER.length+' &middot; '+NAMES[id]+'</p><h1>'+(extra&&extra.h&&id==='death'?extra.h:h)+'</h1><p class="desc">'+(DESC[id]||'')+'</p><p class="txt">'+(extra&&extra.p&&id==='death'?extra.p+' ':'')+p+'</p>'+
@@ -2207,7 +2208,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  // helpers for the cut scenes
  const say=(L,t,st)=>{while(st.i<L.length&&t>=L[st.i][0]){const [,k,txt,d]=L[st.i];subtitle(txt,d*1000);if(k&&XT.voice)XT.voice(txt.replace(/\(.*?\)/g,''),k,d*.85,.4);st.i++}};
  const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
- const CUT={car:()=>null,left:()=>null,collapse:()=>null,joyride:()=>XT.joyCut?XT.joyCut():null,pacifier:()=>null,roof:()=>XT.sixCut?XT.sixCut('roof'):null,phone:()=>XT.sixCut?XT.sixCut('phone'):null,lights:()=>XT.sixCut?XT.sixCut('lights'):null,derby:()=>XT.sixCut?XT.sixCut('derby'):null,bath:()=>XT.sixCut?XT.sixCut('bath'):null,arson:()=>XT.sixCut?XT.sixCut('arson'):null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
+ const CUT={car:()=>null,left:()=>null,collapse:()=>null,joyride:()=>XT.joyCut?XT.joyCut():null,pacifier:()=>null,roof:()=>XT.sixCut?XT.sixCut('roof'):null,phone:()=>XT.sixCut?XT.sixCut('phone'):null,lights:()=>XT.sixCut?XT.sixCut('lights'):null,derby:()=>XT.sixCut?XT.sixCut('derby'):null,bath:()=>XT.sixCut?XT.sixCut('bath'):null,arson:()=>XT.sixCut?XT.sixCut('arson'):null,water:()=>XT.waterCut?XT.waterCut():null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
   parents(){if(window.__rlm&&__rlm.on)return null;const {mom,dad}=XT.props;mom.visible=dad.visible=true;subtitle('',1);
    const L=[[2.6,'mom',"We're home! Oh... you're still here.",2.6],[5.6,'mom',"She was so quiet. Wasn't she quiet? We could hear how quiet she was.",3.6],[9.6,'dad',"Thank you. We'll take it from here.",2.6],[12.6,null,"(Their smiles are much too wide. Neither of them blinks.)",3]],st={i:0};
    fadeTo(false);
@@ -3537,7 +3538,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function noise(dur,vol,fr){if(!AC||!master)return;const n=AC.sampleRate*dur,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=fr||300;g.gain.value=vol;s.connect(f);f.connect(g);g.connect(master);s.start()}
  // the end of it: single-player gets the ending; in multiplayer only you die (and the ending is still counted)
  let over=false;
- function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You stole their car. Nobody is coming after you.'],pacifier:['She is quiet now.','She has not looked away from you once.'],roof:['You fell off the roof.','Somebody else is babysitting you now.'],phone:['You got fired.','Over the phone, on call ten.'],lights:['Lights party.','The demon has a migraine.'],derby:['Weapon of choice: car.','The house came down. You drove out.'],bath:['The house flooded.','You left the bath running.'],arson:['The house burned down.','You fed the fireplace.']}[id];
+ function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You stole their car. Nobody is coming after you.'],pacifier:['She is quiet now.','She has not looked away from you once.'],roof:['You fell off the roof.','Somebody else is babysitting you now.'],phone:['You got fired.','Over the phone, on call ten.'],lights:['Lights party.','The demon has a migraine.'],derby:['Weapon of choice: car.','The house came down. You drove out.'],bath:['The house flooded.','You left the bath running.'],arson:['The house burned down.','You fed the fireplace.'],water:['The water is on fire.','You set the bath water on fire.']}[id];
   window.__noMove=0;if(window.__mp&&__mp.active){safe(()=>XT.markEnding(id),'mark');safe(()=>__mp.die(T[0],T[1]),'die');flash('#000',0,900);over=false;return}
   XT.ending(id);setTimeout(()=>flash('#000',0,10),400)}
  OUT.finish=finish;OUT.park=()=>{T.on=false;T.armed=false;car.visible=false;if(beam)beam.intensity=0;if(eng)eng.g.gain.value=0};
@@ -4474,6 +4475,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   {id:'derby',n:'Weapon of Choice: Car',d:'Find the other ending in the garage.',h:1},
   {id:'bath',n:'Bath Time',d:'Find the ending in the bathtub.',h:1},
   {id:'arson',n:'A Is for Arson',d:'Find the ending in the fireplace.',h:1},
+  {id:'water',n:'You... burnt.... the water?',d:'Find the ending in the bathtub. The other one.',h:1},
   {id:'poison',n:'Poison Taster',d:'Taste the unlabeled bottle in the bathroom cabinet.',h:1},
   {id:'hairpin',n:"Jinshi's Gift",d:'Find the gold hairpin hidden outside.'}];
  const ls={get(){try{return JSON.parse(localStorage.getItem('hushAch')||'{}')||{}}catch(e){return{}}},set(v){try{localStorage.setItem('hushAch',JSON.stringify(v))}catch(e){}}};
@@ -4517,7 +4519,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   if(mp&&mp.active&&mp.started&&safe(()=>mp.dbg.roster().length,'n')>=4)unlock('four')},'watch'),250);
  const oe=XT.ending;
  XT.ending=function(id,extra){const r=oe.apply(this,arguments);
-  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson'].includes(id))unlock(id);
+  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water'].includes(id))unlock(id);
    const won=id==='parents'||id==='dawn'||id==='secret';
    if(won){unlock('night1');if((XT.night||1)>=3)unlock('night3');if(XT.diffKey&&XT.diffKey()==='nightmare')unlock('nightmare');if(!run.hid)unlock('nohide');if(!run.cried)unlock('nocry');
     if(window.__mp&&__mp.active)unlock('together')}
@@ -4846,12 +4848,15 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
      if(t>3.6)sp.intensity=2.2;
      if(t>10.4&&!hit)v=Math.min(9,v+dt*7);else if(hit)v=Math.max(0,v-dt*5);z+=v*dt;car.position.set(P0.x,F,z);car.rotation.y=P0.r;car.updateMatrixWorld(true);if(eng){eng.o.frequency.value=38+v*6;eng.o2.frequency.value=57+v*9}
      if(g&&!hit){g.visible=t>5.6;g.scale.setScalar(.85);if(t>5.6&&t<9.4)dz=mZ(9.2-2.2*sm((t-5.6)/3.8));g.position.set(P0.x,F,dz);g.lookAt(P0.x,F,z);XT.demon.force=t>9.2?'scare':'walk';
-      if(z+2.2>=dz-.4){hit={t,vy:7.5,vz:10,y:F,z:dz};hiss(.3,.9,500);tone(220,.35,.18,'square',0,880);tone(880,.6,.08,'sine',0,1760)}}
-     if(g&&hit){const k=t-hit.t;hit.y=F+hit.vy*k-4.9*k*k;g.position.set(P0.x,hit.y,dz+hit.vz*k);g.rotation.x+=dt*9;g.rotation.z+=dt*4;XT.demon.force='scare';if(k>3)g.visible=false}
-     const e=car.localToWorld(new V3(.42,1.14,-.34));cam.position.copy(e);
-     if(hit&&g&&g.visible&&t-hit.t<1.6)look(g.position.x,Math.max(g.position.y+1,F+1),g.position.z);else{const f=car.localToWorld(new V3(.42,1.22,7));look(f.x,f.y,f.z)}
+      if(z+2.2>=dz-.4){hit={t,vy:15,vz:13,y:F,z:dz,land:0};g.scale.setScalar(1.3);if(!st.fl){st.fl=new THREE.PointLight(0xffe0b0,5,14,1.2);scene.add(st.fl)}/* v96 (Petra): it goes MUCH further */hiss(.3,.9,500);tone(220,.35,.18,'square',0,880);tone(880,.6,.08,'sine',0,1760)}}
+     if(g&&hit){const k=t-hit.t;hit.y=F+hit.vy*k-4.9*k*k;if(!hit.land){g.position.set(P0.x+Math.sin(k*1.3)*1.5,hit.y,dz+hit.vz*k);g.rotation.x+=dt*14;g.rotation.z+=dt*6;g.rotation.y+=dt*3;XT.demon.force='scare';
+      const J=safe(()=>D().J,'J');if(J)for(let i=0;i<14;i++){const s=J['tail'+i];if(s){s.rotation.x=Math.sin(t*19+i*.7)*.55;s.rotation.z=Math.cos(t*15+i*.9)*.45}}
+      if(k>.5&&hit.y<F){hit.land=t;g.visible=false;hiss(.6,.25,260);setTimeout(()=>{tone(1320,1.4,.06,'sine');tone(1980,1.1,.03,'sine')},250)}}}
+     const e=car.localToWorld(hit?new V3(.42,2.3,-2.6):new V3(.42,1.14,-.34));cam.position.copy(e);/* v96: after the bonk the camera rises over the roof so the flight stays in shot */
+     if(st.fl){st.fl.visible=!!(hit&&!hit.land);if(g){st.fl.position.copy(g.position);st.fl.position.y+=1;st.fl.position.z-=2.5}}
+     if(hit&&g&&!hit.land)look(g.position.x,Math.max(g.position.y+.6,F+1),g.position.z);else if(hit&&hit.land&&t-hit.land<1.2)look(P0.x,F+1,dz+hit.vz*(hit.land-hit.t));else{const f=car.localToWorld(new V3(.42,1.22,7));look(f.x,f.y,f.z)}
      say(L,t,st);if(t>20.4)fadeOut();return t>21.8},
-    end(){if(eng){const e=eng;eng=null;try{e.g.gain.setTargetAtTime(0,AC.currentTime,.3)}catch(x){}setTimeout(()=>{try{e.o.stop();e.o2.stop()}catch(x){}},1500)}car.remove(sp);car.remove(sp.target);car.position.set(P0.x,F,P0.z);if(g){g.visible=false;g.rotation.set(0,0,0);g.scale.setScalar(1)}XT.demon.force=null}}},
+    end(){if(eng){const e=eng;eng=null;try{e.g.gain.setTargetAtTime(0,AC.currentTime,.3)}catch(x){}setTimeout(()=>{try{e.o.stop();e.o2.stop()}catch(x){}},1500)}car.remove(sp);car.remove(sp.target);if(st.fl)scene.remove(st.fl);car.position.set(P0.x,F,P0.z);if(g){g.visible=false;g.rotation.set(0,0,0);g.scale.setScalar(1)}XT.demon.force=null}}},
   bath(){const st={i:0};const grp=new THREE.Group();
    const pool=new THREE.Mesh(new THREE.PlaneGeometry(12.8,13.2),new THREE.MeshPhongMaterial({color:0x3a78b0,transparent:true,opacity:.62,shininess:90,specular:0xffffff,depthWrite:false}));pool.rotation.x=-Math.PI/2;pool.position.set(2.3,F+.02,3);grp.add(pool);
    const cv=document.createElement('canvas');cv.width=64;cv.height=64;{const q=cv.getContext('2d');q.fillStyle='#4a90c8';q.fillRect(0,0,64,64);q.fillStyle='rgba(230,245,255,.7)';for(let i=0;i<22;i++)q.fillRect((i*29)%64,(i*17)%64,2+(i%3),10+(i%4)*4)}
@@ -4892,6 +4897,78 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   [-.26,.26].forEach(x=>{const a=box(.1,.5,.1,hood,x,1.0,-.32,g);a.userData.arm=1});box(.4,.8,.24,M(0x2a2a3a),0,.42,.18,g);return g}
  XT.sixCut=id=>CUTS[id]?CUTS[id]():null;
  XT.six={S,get onRoof(){return onRoof},get flick(){return flick},dial,toss,fall,DZ,inGarage,get fpLit(){return fpLit},get fpH(){return !!fpH}};
+})();
+</script>
+<script type="text/x-hush">
+// ===== v96 (Petra): "You... burnt.... the water?" (Lake Erie). The water itself catches fire, like the Ohio rivers did. No hints anywhere.
+// A can of OLD MOTOR OIL on the garage shelves, poured into a bathtub that has water in it, then a match from the box on the fireplace mantel.
+// Bath Time still works the same (the tap fills the tub; the oil just floats on top). Lilith is never hurt. Goes through OUT.finish like the v95 endings.
+(function(){'use strict';const XT=window.__xt,OUT=window.__out;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush erie] '+(t||''),e)}};
+ if(!XT||!OUT||!XT.six)return;const B=XT.six.S;
+ const S={can:false,poured:false,match:false,lit:false};let over=false,burn=-1;
+ const busy=()=>!!(window.__cut||ended||window.__dead||window.__tbc||(window.__mp&&(__mp.ghost||__mp.demon))||(window.__rlm&&__rlm.on));
+ const sm=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
+ const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
+ const say=(L,t,st)=>{while(st.i<L.length&&t>=L[st.i][0]){const [,k,txt,d]=L[st.i];subtitle(txt,d*1000);if(k&&XT.voice)safe(()=>XT.voice(txt.replace(/\(.*?\)/g,''),k,d*.85,.4),'voice');st.i++}};
+ const fadeOut=()=>{const f=document.getElementById('xfade');if(f&&!f.classList.contains('on')){f.hidden=false;f.textContent='';requestAnimationFrame(()=>f.classList.add('on'))}};
+ const fx=(c,o,ms)=>{const e=document.getElementById('outFx');if(!e)return;e.style.transition='opacity '+(ms||350)+'ms';if(c)e.style.background=c;e.style.opacity=o};
+ function hiss(d,g,f,type){if(!AC||!master||muted)return;const n=Math.max(1,AC.sampleRate*d|0),b=AC.createBuffer(1,n,AC.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);const s=AC.createBufferSource(),fl=AC.createBiquadFilter(),e=AC.createGain();s.buffer=b;fl.type=type||'lowpass';fl.frequency.value=f||400;e.gain.value=g;s.connect(fl);fl.connect(e);e.connect(master);s.start()}
+ function tone(f,d,g,type,f1){if(!AC||!master||muted)return;const t=AC.currentTime,o=AC.createOscillator(),e=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);e.gain.setValueAtTime(g,t);e.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(e);e.connect(master);o.start(t);o.stop(t+d+.05)}
+ function end(id){if(over)return;over=true;window.__noMove=1;
+  if(window.__mp&&__mp.active){fx('#000',1,1600);setTimeout(()=>{safe(()=>OUT.finish(id),'mp '+id);over=false;window.__noMove=0},1800);return}
+  safe(()=>OUT.finish(id),'fin '+id)}
+
+ // the can: a cartoonish red oil can with a yellow label, on the middle shelf of the garage's west shelving
+ const can=new THREE.Group();cyl(.09,.09,.26,M(0xb8261e),0,.13,0,10,can);cyl(.025,.025,.06,M(0x3a3a3e),.04,.29,0,6,can);
+ {const cv=document.createElement('canvas');cv.width=128;cv.height=64;const q=cv.getContext('2d');q.fillStyle='#f2d03a';q.fillRect(0,0,128,64);q.fillStyle='#1a1414';q.font='bold 22px sans-serif';q.textAlign='center';q.fillText('OLD MOTOR',64,28);q.fillText('OIL',64,54);
+  const lb=new THREE.Mesh(new THREE.PlaneGeometry(.17,.1),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv)}));lb.rotation.y=Math.PI/2;lb.position.set(.092,.13,0);can.add(lb)}
+ XT.place(can,-10.2,F+.79,-.85);
+ const ch=new THREE.Mesh(new THREE.BoxGeometry(.4,.45,.4),hitM);XT.place(ch,-10.15,F+.95,-.85);
+ ch.userData.i={get label(){return 'A can of old motor oil'},act(){if(busy()||over||S.can||S.poured)return;S.can=true;can.visible=false;const i=inter.indexOf(ch);if(i>=0)inter.splice(i,1);
+  subtitle('A dented can of OLD MOTOR OIL. It sloshes. It smells like a parking lot. You take it, for reasons.',3800)}};inter.push(ch);
+ // the matches: a little red box on the living-room fireplace mantel
+ const mb=new THREE.Group();box(.1,.03,.06,M(0xc8202e),0,.015,0,mb);box(.07,.031,.04,M(0xf0e0b0),0,.016,0,mb);XT.place(mb,-3.3,F+1.075,-.55);
+ const mh=new THREE.Mesh(new THREE.BoxGeometry(.3,.2,.3),hitM);XT.place(mh,-3.3,F+1.1,-.55);
+ mh.userData.i={get label(){return 'A box of matches'},act(){if(busy()||over||S.match)return;S.match=true;mb.visible=false;const i=inter.indexOf(mh);if(i>=0)inter.splice(i,1);
+  subtitle('A box of long fireplace matches. You pocket it.',2600)}};inter.push(mh);
+ // the tub: the oil slick and the fire sit on the bath water from Bath Time
+ const slM=new THREE.MeshPhongMaterial({color:0x2a1e30,transparent:true,opacity:.0,shininess:140,specular:0xc080ff,depthWrite:false});
+ const slick=new THREE.Mesh(new THREE.PlaneGeometry(1.5,.56),slM);slick.rotation.x=-Math.PI/2;slick.visible=false;XT.place(slick,8.0,.1,-3.1);
+ const flm=new THREE.Group(),fl=[];for(let i=0;i<18;i++){const m=new THREE.Mesh(new THREE.ConeGeometry(.06+Math.random()*.05,.3,6),new THREE.MeshBasicMaterial({color:[0xff5a10,0xff9a30,0xffd060][i%3],transparent:true,opacity:.88}));
+  m.position.set(-.3+(i%6)*.17+Math.random()*.04,.15,-.14+Math.floor(i/6)*.14);m.userData.h=Math.random()*6;flm.add(m);fl.push(m)}
+ flm.visible=false;XT.place(flm,8.2,.1,-3.1);const pl=new THREE.PointLight(0xff8a30,0,6,2);pl.position.set(0,.6,0);flm.add(pl);
+ const wy=()=>.1+.43*Math.min(1,B.water/20);
+ // it sits just in front of the hide-in-the-tub panel and only takes over while you carry the can or the oil is in (otherwise the tub hides you as before)
+ const th=new THREE.Mesh(new THREE.BoxGeometry(1.64,1.0,.42),hitM);XT.place(th,8.5,.7,-2.78);
+ th.userData.i={get label(){return S.poured?(S.match?'Strike a match':'The bathtub'):S.can?'Pour the motor oil in the bath':'The bathtub'},act(){if(busy()||over||S.lit)return;
+  if(!S.poured){if(!S.can){subtitle(B.water>0?'A bathtub with some water in it.':'An empty bathtub.',2200);return}
+   if(B.water<3){subtitle('You tip the can over the empty tub, then stop. The oil wants something to float on.',3400);return}
+   S.poured=true;S.can=false;subtitle('Glug. Glug. Glug. A rainbow slick spreads across the bath water. It looks like a gas station puddle. It looks like Ohio, 1969.',4600);hiss(.8,.08,500);draw();return}
+  if(!S.match){subtitle('The bath water has a shimmering rainbow film on it. It smells flammable, which water should not.',3400);return}
+  ignite()}};
+ function draw(){slick.visible=S.poured;slick.position.y=wy()+.004;slM.opacity=S.poured?.7:0}
+ function ignite(){S.lit=true;B.tap=false;subtitle('You strike a match and flick it at the bath. FWOOMP.',2600);hiss(1.2,.4,900);tone(70,1,.12,'sawtooth',40);burn=0;
+  setTimeout(()=>{if(!over)subtitle('(The water is on fire. The WATER. Is on FIRE.)',3200)},2600)}
+ XT.onUpdate(dt=>{safe(()=>{draw();const want=(S.can||S.poured)&&!S.lit&&!over,i=inter.indexOf(th);if(want&&i<0)inter.push(th);else if(!want&&i>=0)inter.splice(i,1);if(!S.lit)return;const T=performance.now()/1000,k=burn<0?1:Math.min(2.2,.4+burn*.5);flm.visible=true;flm.position.y=wy();pl.intensity=1.6+.4*Math.sin(T*11);
+  fl.forEach(m=>m.scale.set(1,k*(.8+.35*Math.abs(Math.sin(T*6+m.userData.h))),1));if(burn>=0&&!over){burn+=dt;if(burn>6)end('water')}},'erie')});
+ XT.parts.erie={save:()=>({c:S.can?1:0,p:S.poured?1:0,m:S.match?1:0}),load:v=>{if(!v)return;S.can=!!v.c;S.poured=!!v.p;S.match=!!v.m;
+  if(S.can||S.poured){can.visible=false;const i=inter.indexOf(ch);if(i>=0)inter.splice(i,1)}if(S.match){mb.visible=false;const i=inter.indexOf(mh);if(i>=0)inter.splice(i,1)}draw()}};
+
+ // the cut scene: firefighters in the bathroom doorway, staring at a bathtub that is on fire
+ XT.waterCut=()=>{const st={i:0},grp=new THREE.Group(),men=[];const calm=window.__getCalm&&__getCalm();
+  [[6.75,-2.0],[8.85,-2.1],[6.8,-1.15]].forEach(([x,z])=>{const g=new THREE.Group(),tan=M(0x6a5a2a),ref=M(0xd8e040);box(.5,.75,.3,tan,0,1.1,0,g);box(.52,.06,.32,ref,0,.95,0,g);box(.44,.75,.26,tan,0,.38,0,g);
+   sph(.13,M(0xe8c0a0),0,1.62,0,1,1.1,1,g);const h=sph(.17,M(0xd0281e),0,1.72,0,1.1,.55,1.2,g);box(.36,.03,.42,M(0xd0281e),0,1.68,.06,g);XT.place(g,x,0,z);g.lookAt(mX(7.9),1.0,mZ(-3.1));men.push(g);grp.add(g)});
+  scene.add(grp);
+  const L=[[.3,null,'(The fire department comes up the stairs at a run, hoses ready.)',3],[3.6,null,'(They stop in the bathroom doorway.)',2.2],[6,null,'(The bathtub is full of water. The water is on fire.)',3],
+   [9.4,'dad','...The WATER is on fire?',2.4],[12,'stranger',"I'm from Cleveland. I've seen this before.",2.8],[15.2,null,'(Lilith watches from the hallway in a tiny plastic fire helmet, clapping.)',3.4],
+   [18.8,'dad',"You're the babysitter? You're fired.",2.8],[21.8,null,'(Somebody starts humming a song about a river.)',2.8]];
+  return{step(dt,t){const T=performance.now()/1000;flm.visible=true;fl.forEach(m=>m.scale.set(1,2.2*(.8+.35*Math.abs(Math.sin(T*6+m.userData.h))),1));pl.intensity=2+.5*Math.sin(T*13);
+    cam.position.set(mX(7.75),1.75,mZ(-.55));look(mX(7.9),.55+Math.sin(t*.4)*.02,mZ(-3.1));
+    if(t>2&&t<9&&!calm){if(!st.s||t-st.s>1.6){st.s=t;tone(700,.8,.05,'sine',1000)}}
+    if(Math.random()<dt*4)hiss(.3,.06,600+Math.random()*1500,'bandpass');
+    say(L,t,st);if(t>23.6)fadeOut();return t>25},
+   end(){scene.remove(grp);fx(null,0,10)}}};
+ XT.erie={S,ignite,draw,get burn(){return burn}};
 })();
 </script>
 
@@ -5589,6 +5666,10 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    const M=[[1.2,72],[1.5,72],[1.8,76],[2.1,79],[2.7,77],[3,76],[3.3,74],[3.9,72],[4.2,74],[4.5,76],[4.8,72]];M.forEach(([x,m])=>kazoo(t+x,m,.26));
    for(let i=0;i<8;i++)tuba(t+1.2+i*.45,i%2?43:48,.2,.06);slide(t+5.6,79,40,2,.06);V(t+5.8,{f:180},2,{w:'sine',g:.05,to:30,vib:9,vd:.06});return 8.5},
   // v95 A Is for Arson: crackling, a fire-engine siren, a brass-band oom-pah and a cymbal
+  // v96 Lake Erie: crackle, a sad kazoo river song, a fire-engine whoop and a cymbal
+  water(t){for(let i=0;i<30;i++)noise(t+Math.random()*8,.04,2500+Math.random()*3000,.05,1);
+   [[.6,67],[1,67],[1.4,64],[1.8,62],[2.4,60],[3,62],[3.4,64],[3.8,60],[4.6,59],[5.2,55]].forEach(([x,m])=>kazoo(t+x,m,.35));
+   for(let i=0;i<8;i++)tuba(t+.6+i*.6,i%2?43:36,.25,.06);slide(t+6,74,81,.5,.05);slide(t+6.5,81,74,.5,.05);crash(t+7.2,.1);return 9},
   arson(t){for(let i=0;i<40;i++)noise(t+Math.random()*9,.04,2500+Math.random()*3000,.05,1);
    for(let i=0;i<3;i++){slide(t+i*1.2,74,81,.6,.05);slide(t+i*1.2+.6,81,74,.6,.05)}
    const b=.22;for(let i=0;i<16;i++){tuba(t+3.6+i*b*2,[48,55,53,55][i%4]-12,b*.9,.08);V(t+3.6+i*b*2+b,[64,67,65,67][i%4],b*.5,{w:'square',g:.025,f:900})}
@@ -5717,6 +5798,9 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   bath(q,W,H){const g=q.createLinearGradient(0,0,0,H);g.addColorStop(0,'#1a2a3a');g.addColorStop(1,'#0a1420');q.fillStyle=g;q.fillRect(0,0,W,H);q.fillStyle='#2a2430';for(let i=0;i<5;i++)q.fillRect(W*.1+i*26,H*.2+i*18,30,8);
    q.fillStyle='rgba(80,150,210,.65)';q.fillRect(0,H*.55,W,H*.45);q.strokeStyle='rgba(220,240,255,.6)';q.lineWidth=2;for(let i=0;i<8;i++){q.beginPath();q.arc(20+i*42,H*.55,12,Math.PI,0);q.stroke()}
    q.fillStyle='#f4d040';q.beginPath();q.ellipse(W*.66,H*.53,26,15,0,0,7);q.fill();q.beginPath();q.arc(W*.66+18,H*.53-16,11,0,7);q.fill();q.fillStyle='#f08030';q.fillRect(W*.66+27,H*.53-17,10,5);q.fillStyle='#000';q.fillRect(W*.66+20,H*.53-20,3,3)},
+  water(q,W,H){q.fillStyle='#0a0c14';q.fillRect(0,0,W,H);q.fillStyle='#e8e4dc';q.beginPath();q.moveTo(W*.12,H*.55);q.lineTo(W*.88,H*.55);q.quadraticCurveTo(W*.86,H*.92,W*.5,H*.92);q.quadraticCurveTo(W*.14,H*.92,W*.12,H*.55);q.fill();
+   q.fillStyle='rgba(80,140,200,.9)';q.fillRect(W*.15,H*.55,W*.7,10);for(let i=0;i<12;i++){q.fillStyle=['#ff4a10','#ff9a20','#ffd040'][i%3];const x=W*.18+i*W*.055,h=30+(i*37)%40;q.beginPath();q.moveTo(x-9,H*.56);q.quadraticCurveTo(x,H*.56-h*1.6,x+9,H*.56);q.fill()}
+   q.fillStyle='#b8261e';q.fillRect(W*.04,H*.66,26,36);q.fillStyle='#f2d03a';q.fillRect(W*.04,H*.72,26,12);q.fillStyle='#f0e8c8';q.font='bold 20px sans-serif';q.fillText('H₂O?!',W*.62,H*.2)},
   arson(q,W,H){q.fillStyle='#0c0608';q.fillRect(0,0,W,H);const g=q.createRadialGradient(W*.5,H*.7,10,W*.5,H*.7,200);g.addColorStop(0,'rgba(255,140,40,.6)');g.addColorStop(1,'rgba(255,60,20,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
    q.fillStyle='#1a1214';q.beginPath();q.moveTo(W*.2,H*.9);q.lineTo(W*.2,H*.5);q.lineTo(W*.5,H*.28);q.lineTo(W*.8,H*.5);q.lineTo(W*.8,H*.9);q.fill();
    for(let i=0;i<14;i++){q.fillStyle=['#ff4a10','#ff9a20','#ffd040'][i%3];const x=W*.18+i*16,h=30+(i*37)%50;q.beginPath();q.moveTo(x-10,H*.9);q.quadraticCurveTo(x,H*.9-h*1.6,x+10,H*.9);q.fill()}
@@ -5729,7 +5813,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const label=()=>{const I=XT.endInfo();b.textContent='Endings '+I.got.length+'/'+I.order.length};label();
  function open(){const I=XT.endInfo();pan.innerHTML='<div class="in"><div class="bar"><div><h2>Endings</h2><p class="sub">Found '+I.got.length+' of '+I.order.length+'</p></div><button type="button" class="x">Close</button></div><div class="grid"></div></div>';
   const G=pan.querySelector('.grid');I.order.forEach((id,k)=>{const f=I.got.includes(id),c=document.createElement('div');c.className='c'+(f?'':' lock');const cv=document.createElement('canvas');cv.width=320;cv.height=200;c.appendChild(cv);
-   const tx=document.createElement('div');tx.className='t';tx.innerHTML='<p class="n">Ending '+(k+1)+'</p><h3></h3><p></p>';tx.querySelector('h3').textContent=f?I.names[id]:'???';tx.querySelector('p:last-child').textContent=f?(I.desc[id]||''):'Not found yet.';c.appendChild(tx);G.appendChild(c);
+   const tx=document.createElement('div');tx.className='t';tx.innerHTML='<p class="n">Ending '+(k+1)+'</p><h3></h3><p></p>';tx.querySelector('h3').textContent=f?I.names[id]:'???';tx.querySelector('p:last-child').innerHTML=f?(I.desc[id]||''):'Not found yet.';c.appendChild(tx);G.appendChild(c);
    safe(()=>{const q=cv.getContext('2d');(f&&P[id]?P[id]:LOCKD)(q,320,200)},'draw '+id)});
   pan.querySelector('.x').onclick=close;pan.hidden=false;setTimeout(()=>safe(()=>pan.querySelector('.x').focus()),30)}
  function close(){pan.hidden=true;safe(()=>b.focus())}
@@ -6245,7 +6329,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // what unlocks what (keys of U())
  const LOCK={hair:{maomao:'pin',nezuko:'blade',miku:'miku',teto:'tetoh',shinobu:'shinobu',mitsuri:'mitsuri',muichiro:'muichiro'},hc:{jade:'pin',grad:'blade',teal:'miku',teto:'teto',shinobu:'shinobu',mitsuri:'mitsuri',inosuke:'inosuke',zenitsu:'zenitsu',muichiro:'muichiro'},bfly:'shinobu',omask:'obanai',boar:'inosuke',cape:'rengoku',mouth:{snake:'snake',shark:'stare'},eyes:{mesm:'stare',ydots:'abst',headlight:'seen'},skin:{purple:'abst'},cap:'bat',bat:'bat',hb:'stare',
   outfit:{maomao:'pin',nezuko:'blade',robes:'cult',yoveralls:'abst',scales:'snake',miku:'miku',teto:'teto',yara:'bat',mesm:'stare',muichiro:'muichiro',suit:'closet',suitskirt:'closet',evening:'closet',cardigan:'closet'},
-  haori:{tanjiro:'blade',nezuko:'blade'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen'};
+  haori:{tanjiro:'blade',nezuko:'blade'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen'};
  const HINT={pin:'A gift someone lost, somewhere outside.',blade:'Prove yourself with a blade.',cult:'Some families never let you leave.',snake:'Something scaly hides down below.',abst:'Follow something that is not really there.',
   miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',seen:'Find every ending.'};
  // DS v89: Demon Slayer unlocks. ONE place to change the triggers: each key is unlocked when hushCustU[key] is set (by the secret pickups/events below).
@@ -6257,11 +6341,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),seen:!!a.seenall||SIA_DBG}}
  const lockKey=(k,v)=>{const L=LOCK[k];if(!L)return null;if(typeof L==='string')return v?L:null;return L[v]||null};
  const isOpen=(k,v,u)=>{const q=lockKey(k,v);return !q||!!(u||U())[q]};
- const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0};
+ const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','invis','roof','phone','disco','tire','duck','lighter','keys','demon'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -6340,7 +6424,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   grp('Layers (over any outfit)','tog',[['muzzle','Bamboo muzzle',0x7a9a4a],['sheath','Sword sheath',0x1a1a1e],['mask','Snake mask',0x5f8a4a],['tie','Teal tie',0x2ab5ac],['ears','Bunny ears',o.ears==null?0xf2ece4:o.ears],['cap','Red "052" cap',0xc8202e],['hb','Pinstripe cap with bow',0x3a62c4],['bat','Baseball bat (on back)',0xf2f0ee],['bfly','Butterfly hairclip',0xa070d8],['omask','Striped bandage mask',0xeeeae2],['boar','Boar head mask',0x6e6862],['cape','Flame cape',0xe8602a]].map(([v,n,c])=>({v,n,c})));
   if(o.ears!=null)grp('Bunny ear color','earc',EARC.map(c=>({v:c,n:'',c})));
   grp('Jewelry','neck',Object.keys(NECK).map(v=>({v,n:NECK[v]})).concat([{v:'pin',n:'Silver hairpin',c:0xd4d8e0,tog:1}]));
-  grp('Seen It All','tog',[['invis','See-through skin (invisible) [I]',0xbfe6ff],['roof','Roof',0xb8502e],['phone','Phone',0x5ab0ff],['disco','Disco ball',0xd8dce4],['tire','Tire tracks',0x222024],['duck','Rubber duck',0xf6d232],['lighter','Lighter',0xc8202e],['keys','Car keys',0xc8ccd4],['demon','Snake demon',0xf3e58a]].map(([v,n,c])=>({v,n,c})));
+  grp('Seen It All','tog',[['invis','See-through skin (invisible) [I]',0xbfe6ff],['roof','Roof',0xb8502e],['phone','Phone',0x5ab0ff],['disco','Disco ball',0xd8dce4],['tire','Tire tracks',0x222024],['duck','Rubber duck',0xf6d232],['lighter','Lighter',0xc8202e],['keys','Car keys',0xc8ccd4],['demon','Snake demon',0xf3e58a],['fpud','Fire puddles',0xff7a1a]].map(([v,n,c])=>({v,n,c})));
   sec.innerHTML='';G.forEach(g=>{const h=document.createElement('h3');h.textContent=g.t;sec.appendChild(h);const r=document.createElement('div');r.className='row';sec.appendChild(r);
    g.items.forEach(it=>{const b=document.createElement('button');b.type='button';b.className='ch';
     const lkK=g.k==='tog'||it.tog?it.v:g.k==='earc'?null:g.k,lv=g.k==='tog'||it.tog?1:it.v,locked=lkK&&!isOpen(lkK,lv,u);
@@ -6538,7 +6622,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // ---- the achievement ----
  safe(()=>{const A=XT.ach&&XT.ach.A;if(!A)return;if(!A.some(a=>a.id==='seenall'))A.push({id:'seenall',n:'Seen It All',d:'You are either very stupid, very curious, or very determined.'});
   const btn=document.getElementById('achB'),cnt=()=>{if(btn)btn.textContent='Achievements '+A.filter(a=>XT.ach.got[a.id]).length+'/'+A.length};
-  const chk=()=>safe(()=>{const e=XT.endInfo&&XT.endInfo();if(!e||!e.order.length||!e.order.every(k=>e.got.includes(k))||XT.ach.got.seenall)return;XT.ach.unlock('seenall');cnt();
+  const chk=()=>safe(()=>{const e=XT.endInfo&&XT.endInfo();/* v96 (Petra): every ending except Six O'Clock (id 'parents', the survive-the-night one), excluded by id */const need=e?e.order.filter(k=>k!=='parents'):[];XT.seenAllNeed=need;if(!e||!need.length||!need.every(k=>e.got.includes(k))||XT.ach.got.seenall)return;XT.ach.unlock('seenall');cnt();
    setTimeout(()=>safe(()=>subtitle('Every ending found. New looks are waiting in Customize.',5200)),4300)},'chk');
   const om=XT.markEnding;if(om)XT.markEnding=function(){const r=om.apply(this,arguments);chk();return r};
   const oe=XT.ending;XT.ending=function(){const r=oe.apply(this,arguments);chk();return r};
@@ -6599,6 +6683,29 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   g.visible=true;g.position.set(S.x,fy,S.z);g.lookAt(tx,fy,tz);
   if(S.lock&&d<.75){end();safe(()=>TRAP.gameOver('It found you.','Barely there is not the same as not there.'),'over');return}
   if(!S.lock&&S.t>20){end();subtitle('(It gives up and slides back into the dark.)',3000)}},'stalk'));
+})();
+</script>
+<script type="text/x-hush">
+// ===== v96 (Petra): Fire puddles, a Seen It All reward. Equipped in Customize (off by default), you leave small burning puddles behind as you walk; each fades in a few
+// seconds. Purely cosmetic: no damage, no ending, not fire for any arson logic (they are never in inter, solids or the fireplace code). Other players' puddles come from
+// their synced look (roster lk.fpud), so it works in multiplayer the same way as the other rewards. One shared pool, capped at 36 puddles.
+(function(){'use strict';const XT=window.__xt,C=window.__cust;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush fpud] '+(t||''),e)}};if(!XT||!C)return;
+ const CAP=36,LIFE=3.6,STEP=.65;const pool=[];let nxt=0;
+ const cv=document.createElement('canvas');cv.width=cv.height=64;{const q=cv.getContext('2d'),g=q.createRadialGradient(32,32,2,32,32,31);g.addColorStop(0,'rgba(255,240,150,1)');g.addColorStop(.4,'rgba(255,140,30,.9)');g.addColorStop(1,'rgba(255,40,0,0)');q.fillStyle=g;q.fillRect(0,0,64,64)}
+ const tex=new THREE.CanvasTexture(cv),geo=new THREE.CircleGeometry(.22,14),cg=new THREE.ConeGeometry(.05,.18,5);
+ for(let i=0;i<CAP;i++){const g=new THREE.Group();g.visible=false;g.userData.noMap=1;g.userData.noTrack=1;
+  const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:tex,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending,fog:false}));m.rotation.x=-Math.PI/2;g.add(m);
+  const fl=[0,1,2].map(k=>{const c=new THREE.Mesh(cg,new THREE.MeshBasicMaterial({color:[0xff6a10,0xffa030,0xffe070][k],transparent:true,opacity:0,depthWrite:false,fog:false}));c.position.set(Math.cos(k*2.1)*.08,.09,Math.sin(k*2.1)*.08);g.add(c);return c});
+  scene.add(g);pool.push({g,m,fl,t:-1,ph:Math.random()*6})}
+ function drop(x,y,z){const p=pool[nxt];nxt=(nxt+1)%CAP;p.g.position.set(x,y+.015,z);p.g.rotation.y=Math.random()*6;p.g.scale.setScalar(.8+Math.random()*.4);p.t=0;p.g.visible=true}
+ const last=new Map();
+ function walker(id,on,x,y,z){if(!on){last.delete(id);return}const l=last.get(id);if(!l){last.set(id,{x,z});return}if(Math.hypot(x-l.x,z-l.z)>=STEP){l.x=x;l.z=z;drop(x,y,z)}}
+ XT.onUpdate(dt=>safe(()=>{
+  const me=safe(()=>C.mine().fpud,'mine');walker('me',!!me&&XT.live(),cam.position.x,typeof fy==='number'?fy:cam.position.y-1.6,cam.position.z);
+  const mp=window.__mp;if(mp&&mp.active&&mp.dbg){const R=mp.dbg.roster();mp.dbg.AV.forEach((a,id)=>{const p=R.find(q=>q.id===id);const on=!!(p&&a.g&&a.g.parent&&a.g.visible&&C.eff(p).fpud);if(on){const v=new THREE.Vector3();a.g.getWorldPosition(v);walker(id,true,v.x,v.y,v.z)}else walker(id,false)})}
+  const T=performance.now()/1000;pool.forEach(p=>{if(p.t<0)return;p.t+=dt;if(p.t>=LIFE){p.t=-1;p.g.visible=false;return}const k=p.t<.15?p.t/.15:1-Math.max(0,(p.t-LIFE*.45)/(LIFE*.55));
+   p.m.material.opacity=.85*k;p.fl.forEach((c,i)=>{c.material.opacity=.9*k;c.scale.y=k*(.7+.5*Math.abs(Math.sin(T*(7+i)+p.ph+i)))})})},'tick'));
+ XT.fpud={pool,drop,get live(){return pool.filter(p=>p.t>=0).length},CAP};
 })();
 </script>
 <script type="text/x-hush">(function(){const el=document.getElementById("ld");if(!el)return;const b=document.getElementById("ldB"),bar=w=>{if(b)b.style.width=w+"%"};const lg=m=>{try{window.__logErr&&__logErr(m)}catch(e){}};
