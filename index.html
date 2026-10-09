@@ -3374,7 +3374,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  let pressed=false;
  function press(){if(pressed||!XT.live())return;pressed=true;
   tone(180,60,1.2,.2,'square',400);
-  if(mp()){safe(()=>XT.markEnding('abstracted'),'mark');safe(()=>__mp.die('Abstracted.','The rabbit pressed back.'),'die');return}
+  if(mp()&&__mp.hm){safe(()=>XT.markEnding('abstracted'),'mark');safe(()=>__mp.die('Abstracted.','The rabbit pressed back.'),'die');return}
   XT.ending('abstracted')}
  // the ending: black ooze from every edge, glitching, and a crowd of mismatched cartoon eyes blinking and looking around
  XT.oozeCut=function(){const cv=document.createElement('canvas');cv.id='ooze';cv.style.cssText='position:fixed;inset:0;width:100%;height:100%;z-index:9;pointer-events:none';document.body.appendChild(cv);
@@ -3556,7 +3556,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  // the end of it: single-player gets the ending; in multiplayer only you die (and the ending is still counted)
  let over=false;
  function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You stole their car. Nobody is coming after you.'],pacifier:['She is quiet now.','She has not looked away from you once.'],roof:['You fell off the roof.','Somebody else is babysitting you now.'],phone:['You got fired.','Over the phone, on call ten.'],lights:['Lights party.','The demon has a migraine.'],derby:['Weapon of choice: car.','The house came down. You drove out.'],bath:['The house flooded.','You left the bath running.'],arson:['The house burned down.','You fed the fireplace.'],water:['The water is on fire.','You set the bath water on fire.'],friend:['You made a friend.','It drank the whole bottle.']}[id];
-  window.__noMove=0;if(window.__mp&&__mp.active){safe(()=>XT.markEnding(id),'mark');safe(()=>__mp.die(T[0],T[1]),'die');flash('#000',0,900);over=false;return}
+  window.__noMove=0;if(window.__mp&&__mp.active){/* same-ending fix: everyone gets this ending (host decides and broadcasts); Hunt keeps the old per-player exit */if(!__mp.hm){safe(()=>XT.ending(id),'end');setTimeout(()=>flash('#000',0,10),900);over=false;return}safe(()=>XT.markEnding(id),'mark');safe(()=>__mp.die(T[0],T[1]),'die');flash('#000',0,900);over=false;return}
   XT.ending(id);setTimeout(()=>flash('#000',0,10),400)}
  OUT.finish=finish;OUT.park=()=>{T.on=false;T.armed=false;car.visible=false;if(beam)beam.intensity=0;if(eng)eng.g.gain.value=0};
  const me=()=>({x:cam.position.x,z:cam.position.z});
@@ -4101,7 +4101,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'dead':if(p){p.rep=Object.assign({},p.rep||{},{gh:1});pushRep(pid,p.rep)}if(MP.remoteHolder===pid)holderSet('');bcast({t:'note',txt:'('+MP.nameOf(pid)+' is gone.)',ms:3000},pid);if(pid!==MP.id)subtitle('('+MP.nameOf(pid)+' is gone.)',3000);checkAllDead();break;
   case 'chat':safe(()=>hostChat(pid,m),'chat');break;
   case 'vote':hostVote(pid);break;
-  case 'endreq':if(['dawn','cult','secret','parents'].includes(m.id)&&!(MP.hm&&m.id==='cult')){decideEnd(m.id,m.extra);runPending()}break;
+  case 'endreq':if(m.id!=='death'&&XT.endInfo&&XT.endInfo().order.includes(m.id)&&!(MP.hm&&!['dawn','secret','parents'].includes(m.id))){decideEnd(m.id,m.extra);runPending()}break;
   case 'solve':hostSolve();break;
   case 'gs':safe(()=>hostScare(pid,m),'gs');break;
   case 'gp':safe(()=>hostPossess(pid,m),'gp');break;
@@ -6822,7 +6822,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // ---- the achievement ----
  safe(()=>{const A=XT.ach&&XT.ach.A;if(!A)return;if(!A.some(a=>a.id==='seenall'))A.push({id:'seenall',n:'Seen It All',d:'You are either very stupid, very curious, or very determined.'});
   const btn=document.getElementById('achB'),cnt=()=>{if(btn)btn.textContent='Achievements '+A.filter(a=>XT.ach.got[a.id]).length+'/'+A.length};
-  const chk=()=>safe(()=>{const e=XT.endInfo&&XT.endInfo();/* v96 (Petra): every ending except Six O'Clock (id 'parents', the survive-the-night one), excluded by id */const need=e?e.order.filter(k=>k!=='parents'):[];XT.seenAllNeed=need;if(!e||!need.length||!need.every(k=>e.got.includes(k))||XT.ach.got.seenall)return;XT.ach.unlock('seenall');cnt();
+  const chk=()=>safe(()=>{const e=XT.endInfo&&XT.endInfo();/* v96 (Petra): every ending except Six O'Clock (id 'parents'), excluded by id; Bottle Buddies ('friend') is required again per Petra 2026-10-09 */const need=e?e.order.filter(k=>k!=='parents'):[];XT.seenAllNeed=need;if(!e||!need.length||!need.every(k=>e.got.includes(k))||XT.ach.got.seenall)return;XT.ach.unlock('seenall');cnt();
    setTimeout(()=>safe(()=>subtitle('Every ending found. New looks are waiting in Customize.',5200)),4300)},'chk');
   const om=XT.markEnding;if(om)XT.markEnding=function(){const r=om.apply(this,arguments);chk();return r};
   const oe=XT.ending;XT.ending=function(){const r=oe.apply(this,arguments);chk();return r};
