@@ -2149,10 +2149,11 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 })();
 // ---------- 7. endings, exit cutscenes, credits ----------
 (function(){const XT=window.__xt;
+ const GUN_NAME='Bang Bang Bang';// v102 (Petra 2026-10-10): the shoot-the-demon ending's name (id 'gun'). Change it here; everything else reads NAMES.gun
  const FRIEND_NAME='Bottle Buddies';// v97 (Petra): the befriend-the-demon ending's name. Change it here; everything else reads NAMES.friend
- const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted',joyride:'Joyride',pacifier:'Pacifier',roof:'Jump Off the Roof',phone:'Call the Parents 10 Times',lights:'Lights Party',derby:'Weapon of Choice: Car',bath:'Bath Time',arson:'A Is for Arson',water:'You... burnt.... the water?',friend:FRIEND_NAME},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water','friend'];
+ const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted',joyride:'Joyride',pacifier:'Pacifier',roof:'Jump Off the Roof',phone:'Call the Parents 10 Times',lights:'Lights Party',derby:'Weapon of Choice: Car',bath:'Bath Time',arson:'A Is for Arson',water:'You... burnt.... the water?',friend:FRIEND_NAME,gun:GUN_NAME},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water','friend','gun'];
  // v79: one line under every ending card's title (Petra)
- const DESC={parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back.",joyride:"You stole their car. Honestly? Fair.",pacifier:"It worked. She hasn't made a sound since. She hasn't blinked, either.",roof:"You fell off a roof and got demoted to baby. The new sitter is very good at her job.",phone:"Ten calls. Nine voicemails. One very short conversation.",lights:"One switch. A hundred flicks. One demon with a migraine.",derby:"You dropped a house on it. Then you ran it over. It was having a bad night.",bath:"Who leaves a bath running? You. You do.",arson:"B is for Babysitter. F is for Fired.",water:"I am sorry but how the <span class=\"redact\" aria-label=\"(redacted)\" style=\"display:inline-block;width:5ch;height:1em;background:#fff;vertical-align:-0.12em\"></span> did you BURN THE WATER!!!!!",friend:"Turns out it was just hungry."};
+ const DESC={gun:"A drawer, a box and three bullets. Every demon slayer has to start somewhere.",parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back.",joyride:"You stole their car. Honestly? Fair.",pacifier:"It worked. She hasn't made a sound since. She hasn't blinked, either.",roof:"You fell off a roof and got demoted to baby. The new sitter is very good at her job.",phone:"Ten calls. Nine voicemails. One very short conversation.",lights:"One switch. A hundred flicks. One demon with a migraine.",derby:"You dropped a house on it. Then you ran it over. It was having a bad night.",bath:"Who leaves a bath running? You. You do.",arson:"B is for Babysitter. F is for Fired.",water:"I am sorry but how the <span class=\"redact\" aria-label=\"(redacted)\" style=\"display:inline-block;width:5ch;height:1em;background:#fff;vertical-align:-0.12em\"></span> did you BURN THE WATER!!!!!",friend:"Turns out it was just hungry."};
  const got=()=>{try{const a=JSON.parse(XT.ls.get('hushEndings')||'[]');return Array.isArray(a)?a.filter(k=>NAMES[k]):[]}catch(e){return[]}};
  XT.endInfo=()=>({order:ORDER.slice(),names:NAMES,desc:DESC,got:got()});
  const css=document.createElement('style');css.textContent=`#xfade{position:fixed;inset:0;z-index:8;background:#000;opacity:0;pointer-events:none;transition:opacity 1.2s;display:flex;align-items:center;justify-content:center;padding:0 16px;text-align:center;font-family:var(--display);font-style:italic;font-size:1.6rem;color:#d8cfc4}#xfade.on{opacity:1}
@@ -2190,6 +2191,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   bath:["Bath Time.","You left the bath running. Then the bathroom ran over, then the hallway, then the stairs, which made a surprisingly nice waterfall. The living room has a tide now. Lilith is perfectly fine and perfectly dry, bundled in a towel on the porch with the plumber, who keeps laughing and taking photos. The house is not fine. The house will never be fine again."],
   arson:["A Is for Arson.","It started with the TV remote and ended with the house. The fire department carried you out over one shoulder and Lilith out in the crook of the other arm, wearing a tiny plastic fire helmet, absolutely delighted and not one hair singed. The captain asked who was in charge. You raised your hand. He said, \"You're fired,\" and the whole crew laughed for a full minute. He had been waiting his entire career to say that."],
   water:["You... burnt.... the water?","You poured old motor oil into the bath and tossed in a match, and the water caught fire. Not the house. The water. Four firefighters stood in the bathroom doorway staring at a burning bathtub while one of them, who grew up in Cleveland, nodded like a man who had seen this before. Lilith watched from the hall in a tiny plastic fire helmet, perfectly fine and thrilled about it. The captain told you that you were fired. Then he told you that water is not supposed to do that."],
+  gun:["Bang. Bang. Bang.","Three shots, and the thing from under the floor went down and stayed down. By the time your hands stopped shaking it was a heap of grey ash on the floor, and the whole house smelled like struck matches. Lilith slept through all of it, warm and perfectly fine, one tiny fist curled up by her ear. At six o'clock her parents came home to a freshly vacuumed rug, every window open, and you on the bottom stair with a revolver in your lap. Nobody asked a single question. You still got paid. Double, actually."],
   friend:[FRIEND_NAME+".","You held out a baby bottle to the thing from under the floor, and it took it. It drank the whole bottle in one go, burped hard enough to rattle the windows, and spent the rest of the night following you from room to room like a very large, very scaly puppy. Lilith slept through all of it, warm and perfectly fine. At six o'clock her parents found the demon curled up on the nursery rug while you scratched it under the chin. Nobody knew what to say. You still got paid."],
   cult:["Welcome home.","They wrap you in the third robe. It fits. The Order of the Low Door has a new sister, and the Deep has its gift, and nobody ever asks the sitter's name again."]};
  function showCard(id,extra){const [h,p]=TXT[id];const g=got();if(document.pointerLockElement)document.exitPointerLock();
@@ -2211,7 +2213,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  // helpers for the cut scenes
  const say=(L,t,st)=>{while(st.i<L.length&&t>=L[st.i][0]){const [,k,txt,d]=L[st.i];subtitle(txt,d*1000);if(k&&XT.voice)XT.voice(txt.replace(/\(.*?\)/g,''),k,d*.85,.4);st.i++}};
  const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
- const CUT={car:()=>null,left:()=>null,collapse:()=>null,joyride:()=>XT.joyCut?XT.joyCut():null,pacifier:()=>null,roof:()=>XT.sixCut?XT.sixCut('roof'):null,phone:()=>XT.sixCut?XT.sixCut('phone'):null,lights:()=>XT.sixCut?XT.sixCut('lights'):null,derby:()=>XT.sixCut?XT.sixCut('derby'):null,bath:()=>XT.sixCut?XT.sixCut('bath'):null,arson:()=>XT.sixCut?XT.sixCut('arson'):null,water:()=>XT.waterCut?XT.waterCut():null,friend:()=>XT.friendCut?XT.friendCut():null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
+ const CUT={car:()=>null,left:()=>null,collapse:()=>null,joyride:()=>XT.joyCut?XT.joyCut():null,pacifier:()=>null,roof:()=>XT.sixCut?XT.sixCut('roof'):null,phone:()=>XT.sixCut?XT.sixCut('phone'):null,lights:()=>XT.sixCut?XT.sixCut('lights'):null,derby:()=>XT.sixCut?XT.sixCut('derby'):null,bath:()=>XT.sixCut?XT.sixCut('bath'):null,arson:()=>XT.sixCut?XT.sixCut('arson'):null,water:()=>XT.waterCut?XT.waterCut():null,friend:()=>XT.friendCut?XT.friendCut():null,gun:()=>XT.gunCut?XT.gunCut():null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
   parents(){if(window.__rlm&&__rlm.on)return null;const {mom,dad}=XT.props;mom.visible=dad.visible=true;subtitle('',1);
    const L=[[2.6,'mom',"We're home! Oh... you're still here.",2.6],[5.6,'mom',"She was so quiet. Wasn't she quiet? We could hear how quiet she was.",3.6],[9.6,'dad',"Thank you. We'll take it from here.",2.6],[12.6,null,"(Their smiles are much too wide. Neither of them blinks.)",3]],st={i:0};
    fadeTo(false);
@@ -2930,6 +2932,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   {k:'flake',n:'snowflake ornament',x:8.6,y:.005,z:4.35,flat:1,where:"parents' bedroom floor"},
   {k:'die',n:'die',x:-3.55,y:F+.42,z:5.9,where:'downstairs bathroom, on the toilet lid'}];
  const NM={};ITEMS.forEach(it=>NM[it.k]=it.n);
+ // v102: things you can carry that are not shelf pieces (the Bang Bang Bang revolver and ammo box). They live in inv like the six, but the shelf won't take them
+ NM.gun='revolver';NM.ammo='ammo box';const SHK=k=>ITEMS.some(it=>it.k===k);
  const SH={ORDER:['die','flake','ball','logo','pot','onion'],onSolve(){XT.ending('secret')}};XT.shelf=SH;
  let inv=[],sel=0,slots=[null,null,null,null,null,null],done=false,wrongKey='',told=false;
  const bills=[];
@@ -2958,7 +2962,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  const myS={x0:-.4,x1:1.6,z0:3.03,z1:3.45,y0:0,y1:2.8};myS.r={x0:myS.x0,x1:myS.x1,z0:myS.z0,z1:myS.z1};solids.push(myS);
  const hb=(w,h,d,x,y,z,label,act,par)=>{const m=new THREE.Mesh(BG(w,h,d),hitM);m.position.set(x,y,z);(par||unit).add(m);m.userData.i={get label(){return label()},act(){safe(act,'act')}};inter.push(m);return m};
  const shelfInst={};const ORD=['1st','2nd','3rd','4th','5th','6th'];
- for(let i=0;i<6;i++)hb(.3,.6,.42,SLOT_X(i),SH_Y+.05,.35,()=>{if(done)return'Shelf';const c=slots[i];if(c)return'Take back the '+NM[c];if(inv.length)return'Put the '+NM[inv[sel]]+' here ('+ORD[i]+' space from the left)';return'Shelf: empty space ('+ORD[i]+' of 6)'},()=>slotAct(i));
+ for(let i=0;i<6;i++)hb(.3,.6,.42,SLOT_X(i),SH_Y+.05,.35,()=>{if(done)return'Shelf';const c=slots[i];if(c)return'Take back the '+NM[c];if(inv.length&&SHK(inv[sel]))return'Put the '+NM[inv[sel]]+' here ('+ORD[i]+' space from the left)';return'Shelf: empty space ('+ORD[i]+' of 6)'},()=>slotAct(i));
  // ---- the six things, out in the house ----
  const worldInst={};
  ITEMS.forEach(it=>{const o=make(it.k);if(it.flat){o.children[0].rotation.x=-Math.PI/2;o.children[0].position.set(o.children[0].position.x,0,o.children[0].position.y+S/2)}
@@ -2976,17 +2980,18 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    const s=shelfInst[it.k],si=slots.indexOf(it.k);s.visible=si>=0;if(si>=0)s.position.set(SLOT_X(si),SH_Y+.0175,SH_Z)});
   hud.innerHTML=inv.map((k,i)=>'<span data-i="'+i+'" class="'+(i===sel?'on':'')+'">'+NM[k]+'</span>').join('')+(inv.length>1?'<em>Q to switch</em>':'')}
  function pick(k){if(inv.includes(k)||slots.includes(k))return;inv.push(k);sel=inv.length-1;sync();if(AC)burst(AC.currentTime,1800,3,.06,.08,'bandpass');
-  const n=inv.length+slots.filter(Boolean).length;subtitle('You pick up the '+NM[k]+'. ('+n+' of 6.'+(told?'':' There is a little shelf in the nursery with six empty slots.')+')',3800);told=true}
+  const n=inv.filter(SHK).length+slots.filter(Boolean).length;subtitle('You pick up the '+NM[k]+'. ('+n+' of 6.'+(told?'':' There is a little shelf in the nursery with six empty slots.')+')',3800);told=true}
  function slotAct(i){if(done)return;const cur=slots[i];
   if(cur){slots[i]=null;inv.push(cur);sel=inv.length-1;sync();if(AC)burst(AC.currentTime,900,3,.06,.08,'bandpass');subtitle('You take the '+NM[cur]+' back off the shelf.',2200);return}
   if(!inv.length){subtitle('A plain wooden shelf with room for six things. Your hands are empty.',2800);return}
+  if(!SHK(inv[sel])){subtitle('The '+NM[inv[sel]]+' does not belong on the shelf.',2400);return}
   const k=inv.splice(sel,1)[0];slots[i]=k;sync();if(AC){burst(AC.currentTime,700,3,.1,.06,'bandpass');burst(AC.currentTime+.05,200,2,.08,.1,'lowpass')}check()}
  function check(){if(slots.some(s=>!s))return;const key=slots.join();
   if(SH.ORDER.every((k,i)=>slots[i]===k)){done=true;subtitle('Something inside the shelf goes click.',2500);setTimeout(()=>safe(()=>SH.onSolve(),'solve'),900);return}
   if(key===wrongKey)return;wrongKey=key;subtitle('(All six slots are full. Nothing happens. Then, far below the floor, something hisses, as if it noticed.)',4500);
   safe(()=>{XT.demonSfx&&XT.demonSfx.hiss(cam.position.x,cam.position.z-3,.9);const C=CARE.dbg;C.noise=Math.min(1,C.noise+.15);const D=DEMON.dbg;if(!D.active&&D.next>0)D.next=Math.max(1,D.next*.5)},'wrong')}
  addEventListener('keydown',e=>{if(e.code!=='KeyQ'||!started||paused||ended||window.__cut||inv.length<2||noteOpen)return;sel=(sel+1)%inv.length;sync();subtitle('Holding: '+NM[inv[sel]],1200)});
- XT.parts.shelf={save:()=>({inv:inv.slice(),sel,slots:slots.slice()}),load:v=>{if(!v)return;const ok=k=>!!NM[k];inv=(v.inv||[]).filter(ok);slots=[0,1,2,3,4,5].map(i=>ok((v.slots||[])[i])?v.slots[i]:null);inv=inv.filter(k=>!slots.includes(k));sel=+v.sel||0;told=inv.length+slots.filter(Boolean).length>0;sync()}};
+ XT.parts.shelf={save:()=>({inv:inv.slice(),sel,slots:slots.slice()}),load:v=>{if(!v)return;const ok=k=>!!NM[k];inv=(v.inv||[]).filter(ok);slots=[0,1,2,3,4,5].map(i=>ok((v.slots||[])[i])?v.slots[i]:null);inv=inv.filter(k=>!slots.includes(k));sel=+v.sel||0;told=inv.filter(SHK).length+slots.filter(Boolean).length>0;sync()}};
  const v3=new THREE.Vector3();
  XT.onUpdate(()=>{const q=myS.r,a=mX(q.x0),b=mX(q.x1),c=mZ(q.z0),d=mZ(q.z1);myS.x0=Math.min(a,b);myS.x1=Math.max(a,b);myS.z0=Math.min(c,d);myS.z1=Math.max(c,d);
   hud.hidden=!(XT.live()&&inv.length&&!paused);
@@ -3273,7 +3278,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  if(XT.CUT)XT.CUT.secret=secretCut;
  SH.onSolve=function(){if((window.__mp&&__mp.active)){safe(()=>__mp.solve(),'mp solve');return}safe(startFight,'fight')};
  XT.bladeFight={start:startFight,get S(){return FS},act,remoteSlash(){damage(FS)}};
- XT.shelfDbg={ITEMS,get inv(){return inv},set inv(v){inv=v},get slots(){return slots},set slots(v){slots=v},pick,slotAct,unit,worldInst,shelfInst,sync};
+ XT.shelfDbg={ITEMS,NM,SHK,get sel(){return sel},set sel(v){sel=v},get inv(){return inv},set inv(v){inv=v},get slots(){return slots},set slots(v){slots=v},pick,slotAct,unit,worldInst,shelfInst,sync};
 })();
 // ---------- 15. how to play: shown once the intro ends, and from the pause menu ----------
 (function(){const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush ext] help '+(t||''),e)}};
@@ -3555,7 +3560,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function noise(dur,vol,fr){if(!AC||!master)return;const n=AC.sampleRate*dur,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=fr||300;g.gain.value=vol;s.connect(f);f.connect(g);g.connect(master);s.start()}
  // the end of it: single-player gets the ending; in multiplayer only you die (and the ending is still counted)
  let over=false;
- function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You stole their car. Nobody is coming after you.'],pacifier:['She is quiet now.','She has not looked away from you once.'],roof:['You fell off the roof.','Somebody else is babysitting you now.'],phone:['You got fired.','Over the phone, on call ten.'],lights:['Lights party.','The demon has a migraine.'],derby:['Weapon of choice: car.','The house came down. You drove out.'],bath:['The house flooded.','You left the bath running.'],arson:['The house burned down.','You fed the fireplace.'],water:['The water is on fire.','You set the bath water on fire.'],friend:['You made a friend.','It drank the whole bottle.']}[id];
+ function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You stole their car. Nobody is coming after you.'],pacifier:['She is quiet now.','She has not looked away from you once.'],roof:['You fell off the roof.','Somebody else is babysitting you now.'],phone:['You got fired.','Over the phone, on call ten.'],lights:['Lights party.','The demon has a migraine.'],derby:['Weapon of choice: car.','The house came down. You drove out.'],bath:['The house flooded.','You left the bath running.'],arson:['The house burned down.','You fed the fireplace.'],water:['The water is on fire.','You set the bath water on fire.'],friend:['You made a friend.','It drank the whole bottle.'],gun:['Bang. Bang. Bang.','Three shots. It went down and stayed down.']}[id];
   window.__noMove=0;if(window.__mp&&__mp.active){/* same-ending fix: everyone gets this ending (host decides and broadcasts); Hunt keeps the old per-player exit */if(!__mp.hm){safe(()=>XT.ending(id),'end');setTimeout(()=>flash('#000',0,10),900);over=false;return}safe(()=>XT.markEnding(id),'mark');safe(()=>__mp.die(T[0],T[1]),'die');flash('#000',0,900);over=false;return}
   XT.ending(id);setTimeout(()=>flash('#000',0,10),400)}
  OUT.finish=finish;OUT.park=()=>{T.on=false;T.armed=false;car.visible=false;if(beam)beam.intensity=0;if(eng)eng.g.gain.value=0};
@@ -3747,7 +3752,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function myReport(){const RL=!!(window.__rlm&&__rlm.on),c=cam.position,B=XT.bladeFight&&XT.bladeFight.S;
   return{x:+(RL?c.x:iX(c.x)).toFixed(2),z:+(RL?c.z:iZ(c.z)).toFixed(2),y:+fy.toFixed(2),cy:+c.y.toFixed(2),yaw:+yaw.toFixed(3),pi:+pitch.toFixed(3),cr:crouch?1:0,
    hid:XT.hide&&XT.hide.hid?1:0,gh:gone()?1:0,tor:XT.torch&&XT.torch.on?1:0,ar:RL?'r':'h',gl:CD.mp.carrying&&CD.mp.inGlider()?1:0,nu:CD.mp.inNursery()?1:0,
-   inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],dm:MP.demon?1:0,hs:XT.hide&&XT.hide.hid||'',cl:window.__dmCeil?1:0,busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,nm:V.denied?1:0,ent:entered?1:0}}
+   inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],dm:MP.demon?1:0,hs:XT.hide&&XT.hide.hid||'',cl:window.__dmCeil?1:0,busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,nm:V.denied?1:0,ent:entered?1:0,gf:window.__genyaF|0}}
  const isDm=id=>!!(MP.hm&&MP.hm.demon===id);
  const gone=()=>MP.ghost||!!(XT.bladeFight&&XT.bladeFight.S&&XT.bladeFight.S.dead);
  const alive=()=>{const L=[];if(MP.host){if(!gone()&&!MP.demon)L.push({id:MP.id,r:myReport()});P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))L.push({id,r:p.rep})})}return L};
@@ -3954,6 +3959,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    const x=r.ar==='r'?r.x:mX(r.x),z=r.ar==='r'?r.z:mZ(r.z),eye=r.cr?.62:1.6,fl=r.cy-eye;a.g.position.set(x,fl,z);a.g.rotation.y=r.yaw;
    const spd=prev?Math.hypot(r.x-prev.x,r.z-prev.z)/Math.max(dt,1e-3):0;a.ph+=dt*Math.min(9,spd*5);const sw=spd>.3?Math.sin(a.ph)*.5:0;
    a.legs[0].rotation.x=sw;a.legs[1].rotation.x=-sw;a.arms[0].rotation.x=-sw*.7;a.arms[1].rotation.x=sw*.7;a.head.rotation.x=-r.pi*.6;
+   /*GENYA v102: their pistol comes up and flashes when they fire (cosmetic)*/if(window.__cust&&__cust.genyaPose&&a.arms[1].getObjectByName('genyaGun')){const gf=r.gf|0;if(a.gf0==null)a.gf0=gf;else if(gf!==a.gf0){a.gf0=gf;a.gaT=1.6;a.gfl=.12;try{__cust.genyaBang()}catch(e){}}if(a.gaT>0){a.gaT-=dt;a.gfl=(a.gfl||0)-dt;__cust.genyaPose(a,a.gfl>0?2:1);if(a.gaT<=0)__cust.genyaPose(a,0)}}
    a.body.scale.y=r.cr?.62:1;a.body.position.y=0;a.torch.visible=!!r.tor;
    /*SIA*/a.body.userData.dmMove=spd>.3;a.body.userData.crouch=!!r.cr;const ivq=window.__cust?__cust.invOp(performance.now()/1000):.03;a.g.traverse(o=>{if(o.material&&o!==a.tag){const iv=a.inv&&!r.gh;(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{const b0=m.userData&&m.userData.op0!=null?m.userData.op0:1;m.transparent=!!r.gh||iv||b0<1;m.opacity=b0*(r.gh?.28:iv?ivq:1);if(iv&&m.userData.op0==null)m.depthWrite=false})}});
    const spk=V.levels.get(id)>.03;if(spk!==a.spk||!!r.mu!==a.mu)drawTag(a,a.name,spk,r.mu)});
@@ -4494,6 +4500,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   {id:'arson',n:'A Is for Arson',d:'Find the ending in the fireplace.',h:1},
   {id:'water',n:'You... burnt.... the water?',d:'Find the ending in the bathtub. The other one.',h:1},
   {id:'friend',n:(XT.endInfo?XT.endInfo().names.friend:'Bottle Buddies'),d:'Share something warm with something cold.',h:1},
+  {id:'gun',n:(XT.endInfo?XT.endInfo().names.gun:'Bang Bang Bang'),d:'Three shots. One demon. Zero babies woken.',h:1},
   {id:'poison',n:'Poison Taster',d:'Taste the unlabeled bottle in the bathroom cabinet.',h:1},
   {id:'hairpin',n:"Jinshi's Gift",d:'Find the gold hairpin hidden outside.'}];
  const ls={get(){try{return JSON.parse(localStorage.getItem('hushAch')||'{}')||{}}catch(e){return{}}},set(v){try{localStorage.setItem('hushAch',JSON.stringify(v))}catch(e){}}};
@@ -4537,7 +4544,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   if(mp&&mp.active&&mp.started&&safe(()=>mp.dbg.roster().length,'n')>=4)unlock('four')},'watch'),250);
  const oe=XT.ending;
  XT.ending=function(id,extra){const r=oe.apply(this,arguments);
-  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water','friend'].includes(id))unlock(id);
+  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water','friend','gun'].includes(id))unlock(id);
    const won=id==='parents'||id==='dawn'||id==='secret';
    if(won){unlock('night1');if((XT.night||1)>=3)unlock('night3');if(XT.diffKey&&XT.diffKey()==='nightmare')unlock('nightmare');if(!run.hid)unlock('nohide');if(!run.cried)unlock('nocry');
     if(window.__mp&&__mp.active)unlock('together')}
@@ -5059,6 +5066,139 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
     say(L2,t,st);if(t>20.6)fadeOut();return t>22},
    end(){bot.visible=false;hearts.forEach(s=>scene.remove(s));hearts.length=0;XT.demon.force=null;g.visible=false}}};
  XT.friend={get near(){return !!near()},start,get over(){return over},hit};
+})();
+// ===== v102 (Petra 2026-10-10): the Bang Bang Bang ending (name: GUN_NAME in the endings block, id 'gun'). A Demon Slayer reference.
+// A revolver in the drawer of the parents' bedroom nightstand (the one by the window side of the bed, with the mug on it); an ammo box on the basement
+// workbench (the basement door needs the key behind the foyer painting). Both go into the same carry inventory as the shelf pieces (top HUD, Q to switch).
+// With the revolver selected and the ammo box carried, E / click / the touch Use button / a tap on the demon fires. Three hits on the demon (they add up
+// over the night, and are saved) and it goes down: a short cut scene, it crumbles to ash. Lilith is never involved and never in danger; you can't fire while
+// carrying her. Goes through OUT.finish like Bottle Buddies (multiplayer: XT.ending, the host decides and broadcasts). No hints anywhere.
+(function(){'use strict';const XT=window.__xt,OUT=window.__out;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush gun] '+(t||''),e)}};
+ if(!XT||!OUT||!XT.shelfDbg||typeof DEMON==='undefined')return;const DM=DEMON.dbg,g=DM.g,D=XT.shelfDbg;
+ const ROUNDS=12,HITS=3;const S={drawer:false,rounds:ROUNDS,hits:0};let over=false,cool=0,recoil=0,flashT=0;
+ const sm=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
+ const has=k=>D.inv.includes(k),gone=k=>has(k)||(XT.mpHeld||[]).includes(k);
+ const busy=()=>!!(window.__cut||ended||window.__dead||window.__tbc||seated||CARE.busy()||(XT.hide&&XT.hide.hid)||(window.__mp&&(__mp.ghost||__mp.demon))||(window.__rlm&&__rlm.on)||(XT.bladeFight&&XT.bladeFight.S)||noteOpen);
+ const holding=()=>D.inv[D.sel]==='gun';
+ const armed=()=>!over&&started&&!paused&&XT.live()&&!busy()&&holding()&&!CARE.dbg.carrying;
+ // ---- the revolver model (barrel along -z, grip down), used in the drawer, in your hand and in the cut scene ----
+ function revolver(){const r=new THREE.Group(),st=new THREE.MeshPhongMaterial({color:0x34363c,specular:0x888888,shininess:60}),wd=new THREE.MeshPhongMaterial({color:0x5a3620,shininess:20});
+  const B=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);r.add(o);return o};
+  const bar=new THREE.Mesh(new THREE.CylinderGeometry(.009,.009,.16,8),st);bar.rotation.x=Math.PI/2;bar.position.set(0,.012,-.1);r.add(bar);
+  const cylr=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.045,8),st);cylr.rotation.x=Math.PI/2;cylr.position.set(0,0,-.005);r.add(cylr);
+  B(.02,.035,.09,st,0,.004,.0);B(.016,.012,.15,st,0,.026,-.09);B(.004,.012,.006,st,0,.036,-.17);
+  const gr=B(.022,.075,.032,wd,0,-.045,.04);gr.rotation.x=-.35;const tg=new THREE.Mesh(new THREE.TorusGeometry(.014,.003,4,10,Math.PI),st);tg.rotation.y=Math.PI/2;tg.rotation.z=Math.PI;tg.position.set(0,-.02,.0);r.add(tg);
+  B(.006,.016,.012,st,0,.03,.04);r.userData.muzzle=new THREE.Vector3(0,.012,-.185);return r}
+ // ---- the nightstand drawer (world x 10.15 after the hall widening; its front faces the bed side, -x) ----
+ const NSX=10.15,NSZ=1.9;const dG=new THREE.Group();XT.place(dG,NSX-.2,.42,NSZ);const slide=new THREE.Group();dG.add(slide);
+ const wood=new THREE.MeshPhongMaterial({color:0x4a2418,shininess:30}),inside=new THREE.MeshPhongMaterial({color:0x2a1810});
+ {const B=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);slide.add(o);return o};
+  B(.02,.13,.34,wood,-.012,0,0);B(.3,.01,.3,inside,.15,-.055,0);B(.3,.08,.01,inside,.15,-.02,-.15);B(.3,.08,.01,inside,.15,-.02,.15);B(.01,.08,.3,inside,.3,-.02,0);
+  const kb=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),new THREE.MeshPhongMaterial({color:0xc8a050,shininess:90}));kb.position.set(-.028,0,0);slide.add(kb);
+  const cloth=B(.2,.006,.16,new THREE.MeshPhongMaterial({color:0x6a6048}),.15,-.047,0)}
+ const wGun=revolver();wGun.rotation.set(-Math.PI/2,0,1.2);wGun.rotation.order='YXZ';wGun.rotation.set(0,1.2,0);wGun.position.set(.16,-.035,0);wGun.rotation.z=Math.PI/2;slide.add(wGun);wGun.visible=false;
+ const hitMat=new THREE.MeshBasicMaterial({visible:false});
+ const dHit=new THREE.Mesh(new THREE.BoxGeometry(.08,.16,.38),hitMat);dHit.position.set(-.03,0,0);slide.add(dHit);
+ dHit.userData.i={get label(){return S.drawer?'Close the drawer':'Drawer'},act(){safe(()=>{S.drawer=!S.drawer;sfx.drawer();if(S.drawer)subtitle(gone('gun')?'An empty drawer. Just a folded cloth.':'Under a folded cloth: a heavy old revolver.',2600)},'drawer')}};inter.push(dHit);
+ const gHit=new THREE.Mesh(new THREE.BoxGeometry(.24,.1,.2),hitMat);gHit.position.set(.16,-.01,0);slide.add(gHit);
+ gHit.userData.i={get label(){return 'Take the revolver'},act(){safe(()=>{if(!S.drawer||gone('gun'))return;take('gun')},'take gun')}};
+ // ---- the ammo box, on the basement workbench ----
+ const ammo=new THREE.Group();{const ol=new THREE.MeshPhongMaterial({color:0x4a5230,shininess:25}),dk=new THREE.MeshPhongMaterial({color:0x2a2e1c});
+  const B=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);ammo.add(o);return o};
+  B(.26,.13,.11,ol,0,.065,0);B(.27,.02,.12,dk,0,.135,0);B(.1,.012,.02,dk,0,.152,0);B(.02,.05,.06,dk,.14,.1,0)}
+ ammo.position.set(1.8,BF+.93,-7.98);ammo.rotation.y=.25;BSM.G.add(ammo);
+ const aHit=new THREE.Mesh(new THREE.BoxGeometry(.32,.22,.2),hitMat);aHit.position.set(0,.08,0);ammo.add(aHit);
+ aHit.userData.i={get label(){return 'Take the ammo box'},act(){safe(()=>{if(gone('ammo'))return;take('ammo')},'take ammo')}};
+ function take(k){if(has(k))return;D.inv.push(k);D.sel=D.inv.length-1;D.sync();sfx.pick();
+  const both=has('gun')&&has('ammo');
+  if(k==='gun')subtitle(both?'You load the revolver from the ammo box. Six in the cylinder.':'A heavy old revolver, wrapped in an oilcloth.',3200);
+  else subtitle(both?'An old metal ammo box. You load the revolver. Six in the cylinder.':'An old metal ammo box. Heavy. Something rattles inside.',3200);
+  if(both&&k==='ammo'){const i=D.inv.indexOf('gun');if(i>=0){D.sel=i;D.sync()}}}
+ // keep the world copies and their targets in step with who has them
+ const want=(m,on)=>{const i=inter.indexOf(m);if(on&&i<0)inter.push(m);if(!on&&i>=0)inter.splice(i,1)};
+ // ---- sounds ----
+ const sfx={raw(f,d,gn,type,f1,lp){if(!AC||!master||muted)return;const t=AC.currentTime,o=AC.createOscillator(),e=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);e.gain.setValueAtTime(gn,t);e.gain.exponentialRampToValueAtTime(.001,t+d);
+   if(lp){const fl=AC.createBiquadFilter();fl.type='lowpass';fl.frequency.value=lp;o.connect(fl);fl.connect(e)}else o.connect(e);e.connect(master);o.start(t);o.stop(t+d+.05)},
+  noise(d,gn,f,type,dl){if(!AC||!master||muted)return;const t=AC.currentTime+(dl||0),n=Math.floor(AC.sampleRate*d),b=AC.createBuffer(1,n,AC.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);
+   const s=AC.createBufferSource(),fl=AC.createBiquadFilter(),e=AC.createGain();s.buffer=b;fl.type=type||'lowpass';fl.frequency.value=f;e.gain.value=gn;s.connect(fl);fl.connect(e);e.connect(master);s.start(t)},
+  bang(){this.noise(.5,.9,1400);this.noise(.12,.35,4000,'highpass');this.raw(110,.3,.6,'sine',35);this.noise(.9,.18,600,'lowpass',.18);this.noise(.9,.08,500,'lowpass',.42)},
+  click(){this.noise(.03,.25,3000,'highpass');this.raw(1800,.03,.08,'square')},
+  pick(){this.noise(.08,.2,1800,'bandpass')},drawer(){this.noise(.35,.12,500,'bandpass');this.raw(90,.2,.06,'sawtooth',70,300)}};
+ // ---- in your hand ----
+ const fp=revolver();fp.position.set(.2,-.2,-.42);fp.rotation.set(.04,.06,0);cam.add(fp);fp.visible=false;
+ const mf=new THREE.PointLight(0xffc070,0,4,2);mf.position.copy(fp.userData.muzzle);fp.add(mf);
+ const flashM=new THREE.Mesh(new THREE.SphereGeometry(.03,8,6),new THREE.MeshBasicMaterial({color:0xffe080,transparent:true,opacity:.9,depthWrite:false}));flashM.position.copy(fp.userData.muzzle);flashM.visible=false;fp.add(flashM);
+ // ---- aiming at it ----
+ const v1=new THREE.Vector3(),v2=new THREE.Vector3(),fw=new THREE.Vector3();
+ function chest(){g.updateMatrixWorld(true);const head=DM.J&&DM.J.head;g.getWorldPosition(v1);if(head){head.getWorldPosition(v2);return v1.lerp(v2,.6)}return v1.set(v1.x,v1.y+1.2,v1.z)}
+ function seen(){if(!g.visible)return null;const a=DM.active;if(a==='painting'||a==='mirror'||a==='monitor')return null;const c=chest(),dx=c.x-cam.position.x,dy=c.y-cam.position.y,dz=c.z-cam.position.z,L=Math.hypot(dx,dy,dz);
+  if(L>11||L<.2)return null;if(typeof losClear==='function'&&!losClear(cam.position.x,cam.position.z,c.x,c.z,fy))return null;return{dx:dx/L,dy:dy/L,dz:dz/L,L}}
+ function aimed(){const s=seen();if(!s)return null;cam.getWorldDirection(fw);const dot=fw.x*s.dx+fw.y*s.dy+fw.z*s.dz;const tol=Math.max(.1,Math.atan(.5/s.L));return Math.acos(Math.min(1,dot))<tol?s:null}
+ // an invisible target between you and it, so the prompt reads Shoot and a tap on it fires
+ const hit=new THREE.Mesh(new THREE.BoxGeometry(1,1.9,.3),hitMat);scene.add(hit);// mesh stays visible (its material is not) so a touch tap's ray can find it
+ hit.userData.i={get label(){return 'Shoot'},act(){if(armed())fire()}};
+ // ---- firing ----
+ function fire(){const now=performance.now();if(now<cool||!armed())return;cool=now+550;
+  if(!has('ammo')){sfx.click();subtitle('Click. It isn\'t loaded.',1800);return}
+  if(S.rounds<=0){sfx.click();subtitle('Click. The ammo box is empty.',2000);return}
+  S.rounds--;recoil=1;flashT=.07;sfx.bang();const s=aimed();
+  if(!s){if(seen())subtitle('(You missed.)',1400);return}
+  S.hits++;safe(()=>XT.demonSfx&&XT.demonSfx.hiss(g.position.x,g.position.z,1.2),'hiss');
+  if(S.hits>=HITS){finale();return}
+  subtitle(S.hits===1?'(It shrieks and jerks back. Black smoke curls out of it.)':'(It staggers, hissing. It is slower now.)',2600);
+  safe(()=>{if(TRAP.cancel)TRAP.cancel()},'trap');XT.demon.force='scare';setTimeout(()=>safe(()=>{if(over)return;XT.demon.force=null;DM.stop()},'stop'),650)}
+ let P0=null,G0=null;
+ function finale(){over=true;window.__noMove=1;want(hit,false);
+  P0={x:cam.position.x,y:cam.position.y,z:cam.position.z,fy};G0={x:g.position.x,z:g.position.z};
+  safe(()=>{if(TRAP.cancel)TRAP.cancel()},'trap');XT.demon.force='scare';
+  subtitle('(The third shot.)',1800);
+  if(window.__mp&&__mp.active){setTimeout(()=>{safe(()=>{XT.demon.force=null;DM.stop()},'stop');safe(()=>OUT.finish('gun'),'mp');over=false;window.__noMove=0},1600);return}
+  setTimeout(()=>{safe(()=>{XT.demon.force=null;DM.stop()},'stop');safe(()=>OUT.finish('gun'),'fin')},300)}
+ // E (and the touch Use button, which sends E), and a click while the pointer is locked
+ const shootKey=e=>{if(!armed())return false;const s=aimed();if(!s){const t=window.__target&&__target();if(t&&t!==hit.userData.i)return false}e.stopImmediatePropagation();e.preventDefault&&e.preventDefault();fire();return true};
+ addEventListener('keydown',e=>{if(e.code!=='KeyE'||e.repeat||window.__typing)return;safe(()=>shootKey(e),'key')},true);
+ renderer.domElement.addEventListener('mousedown',e=>{if(!document.pointerLockElement)return;safe(()=>shootKey(e),'click')},true);
+ // ---- every frame ----
+ XT.onUpdate(dt0=>safe(()=>{const dt=Math.min(.1,+dt0||.016);
+  // the drawer slides; the revolver and the ammo box are there until someone has them
+  const o=S.drawer?1:0;slide.position.x+=(-.24*o-slide.position.x)*Math.min(1,dt*12);wGun.visible=o&&!gone('gun')||(slide.position.x<-.02&&!gone('gun'));want(gHit,S.drawer&&!gone('gun'));
+  ammo.visible=!gone('ammo');want(aHit,!gone('ammo'));
+  // in your hand
+  const show=over?fp.visible:(holding()&&XT.live()&&!CARE.dbg.carrying&&!seated);if(!window.__cut)fp.visible=!!show;
+  recoil=Math.max(0,recoil-dt*7);fp.position.set(.2,-.2+recoil*.02,-.42+recoil*.05);fp.rotation.x=.04+recoil*.35;
+  flashT=Math.max(0,flashT-dt);mf.intensity=flashT>0?3:0;flashM.visible=flashT>0;
+  // the Shoot target
+  const s=armed()?seen():null;if(s){const d=Math.min(1.3,s.L-.1);hit.position.set(cam.position.x+s.dx*d,cam.position.y-.2,cam.position.z+s.dz*d);hit.lookAt(cam.position.x,hit.position.y,cam.position.z);hit.updateMatrixWorld();want(hit,true)}else want(hit,false)},'upd'));
+ XT.parts.gun={save:()=>({d:S.drawer?1:0,r:S.rounds,h:S.hits}),load:v=>{if(!v)return;S.drawer=!!v.d;if(isFinite(v.r))S.rounds=Math.max(0,Math.min(ROUNDS,v.r|0));if(isFinite(v.h))S.hits=Math.max(0,Math.min(HITS-1,v.h|0))}};
+ // ---- the cut scene: it goes over backwards and crumbles to ash ----
+ const ashT=(()=>{const c=document.createElement('canvas');c.width=c.height=32;const q=c.getContext('2d'),gr=q.createRadialGradient(16,16,1,16,16,15);gr.addColorStop(0,'rgba(190,185,190,1)');gr.addColorStop(1,'rgba(120,115,120,0)');q.fillStyle=gr;q.fillRect(0,0,32,32);return new THREE.CanvasTexture(c)})();
+ const motes=[];const pile=new THREE.Mesh(new THREE.SphereGeometry(.45,12,6,0,Math.PI*2,0,Math.PI/2),new THREE.MeshPhongMaterial({color:0x5a585e,shininess:2}));pile.visible=false;scene.add(pile);
+ const mote=(x,y,z,v,sz)=>{const s=new THREE.Sprite(new THREE.SpriteMaterial({map:ashT,transparent:true,depthWrite:false,opacity:.85}));s.scale.setScalar(sz||.16);s.position.set(x,y,z);s.userData.v=v||.3;s.userData.w=Math.random()*6;scene.add(s);motes.push(s)};
+ const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
+ const say=(L,t,st)=>{while(st.i<L.length&&t>=L[st.i][0]){const [,k,txt,d]=L[st.i];subtitle(txt,d*1000);st.i++}};
+ const fadeOut=()=>{const f=document.getElementById('xfade');if(f&&!f.classList.contains('on')){f.hidden=false;f.textContent='';requestAnimationFrame(()=>f.classList.add('on'))}};
+ XT.gunCut=()=>{const st={i:0};const P=P0||{x:cam.position.x,y:cam.position.y,z:cam.position.z,fy};
+  let dx=(G0?G0.x:P.x+1)-P.x,dz=(G0?G0.z:P.z)-P.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let Dd=Math.min(2.6,Math.max(1.6,L));while(Dd>1.1&&typeof losClear==='function'&&!losClear(P.x,P.z,P.x+dx*(Dd+.4),P.z+dz*(Dd+.4),P.fy))Dd-=.1;
+  const gx=P.x+dx*Dd,gz=P.z+dz*Dd;g.visible=true;g.scale.setScalar(1);g.rotation.set(0,0,0);g.position.set(gx,P.fy,gz);g.lookAt(P.x,P.fy,P.z);XT.demon.force='stand';
+  const base=g.quaternion.clone();fp.visible=true;pile.position.set(gx-dx*.2,P.fy,gz-dz*.2);pile.scale.set(1,.001,1);
+  const L2=[[.3,null,'(It stops. It looks down at itself, almost surprised.)',3],[3.3,null,'(It goes over backwards like a felled tree, and before it hits the floor it is already coming apart.)',3.8],
+   [7.4,null,'(Grey ash, curling up like burnt paper. Then nothing but the smell of struck matches.)',3.4],[11,null,'(Upstairs, Lilith yawns, rolls over and keeps right on sleeping. She is fine. She never even woke up.)',3.6],
+   [15,null,'(You blow the smoke off the barrel, like in the movies. Then you sit down on the floor for a while.)',3.4]];
+  return{step(dt,t){cam.position.set(P.x,P.fy+1.6,P.z);
+    // stagger, fall, crumble
+    g.quaternion.copy(base);if(t<3.2){g.rotateZ(Math.sin(t*5)*.06*(1-t/3.2));g.position.set(gx+Math.sin(t*7)*.03,P.fy,gz)}
+    else{const k=sm((t-3.2)/1.3);g.rotateX(-1.35*k);g.position.set(gx,P.fy,gz)}
+    const c=sm((t-4)/3);g.scale.set(1+.15*c,Math.max(.02,1-c),1+.15*c);g.visible=t<7.2;
+    if(t>3.6&&t<8.5&&Math.random()<dt*14){const h=Math.random()*1.4*(1-c*.8);mote(gx-dx*h*.6+(Math.random()-.5)*.6,P.fy+.2+Math.random()*(1-c)*1.2,gz-dz*h*.6+(Math.random()-.5)*.6,.2+Math.random()*.4,.12+Math.random()*.12)}
+    if(t>4){pile.visible=true;pile.scale.set(1,Math.max(.001,.22*sm((t-4)/3.5)),1)}
+    for(let i=motes.length-1;i>=0;i--){const s=motes[i];s.position.y+=s.userData.v*dt;s.position.x+=Math.sin(t*1.5+s.userData.w)*dt*.15;s.material.opacity-=dt*.22;if(s.material.opacity<=0){scene.remove(s);motes.splice(i,1)}}
+    // the revolver: still raised, smoking; lowered at the end
+    if(t<4&&Math.random()<dt*6){fp.updateMatrixWorld(true);const m=fp.localToWorld(fp.userData.muzzle.clone());mote(m.x,m.y+.02,m.z,.15,.05)}
+    const low=sm((t-14.6)/1.4);fp.position.set(.2,-.2-.12*low,-.42);fp.rotation.set(.04-.6*low,.06,0);
+    const ty=t<6?P.fy+1.2-.9*sm((t-3.4)/2.4):P.fy+.25;look(gx,ty-(t>14.6?.3*low:0),gz);
+    say(L2,t,st);if(t>18.6)fadeOut();return t>20},
+   end(){motes.forEach(s=>scene.remove(s));motes.length=0;pile.visible=false;g.scale.setScalar(1);g.rotation.set(0,0,0);XT.demon.force=null;g.visible=false;fp.visible=false}}};
+ XT.gun={get S(){return S},fire,aimed,seen,get over(){return over},take,dHit,gHit,aHit,hit,armed};
 })();
 </script>
 
@@ -5765,6 +5905,12 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    mel.forEach(([x,m])=>bell(t+x*b,m,b*1.6,.06));[48,43,45,41].forEach((m,i)=>{for(let k=0;k<3;k++)V(t+i*3*b+k*b,k?m+19:m+12,b*.8,{w:'triangle',g:k?.025:.05,f:1800})});
    [0,1,2].forEach(i=>slide(t+4.1+i*.32,64,55,.22,.05));tuba(t+5.2,31,.2,.12);slide(t+5.2,43,31,1.1,.08);
    mel.forEach(([x,m])=>bell(t+6.8+x*b,m+12,b*1.4,.05));pad(t+6.8,[60,64,67],3.6,.025);bell(t+10.6,84,1.6,.06);bell(t+10.75,88,1.6,.05);return 12.5},
+  // v102 Bang Bang Bang: three gunshots, a beat of silence, then a bright little western brass fanfare over a snare roll and a big major chord with a cymbal
+  gun(t){[0,.75,1.5].forEach(x=>{noise(t+x,.45,900,.32,.7,'lowpass');kick(t+x,.45);noise(t+x+.02,.12,3800,.08,1,'highpass')});
+   const b=.22,s=t+2.6;for(let i=0;i<10;i++)snare(s+i*b*.5,.05+i*.008);
+   const M=[[0,67,1],[1,72,1],[2,72,.5],[2.5,72,.5],[3,76,1],[4,72,1],[5,79,3]];M.forEach(([x,m,l])=>V(s+1.1+x*b*1.6,m,l*b*1.6,{w:'sawtooth',g:.05,a:.02,f:1700,det:[-7,7],sus:.8,r:.15}));
+   [[48,55,64],[48,55,64],[43,55,62],[48,52,60]].forEach((c,i)=>c.forEach(m=>V(s+1.1+i*b*3.2,m,b*3,{w:'sawtooth',g:.025,f:700,sus:.8})));
+   kick(s+1.1+5*b*1.6,.35);crash(s+1.1+5*b*1.6,.12);pad(s+1.1+5*b*1.6,[60,64,67,72],3,.03);bell(s+3.4+5*b*1.6,84,1.4,.05);return s-t+1.1+5*b*1.6+4},
   arson(t){for(let i=0;i<40;i++)noise(t+Math.random()*9,.04,2500+Math.random()*3000,.05,1);
    for(let i=0;i<3;i++){slide(t+i*1.2,74,81,.6,.05);slide(t+i*1.2+.6,81,74,.6,.05)}
    const b=.22;for(let i=0;i<16;i++){tuba(t+3.6+i*b*2,[48,55,53,55][i%4]-12,b*.9,.08);V(t+3.6+i*b*2+b,[64,67,65,67][i%4],b*.5,{w:'square',g:.025,f:900})}
@@ -5901,6 +6047,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    q.fillStyle='#120e14';q.fillRect(W*.47-11,H*.34,6,5);q.fillRect(W*.47+5,H*.34,6,5);q.fillStyle='#8a0a1a';q.fillRect(W*.47-2,H*.47,3,10);
    q.save();q.translate(W*.47+20,H*.42);q.rotate(-1.1);q.fillStyle='rgba(240,248,255,.85)';q.fillRect(-6,-18,12,30);q.fillStyle='#fff6e4';q.fillRect(-5,0,10,10);q.fillStyle='#8ad0f0';q.fillRect(-7,-22,14,5);q.fillStyle='#f0c890';q.fillRect(-3,-28,6,6);q.restore();
    const ht=(x,y,s)=>{q.fillStyle='#ff5a8a';q.beginPath();q.moveTo(x,y+s);q.bezierCurveTo(x-s*1.4,y+s*.2,x-s*1.1,y-s*.9,x,y-s*.3);q.bezierCurveTo(x+s*1.1,y-s*.9,x+s*1.4,y+s*.2,x,y+s);q.fill()};ht(W*.66,H*.2,9);ht(W*.74,H*.32,6);ht(W*.6,H*.1,5);ht(W*.3,H*.22,7)},
+  gun(q,W,H){q.fillStyle='#0c0a0e';q.fillRect(0,0,W,H);const g=q.createRadialGradient(W*.3,H*.42,4,W*.3,H*.42,110);g.addColorStop(0,'rgba(255,200,90,.35)');g.addColorStop(1,'rgba(255,200,90,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
+   q.save();q.translate(W*.08,H*.78);q.rotate(-.35);q.fillStyle='#3a3c42';q.fillRect(0,-10,92,14);q.fillRect(40,-16,42,24);q.fillStyle='#55585e';q.beginPath();q.arc(58,-4,13,0,7);q.fill();q.fillStyle='#5a3a22';q.beginPath();q.moveTo(80,4);q.lineTo(104,4);q.lineTo(112,46);q.lineTo(92,48);q.fill();q.restore();
+   q.fillStyle='#ffd040';q.font='bold 26px Georgia';q.textAlign='center';[['BANG',.34,.28,-.12],['BANG',.56,.18,.08],['BANG',.5,.42,-.05]].forEach(([w,x,y,r])=>{q.save();q.translate(W*x,H*y);q.rotate(r);q.fillText(w,0,0);q.restore()});q.textAlign='left';
+   q.fillStyle='#6a6670';q.beginPath();q.ellipse(W*.8,H*.86,W*.13,H*.06,0,0,7);q.fill();q.fillStyle='#8a8690';q.beginPath();q.ellipse(W*.8,H*.83,W*.07,H*.05,0,Math.PI,0);q.fill();
+   q.fillStyle='rgba(170,165,175,.6)';for(let i=0;i<16;i++){q.beginPath();q.arc(W*.7+((i*37)%70),H*.75-((i*23)%60),1.5+(i%3),0,7);q.fill()}},
   arson(q,W,H){q.fillStyle='#0c0608';q.fillRect(0,0,W,H);const g=q.createRadialGradient(W*.5,H*.7,10,W*.5,H*.7,200);g.addColorStop(0,'rgba(255,140,40,.6)');g.addColorStop(1,'rgba(255,60,20,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
    q.fillStyle='#1a1214';q.beginPath();q.moveTo(W*.2,H*.9);q.lineTo(W*.2,H*.5);q.lineTo(W*.5,H*.28);q.lineTo(W*.8,H*.5);q.lineTo(W*.8,H*.9);q.fill();
    for(let i=0;i<14;i++){q.fillStyle=['#ff4a10','#ff9a20','#ffd040'][i%3];const x=W*.18+i*16,h=30+(i*37)%50;q.beginPath();q.moveTo(x-10,H*.9);q.quadraticCurveTo(x,H*.9-h*1.6,x+10,H*.9);q.fill()}
@@ -6034,6 +6185,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    plait(h,m,[[0,-.08,.15],[0,-.2,.16],[0,-.36,.16],[0,-.54,.16],[0,-.66,.16]],.052,13,1);
    [-1,1].forEach(k=>plait(h,m,fitOver(h,[[.1,.04,.03],[.135,-.06,.0],[.15,-.17,-.05],[.155,-.3,-.09],[.15,-.44,-.1]].map(([x,y,z])=>new THREE.Vector3(k*x,y,z)),k,.06),.052,11,0))},
   short:(h,m)=>{cap(h,m)},
+  genya:(h,m)=>genyaHair(h,m),
+  genyad:(h,m)=>genyaDemonHair(h,m),
   // HAIR v97 (Petra: "more boy haircuts"): six short styles, free by default. They stay close to the head so hats, headbands and masks still sit on top,
   // every piece uses the hair material (so colours and gradients work), and the only long-ish strands (the wolf cut's nape) are fitted over the outfit's collar.
   buzz:(h,m)=>{sph(.137,m,1,.74,1.04,0,.05,.012,h)},
@@ -6123,6 +6276,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   mesm:h=>[-1,1].forEach(k=>{const e=new THREE.Mesh(new THREE.CylinderGeometry(.034,.034,.02,12),B(0x0a080c));e.rotation.x=Math.PI/2;e.scale.y=1.15;e.position.set(k*.05,.01,-.122);h.add(e);sph(.009,B(0xffffff),1,1,.5,k*.05-.012,.024,-.133,h)}),
   lashes:h=>[-1,1].forEach(k=>{bx(.025,.025,.01,B(0x101010),k*.045,.01,-.125,h);const l=bx(.018,.006,.01,B(0x101010),k*.065,.028,-.124,h);l.rotation.z=k*.6}),
   headlight:(h,o)=>headlights(h,((o&&o.hlb)||100)/100),
+  genya:h=>genyaEyes(h),
+  genyad:h=>genyaDemonEyes(h),
  };
  const MOUTH={
   none:()=>{},
@@ -6189,6 +6344,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   suitskirt:{n:'Suit with pencil skirt',shirt:0x1c1c22,legs:0,skinLegs:1,shoe:0x0e0e10,x:(b,s,r)=>{suitTop(b,r);frustum(.385,.228,.33,.2,.44,P(0x1c1c22),.69,b);belt(b)}},
   // Teto, "Execution Clap" (TRAP CHICK, art by Saku Ram): black suit jacket over a white shirt, tie with an infinity / ouroboros pin, white gloves, garter belt and stockings, winged shoes, horns
   // DS v89: Muichiro's woodcutter kimono from before the Corps: short plain blue-gray kimono, dark tie belt, dark trousers
+  genya:{n:"Genya's Corps uniform",shirt:0x17161e,legs:0x17161e,shoe:0x2a2228,x:(b,s,r,o)=>genyaUni(b,r,o)},
   muichiro:{n:"Muichiro's cloud yukata",shirt:0xb6d4ee,legs:0x1e2238,shoe:0x8a6a4a,robe:1,x:(b,s,r,o)=>woodcutter(b,r,o)},
   teto:{n:'Teto: Execution Clap',shirt:0x5a1822,legs:0,skinLegs:1,shoe:0x141216,x:(b,s,r)=>tetoClap(b,r),hx:h=>tetoBows(h)},
   // Teto, "Yararara": cropped open navy varsity jacket with white sleeves and red and white striped trim over a cropped red top, choker, navy leggings, batting gloves, sneakers
@@ -6252,6 +6408,70 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   // white knee socks, red roller skates with orange wheels
   r.legs.forEach(q=>{bx(.13,.32,.14,w,0,-.62,0,q);bx(.136,.09,.17,P(0xc8202e),0,-.74,-.01,q);const om=P(0xf08a20);[-.11,.06].forEach(z=>[-1,1].forEach(k=>{const wh=new THREE.Mesh(new THREE.CylinderGeometry(.026,.026,.035,8),om);wh.rotation.z=Math.PI/2;wh.position.set(k*.045,-.83,z);q.add(wh)}));bx(.03,.03,.03,P(0xe0b040),0,-.82,-.14,q)})}
  // wearables over any hair: Yararara's red cap with "052", Mesmerizer's pinstripe headband with a striped bow
+ // ---------- GENYA (preview, Petra): Genya Shinazugawa set. Uniform, mohawk, face scar, glare eyes, double-barrel pistol. Cosmetic only. ----------
+ // (Petra v2, from her reference) black Corps uniform buttoned up, high collar with one white band as its top edge (Petra v5), white buttons, white belt, white leg wraps;
+ // over it a loose SLEEVELESS dark maroon haori, open at the front, one solid color (Petra v3: no lighter shoulders), covering the back (no 滅 showing);
+ // plain black sleeves (Petra v3: the olive spots were only shading)
+ // (Petra v11) Genya's sleeveless maroon haori is its own Layers toggle ('ghaori') that goes over ANY outfit; it is no longer part of the uniform
+ function genyaHaori(b){const mr=P(0x4a1a2a),len=.52,y=1.47-len/2,H=(w,h,d,x,yy,z)=>bx(w,h,d,mr,x,yy,z,b);
+  H(.46,len,.02,0,y,.135);[-1,1].forEach(k=>{H(.02,len,.25,k*.222,y,0);H(.11,len,.02,k*.17,y,-.135);
+   const sh=bx(.13,.035,.29,mr,k*.155,1.487,0,b);sh.rotation.z=-k*.12})}
+ function genyaUni(b,r,o){const bk=P(0x17161e),wt=P(0xeeeae0),wd=D(0xeeeae0);
+  /* open rings, so looking down you see only the thin rim, not a white plate */[[.063,1.4615,0x17161e,.1],[.018,1.484,0xeeeae0,.1015]].forEach(([hh,yy,c,rr])=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(rr,rr,hh,8,1,true),P(c,{side:THREE.DoubleSide}));m.position.y=yy;m.rotation.y=Math.PI/8;m.scale.z=.85;b.add(m)});{const nk=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.08,8),P(SKIN[o.skin][1]));nk.position.y=1.46;b.add(nk)}
+  [1.3,1.17,1.04].forEach(y=>sph(.012,P(0xd8d8dc,{shininess:80,specular:0xffffff}),1,1,.6,0,y,-.113,b));
+  rbx(.404,.04,.244,wt,0,.92,0,b,.07);
+  r.legs.forEach(q=>{bx(.145,.4,.155,bk,0,-.2,0,q);bx(.134,.3,.144,wt,0,-.6,0,q)})}
+ // shaved sides: a short dark stubble shell; a tall spiky mohawk of long spikes swept back, with a few trailing down the back of the head
+ // (Petra v10: the normal and demon mohawks share this shape; gold=true adds the demon form's gold tips, the top 30% of each spike, in their own material)
+ function genyaHair(h,m,gold){const st=P(0x4a4448),gd=gold?P(0xf0c030):null;{const s=new THREE.Mesh(new THREE.SphereGeometry(.132,16,8,0,Math.PI*2,0,Math.PI*.44),st);s.scale.set(.97,1.1,1.02);s.rotation.x=.32;s.position.set(0,.002,.004);h.add(s)}
+  sph(.05,m,.75,.75,2.9,0,.13,.03,h);
+  const spike=(x,y,z,rx,rz,r,L)=>{const g=new THREE.Group();g.position.set(x,y,z);g.rotation.set(rx,0,rz);h.add(g);const c=new THREE.Mesh(new THREE.ConeGeometry(r,L,4),m);c.position.y=L/2;c.scale.x=.65;g.add(c);
+   if(gd){const t=new THREE.Mesh(new THREE.ConeGeometry(r*.32,L*.3,4),gd);t.position.y=L*.85;t.scale.x=.65;g.add(t)}};
+  for(let i=0;i<9;i++){const t=i/8,z=-.1+t*.27,yy=.143*Math.sqrt(Math.max(0,1-(Math.min(z,.13)/.135)**2));spike(0,yy-.01,z,i===0?.55:.85+t*1.0,0,.045-t*.01,.24-t*.06);
+   if(i>0&&i<8)[-1,1].forEach(k=>spike(k*.024,yy-.02,z,.95+t*.9,-k*.35,.03,.15))}
+  [[-.05,-.02],[.05,-.02],[0,-.06]].forEach(([x,y])=>spike(x,y,.12,2.3,x*4,.03,.17))}
+ // the scar straight across the nose, cheek to cheek, following the face
+ function genyaScar(h){const m=D(0xc27470,{polygonOffsetFactor:-3,polygonOffsetUnits:-3}),y=-.022;for(let i=0;i<9;i++){const x=-.088+i*.022,z=-.13*Math.sqrt(Math.max(0,1-(x/.1235)**2-(y/.143)**2))-.003;
+   const s=bx(.026,.013,.004,m,x,y+x*.06,z,h);s.rotation.y=Math.atan2(x/.1235*.13,.13)*-1;s.rotation.z=.06}}
+ // his wide angry stare: whites, purple irises, black pupils, heavy brows angled down to the middle
+ function genyaEyes(h){[-1,1].forEach(k=>{bx(.042,.03,.01,B(0xf4f0ea),k*.046,.01,-.124,h);bx(.022,.026,.012,B(0x7a4aa8),k*.046,.008,-.126,h);bx(.01,.012,.013,B(0x0a080c),k*.046,.008,-.127,h);
+  const w=bx(.05,.011,.012,B(0x141010),k*.048,.042,-.124,h);w.rotation.z=k*.32})}
+ // the double-barrel pistol, in the right hand (arms[1]). Built so the barrels run down the arm: hanging at the side it points at the floor,
+ // and with the arm raised forward (genyaPose) it aims straight ahead. The muzzle flash is a hidden child named 'flash'.
+ function genyaGun(a){const g=new THREE.Group();g.name='genyaGun';g.position.set(0,-.6,0);a.add(g);
+  const mt=P(0x2c2e34,{shininess:70,specular:0x777777}),dk=P(0x111114),wd=P(0x5a3420,{shininess:20}),br=P(0xb08a4a,{shininess:90,specular:0xffffff});
+  bx(.046,.06,.15,wd,0,.012,.08,g).rotation.x=-.22;bx(.05,.02,.02,br,0,.03,.155,g);
+  bx(.078,.14,.075,mt,0,-.03,-.04,g);bx(.08,.06,.03,br,0,-.02,-.04,g).scale.set(1.02,1,1.02);
+  [-1,1].forEach(k=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.42,10),mt);c.position.set(k*.026,-.29,-.065);g.add(c);
+   const bo=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.01,8),dk);bo.position.set(k*.026,-.497,-.065);g.add(bo);
+   bx(.012,.03,.018,dk,k*.02,.055,-.08,g).rotation.x=.4});
+  bx(.012,.42,.012,dk,0,-.29,-.095,g);bx(.06,.18,.03,wd,0,-.17,-.028,g);
+  const tg=new THREE.Mesh(new THREE.TorusGeometry(.026,.006,4,10,Math.PI),mt);tg.rotation.set(0,Math.PI/2,0);tg.position.set(0,-.045,.005);g.add(tg);
+  const f=new THREE.Group();f.name='flash';f.visible=false;f.position.set(0,-.5,-.065);g.add(f);
+  const y=new THREE.MeshBasicMaterial({color:0xfff1a8}),o=new THREE.MeshBasicMaterial({color:0xff8a2a,transparent:true,opacity:.85});
+  sph(.05,y,1.3,1,1,0,-.02,0,f);{const c=new THREE.Mesh(new THREE.ConeGeometry(.07,.22,7),o);c.rotation.x=Math.PI;c.position.y=-.12;f.add(c)}
+  for(let i=0;i<6;i++){const a2=i/6*Math.PI*2,c=new THREE.Mesh(new THREE.ConeGeometry(.018,.12,4),y);c.position.set(Math.cos(a2)*.05,-.03,Math.sin(a2)*.05);c.rotation.set(Math.sin(a2)*1.3+Math.PI*.0,0,-Math.cos(a2)*1.3);f.add(c)}
+  return g}
+ // pose helper for the shooting action and previews: 0 at the side, 1 aiming, 2 aiming with the flash
+ function genyaPose(rig,mode){const a=rig.arms[1],g=a.getObjectByName('genyaGun');a.rotation.set(mode?Math.PI/2-.04:.12,0,mode?.06:0);if(g)g.getObjectByName('flash').visible=mode===2}
+ // shooting is purely cosmetic (Petra): a bang and a flash, nothing else. No hit test, no effect on the demon or anything in the house.
+ let GAC=null;function genyaBang(){try{GAC=GAC||new (window.AudioContext||window.webkitAudioContext)();const c=GAC,t=c.currentTime,n=c.createBuffer(1,c.sampleRate*.5,c.sampleRate),d=n.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,4);
+  const s=c.createBufferSource();s.buffer=n;const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.setValueAtTime(5000,t);lp.frequency.exponentialRampToValueAtTime(300,t+.4);const gn=c.createGain();gn.gain.setValueAtTime(1,t);gn.gain.exponentialRampToValueAtTime(.001,t+.5);
+  const os=c.createOscillator();os.frequency.setValueAtTime(120,t);os.frequency.exponentialRampToValueAtTime(40,t+.2);const og=c.createGain();og.gain.setValueAtTime(.8,t);og.gain.exponentialRampToValueAtTime(.001,t+.25);
+  s.connect(lp).connect(gn).connect(c.destination);os.connect(og).connect(c.destination);s.start(t);os.start(t);os.stop(t+.3)}catch(e){}}
+ function genyaFire(rig){genyaPose(rig,2);genyaBang();setTimeout(()=>genyaPose(rig,1),90)}
+ // (Petra v7, from her reference) demon-eating form, same genya lock.
+ // Hair: the same long swept-back mohawk as the normal one; only the TIPS are bright gold
+ // (separate tip pieces in their own material, so hair colour and gradients never touch them). Shaved stubble sides as normal.
+ function genyaDemonHair(h,m){genyaHair(h,m,true)}
+ // demon eyes: fully black eyes with dark smudged rims, small round yellow irises with dark pupils, the same angry brows.
+ // (Petra v8) no face cracks or veins, and the face keeps the player's skin tone.
+ function genyaDemonEyes(h){const at=(x,y)=>-.13*Math.sqrt(Math.max(0,1-(x/.1235)**2-(y/.143)**2));
+  [-1,1].forEach(k=>{bx(.068,.052,.006,D(0x4a4648),k*.046,.008,at(k*.046,.008)+.001,h);bx(.05,.036,.01,B(0x050405),k*.046,.01,-.124,h);
+   const ir=new THREE.Mesh(new THREE.CylinderGeometry(.011,.011,.006,10),B(0xf2c832));ir.rotation.x=Math.PI/2;ir.position.set(k*.046,.01,-.13);h.add(ir);
+   const pu=new THREE.Mesh(new THREE.CylinderGeometry(.005,.005,.006,8),B(0x1a1208));pu.rotation.x=Math.PI/2;pu.position.set(k*.046,.01,-.1325);h.add(pu);
+   const w=bx(.05,.011,.012,B(0x141010),k*.048,.046,-.124,h);w.rotation.z=k*.32});
+}
  function capHat(h){const m=P(0xc8202e),d=new THREE.Mesh(new THREE.SphereGeometry(.152,12,6,0,Math.PI*2,0,Math.PI/2),m);d.scale.set(1,.78,1.08);d.position.y=.04;h.add(d);
   const br=bx(.2,.014,.13,m,0,.045,-.18,h);br.rotation.x=-.12;sph(.016,m,1,.6,1,0,.16,0,h);
   const c=document.createElement('canvas');c.width=128;c.height=64;const q=c.getContext('2d');q.fillStyle='#fff';q.font='bold 50px system-ui,Arial,sans-serif';q.textAlign='center';q.textBaseline='middle';q.fillText('052',64,36);
@@ -6519,30 +6739,30 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const GRAD={grad:[0x121010,0xe8742a,0xffa448],shinobu:[0x141018,0x6a3a9a,0xa070d8,.5,.7],mitsuri:[0xf07aa8,0x7ac06a,0xa4e08a,.5,.68],inosuke:[0x12142a,0x1f3f8f,0x2a4fa8,.62,.82],muichiro:[0x121418,0x2a8a7a,0x6ad0b8],zenitsu:[0xf2c838,0xe8962a,0xf07a1a,.6,.8]};
  const SKIN={peach:['Peach',0xe2c0a0],porcelain:['Porcelain',0xf0d8c4],honey:['Honey',0xc8956a],umber:['Umber',0x8a5a3a],deep:['Deep',0x5a3a26],purple:['Rabbit purple',0x8a5ac8]};
  const SLOT=[0xe0705a,0x4fb3a9,0xe0b84a,0x9a7ad8],SLOTH=['bark','chestnut','ink','wheat'];
- const HAIRN={bald:'Bald',short:'Short',long:'Long',ponytail:'Ponytail',bob:'Bob with bangs',buns:'Twin buns',maomao:"Maomao's buns",nezuko:"Nezuko's long hair",miku:"Miku's twin tails",teto:"Teto's drill twin tails",braid:'Long braid',shinobu:"Shinobu's bob",mitsuri:"Mitsuri's braids",muichiro:"Muichiro's long hair",buzz:'Buzz cut',messy:'Short messy',sidepart:'Side part',curtain:'Curtain bangs',spiky:'Spiky',wolf:'Wolf cut'};
- const EYEN={dots:'Dots',ydots:'Yellow dots (rabbit)',wide:'Wide',sleepy:'Sleepy',mesm:'Big round (Mesmerizer)',lashes:'Lashes',headlight:'Headlights'},MOUTHN={none:'None',smile:'Smile',flat:'Flat',oh:'Gasp',snake:'Snake grin',shark:'Open smile'};
+ const HAIRN={bald:'Bald',short:'Short',long:'Long',ponytail:'Ponytail',bob:'Bob with bangs',buns:'Twin buns',maomao:"Maomao's buns",nezuko:"Nezuko's long hair",miku:"Miku's twin tails",teto:"Teto's drill twin tails",braid:'Long braid',shinobu:"Shinobu's bob",mitsuri:"Mitsuri's braids",muichiro:"Muichiro's long hair",buzz:'Buzz cut',messy:'Short messy',sidepart:'Side part',curtain:'Curtain bangs',spiky:'Spiky',wolf:'Wolf cut',genya:"Genya's mohawk",genyad:"Genya's mohawk (demon form)"};
+ const EYEN={dots:'Dots',ydots:'Yellow dots (rabbit)',wide:'Wide',sleepy:'Sleepy',mesm:'Big round (Mesmerizer)',lashes:'Lashes',headlight:'Headlights',genya:"Genya's glare",genyad:"Genya's demon eyes"},MOUTHN={none:'None',smile:'Smile',flat:'Flat',oh:'Gasp',snake:'Snake grin',shark:'Open smile'};
  const NECK={'':'None',pearl:'Pearl necklace',gold:'Gold necklace',silver:'Small silver necklace'},HAORI={'':'None',tanjiro:"Tanjiro's haori",nezuko:'Black haori'};
  const EARC=[0xf2ece4,0x5a2a4a,0x141010,0xf0b0c0,0x8ab0d8,0xe8c030,0x7a9a4a,0xc02030];
  // what unlocks what (keys of U())
- const LOCK={hair:{maomao:'pin',nezuko:'blade',miku:'miku',teto:'tetoh',shinobu:'shinobu',mitsuri:'mitsuri',muichiro:'muichiro'},hc:{jade:'pin',grad:'blade',teal:'miku',teto:'teto',shinobu:'shinobu',mitsuri:'mitsuri',inosuke:'inosuke',zenitsu:'zenitsu',muichiro:'muichiro'},bfly:'shinobu',omask:'obanai',boar:'inosuke',cape:'rengoku',mouth:{snake:'snake',shark:'stare'},eyes:{mesm:'stare',ydots:'abst',headlight:'seen'},skin:{purple:'abst'},cap:'bat',bat:'bat',hb:'stare',
-  outfit:{maomao:'pin',nezuko:'blade',robes:'cult',yoveralls:'abst',scales:'snake',miku:'miku',teto:'teto',yara:'bat',mesm:'stare',muichiro:'muichiro',suit:'closet',suitskirt:'closet',evening:'closet',cardigan:'closet'},
+ const LOCK={hair:{maomao:'pin',nezuko:'blade',miku:'miku',teto:'tetoh',shinobu:'shinobu',mitsuri:'mitsuri',muichiro:'muichiro',genya:'genya',genyad:'genya'},hc:{jade:'pin',grad:'blade',teal:'miku',teto:'teto',shinobu:'shinobu',mitsuri:'mitsuri',inosuke:'inosuke',zenitsu:'zenitsu',muichiro:'muichiro'},bfly:'shinobu',omask:'obanai',boar:'inosuke',cape:'rengoku',ghaori:'genya',gscar:'genya',gun:'genya',mouth:{snake:'snake',shark:'stare'},eyes:{mesm:'stare',ydots:'abst',headlight:'seen',genya:'genya',genyad:'genya'},skin:{purple:'abst'},cap:'bat',bat:'bat',hb:'stare',
+  outfit:{maomao:'pin',nezuko:'blade',robes:'cult',yoveralls:'abst',scales:'snake',miku:'miku',teto:'teto',yara:'bat',mesm:'stare',muichiro:'muichiro',genya:'genya',suit:'closet',suitskirt:'closet',evening:'closet',cardigan:'closet'},
   haori:{tanjiro:'blade',nezuko:'blade'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen'};
  const HINT={pin:'A gift someone lost, somewhere outside.',blade:'Prove yourself with a blade.',cult:'Some families never let you leave.',snake:'Something scaly hides down below.',abst:'Follow something that is not really there.',
-  miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',seen:'Find every ending.'};
+  miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',genya:'???',seen:'Find every ending.'};
  // DS v89: Demon Slayer unlocks. ONE place to change the triggers: each key is unlocked when hushCustU[key] is set (by the secret pickups/events below).
- const DS_KEYS=['shinobu','mitsuri','obanai','inosuke','zenitsu','rengoku','muichiro'];const dsU=(k,a,o)=>!!o[k];
+ const DS_KEYS=['shinobu','mitsuri','obanai','inosuke','zenitsu','rengoku','muichiro','genya'];const dsU=(k,a,o)=>!!o[k];
  const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
  const own=()=>{try{return JSON.parse(LS.get('hushCustU')||'{}')||{}}catch(e){return{}}};
  const SIA_DBG=(()=>{try{return new URLSearchParams(location.search).get('seenall')==='1'}catch(e){return false}})();
  function U(){let a={};try{a=JSON.parse(LS.get('hushAch')||'{}')||{}}catch(e){}const o=own();
-  return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),seen:!!a.seenall||SIA_DBG}}
+  return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,seen:!!a.seenall||SIA_DBG}}
  const lockKey=(k,v)=>{const L=LOCK[k];if(!L)return null;if(typeof L==='string')return v?L:null;return L[v]||null};
  const isOpen=(k,v,u)=>{const q=lockKey(k,v);return !q||!!(u||U())[q]};
- const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,that:0,ths:100,thp:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0};
+ const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','ghaori','gscar','gun','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -6560,7 +6780,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   const h=new THREE.Group();h.position.set(0,1.62,0);body.add(h);sph(.13,sk,.95,1.1,1,0,0,0,h);
   FITB=body;const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],gr=GRAD[hc],hm=P(gr?0:hc);HAIR[o.hair](hg,hm);FITB=null;
   if(gr)gradHair(hg,hm,gr);
-  if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.that)topHat(h,o);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.cape)cape(body);
+  if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.that)topHat(h,o);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.ghaori)genyaHaori(body);if(o.cape)cape(body);if(o.gscar)genyaScar(h);if(o.gun)genyaGun(arms[1]);
   if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.invis)seeThrough(body,INV_OP,1);
   return{legs,arms,head:h}}
  // Nezuko's gradient, fitted to each hairstyle's own height (like her real hair): black at the crown/roots, starting to fade about 30% of the way down
@@ -6618,7 +6838,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   grp('Mouth','mouth',Object.keys(MOUTH).map(v=>({v,n:MOUTHN[v]})));
   grp('Outfit','outfit',Object.keys(OUTFIT).map(v=>({v,n:OUTFIT[v].n,c:OUTFIT[v].shirt==null?SLOT[0]:OUTFIT[v].shirt})));
   grp('Haori (over any outfit)','haori',Object.keys(HAORI).map(v=>({v,n:HAORI[v],c:v==='tanjiro'?0x2a7a52:v?0x18161a:null})));
-  grp('Layers (over any outfit)','tog',[['muzzle','Bamboo muzzle',0x7a9a4a],['sheath','Sword sheath',0x1a1a1e],['mask','Snake mask',0x5f8a4a],['tie','Teal tie',0x2ab5ac],['ears','Bunny ears',o.ears==null?0xf2ece4:o.ears],['cap','Red "052" cap',0xc8202e],['hb','Pinstripe cap with bow',0x3a62c4],['bat','Baseball bat (on back)',0xf2f0ee],['bfly','Butterfly hairclip',0xa070d8],['omask','Striped bandage mask',0xeeeae2],['boar','Boar head mask',0x6e6862],['cape','Flame cape',0xe8602a],['that',"Magician's top hat",0x121016]].map(([v,n,c])=>({v,n,c})));
+  grp('Layers (over any outfit)','tog',[['muzzle','Bamboo muzzle',0x7a9a4a],['sheath','Sword sheath',0x1a1a1e],['mask','Snake mask',0x5f8a4a],['tie','Teal tie',0x2ab5ac],['ears','Bunny ears',o.ears==null?0xf2ece4:o.ears],['cap','Red "052" cap',0xc8202e],['hb','Pinstripe cap with bow',0x3a62c4],['bat','Baseball bat (on back)',0xf2f0ee],['bfly','Butterfly hairclip',0xa070d8],['omask','Striped bandage mask',0xeeeae2],['boar','Boar head mask',0x6e6862],['cape','Flame cape',0xe8602a],['ghaori',"Genya's sleeveless haori",0x4a1a2a],['gscar',"Genya's scar",0xc27470],['gun',"Genya's double-barrel pistol (R to fire)",0x2c2e34],['that',"Magician's top hat",0x121016]].map(([v,n,c])=>({v,n,c})));
   if(o.that)grp('Top hat position','thp',[{v:0,n:'On top'},{v:1,n:'On the side'}]);
   if(o.ears!=null)grp('Bunny ear color','earc',EARC.map(c=>({v:c,n:'',c})));
   grp('Jewelry','neck',Object.keys(NECK).map(v=>({v,n:NECK[v]})).concat([{v:'pin',n:'Silver hairpin',c:0xd4d8e0,tog:1}]));
@@ -6810,7 +7030,29 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    ld.addEventListener('click',()=>{if(!S[i].lk)return;const want=clean(S[i].lk);LOOK=want;LOOK=mine();const lost=JSON.stringify(LOOK)!==JSON.stringify(want);save();rows();redoll();msg.textContent='Loaded "'+nm()+'".'+(lost?' Some items are still locked, so they were left off.':'')});
    r.append(inp,e,sv,ld);box.appendChild(r)})},'slots');
  // ---------- end SLOTS v90 ----------
- window.__cust={build,key,clean,mine,open,close,U,dress,eff,LOCK,HINT,dust,squeak,seeThrough,setInv,INV_OP,invOp,bumpDust(){DZ++;safe(()=>{const mp=window.__mp;if(mp&&mp.setLook)mp.setLook(mine())},'mp')},get doll(){return doll},get look(){return LOOK}};
+ window.__cust={genyaPose,genyaFire,genyaBang,genyaGun,build,key,clean,mine,open,close,U,dress,eff,LOCK,HINT,dust,squeak,seeThrough,setInv,INV_OP,invOp,bumpDust(){DZ++;safe(()=>{const mp=window.__mp;if(mp&&mp.setLook)mp.setLook(mine())},'mp')},get doll(){return doll},get look(){return LOOK}};
+})();
+// ===== v102 (Petra): Genya's double-barrel pistol, the in-game hook. Cosmetic only (Petra): with the pistol equipped in Customize, R (or the touch
+// Fire button, or a click while it is raised) raises it, bangs and flashes (genyaBang). No hit test, no effect on the demon or anything else.
+// You see it in first person; other players see your arm come up and the flash (report field gf, a fire counter; MP avatar update poses arms[1]).
+(function(){'use strict';const XT=window.__xt,C=window.__cust;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush genya] '+(t||''),e)}};
+ if(!XT||!C||!C.genyaGun||!C.genyaBang)return;
+ let eqT=0,eq=false,aimT=0,flT=0;window.__genyaF=0;
+ const equipped=()=>{const n=performance.now();if(n>eqT){eqT=n+500;eq=!!safe(()=>C.mine().gun,'mine')}return eq};
+ const can=()=>started&&!paused&&XT.live()&&!seated&&!noteOpen&&!(window.__mp&&(__mp.ghost||__mp.demon))&&!(window.__rlm&&__rlm.on)&&equipped();
+ // first person: the same model, on a holder turned so the barrels (built along -y, down the arm) point ahead
+ const hold=new THREE.Group();hold.position.set(.2,-.24,.2);hold.rotation.set(Math.PI/2-.02,0,0);hold.scale.setScalar(.8);hold.visible=false;cam.add(hold);
+ const gun=safe(()=>C.genyaGun(hold),'build');const flash=gun&&gun.getObjectByName('flash');
+ function fire(){if(!can())return false;aimT=1.6;flT=.1;window.__genyaF++;safe(()=>C.genyaBang(),'bang');return true}
+ addEventListener('keydown',e=>{if(e.code!=='KeyR'||e.repeat||window.__typing)return;if(fire())e.stopPropagation()});
+ renderer.domElement.addEventListener('mousedown',e=>{if(aimT>0&&document.pointerLockElement&&can()){e.stopImmediatePropagation();fire()}},true);
+ // touch: a Fire button next to Use, only while the pistol is equipped
+ let tb=null;const mkB=()=>{const B=document.getElementById('tcB');if(!B||tb)return;tb=document.createElement('button');tb.type='button';tb.id='tcGF';tb.textContent='Fire';tb.hidden=true;B.appendChild(tb);
+  tb.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();fire()});['touchstart','click','mousedown'].forEach(k=>tb.addEventListener(k,e=>e.stopPropagation()))};
+ XT.onUpdate(dt0=>safe(()=>{const dt=Math.min(.1,+dt0||.016);mkB();if(tb)tb.hidden=!equipped();
+  aimT=Math.max(0,aimT-dt);flT=Math.max(0,flT-dt);hold.visible=aimT>0&&can()&&!window.__cut;if(flash)flash.visible=flT>0;
+  hold.rotation.x=Math.PI/2-.02+Math.max(0,flT)*2.5},'upd'));
+ XT.genya={fire,get aimT(){return aimT},equipped,hold};
 })();
 // ===== end CUSTOMIZE v81 =====
 </script>
@@ -6822,7 +7064,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // ---- the achievement ----
  safe(()=>{const A=XT.ach&&XT.ach.A;if(!A)return;if(!A.some(a=>a.id==='seenall'))A.push({id:'seenall',n:'Seen It All',d:'You are either very stupid, very curious, or very determined.'});
   const btn=document.getElementById('achB'),cnt=()=>{if(btn)btn.textContent='Achievements '+A.filter(a=>XT.ach.got[a.id]).length+'/'+A.length};
-  const chk=()=>safe(()=>{const e=XT.endInfo&&XT.endInfo();/* v96 (Petra): every ending except Six O'Clock (id 'parents'), excluded by id; Bottle Buddies ('friend') is required again per Petra 2026-10-09 */const need=e?e.order.filter(k=>k!=='parents'):[];XT.seenAllNeed=need;if(!e||!need.length||!need.every(k=>e.got.includes(k))||XT.ach.got.seenall)return;XT.ach.unlock('seenall');cnt();
+  const chk=()=>safe(()=>{const e=XT.endInfo&&XT.endInfo();/* v96 (Petra): every ending except Six O'Clock (id 'parents'), excluded by id; Bottle Buddies ('friend') is required again per Petra 2026-10-09; Bang Bang Bang ('gun') is required too (it is in ORDER) per Petra 2026-10-10 */const need=e?e.order.filter(k=>k!=='parents'):[];XT.seenAllNeed=need;if(!e||!need.length||!need.every(k=>e.got.includes(k))||XT.ach.got.seenall)return;XT.ach.unlock('seenall');cnt();
    setTimeout(()=>safe(()=>subtitle('Every ending found. New looks are waiting in Customize.',5200)),4300)},'chk');
   const om=XT.markEnding;if(om)XT.markEnding=function(){const r=om.apply(this,arguments);chk();return r};
   const oe=XT.ending;XT.ending=function(){const r=oe.apply(this,arguments);chk();return r};
