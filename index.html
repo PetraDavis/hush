@@ -160,11 +160,13 @@ const WI=[];// wall-mounted item registry (overlap checks)
 function box(w,h,d,m,x,y,z,parent,solid){const g=new THREE.Mesh(BG(w,h,d),m);g.position.set(x,y,z);g.castShadow=g.receiveShadow=true;(parent||scene).add(g);if(!parent){tagA(g);if(TAGW)g.userData.wall=TAGW;if(TAGS)g.userData.span=TAGS}if(solid){const q={x0:x-w/2,x1:x+w/2,z0:z-d/2,z1:z+d/2,y0:y-h/2,y1:y+h/2};if(ANC&&!parent)q.ancd={dx:ANC.x-x,dz:ANC.z-z};solids.push(q)}return g}
 // room
 box(W,.1,D,mats.floor,0,-.05,0);box(W,.1,D,mats.ceil,0,H+.05,0).receiveShadow=false;
-box(W,H,.1,mats.wall,0,H/2,-D/2);box(W,H,.1,mats.wall,0,H/2,D/2);
+// polish: the nursery's own walls were built before the stretch tags existed, so the stretch treated them as furniture
+// (one rigid cluster anchored outside the stretched half) and they never moved in the boss arena. Tagged like every other wall now.
+TAGW='x';box(W,H,.1,mats.wall,0,H/2,-D/2);box(W,H,.1,mats.wall,0,H/2,D/2);TAGW=null;
 solids.push({x0:-4.05,x1:4.05,z0:-3.55,z1:-3.45,y0:0,y1:H},{x0:-4.05,x1:4.05,z0:3.45,z1:3.55,y0:0,y1:H},{x0:-4.05,x1:-3.95,z0:-3.5,z1:3.5,y0:0,y1:H});
 // left wall with window hole (window at z 0, width 1.4, y .9-2.1)
-box(.1,H,(D-1.4)/2,mats.wall2,-W/2,H/2,-(D+1.4)/4);box(.1,H,(D-1.4)/2,mats.wall2,-W/2,H/2,(D+1.4)/4);
-box(.1,.9,1.4,mats.wall2,-W/2,.45,0);box(.1,H-2.1,1.4,mats.wall2,-W/2,(H+2.1)/2,0);
+TAGW='z';box(.1,H,(D-1.4)/2,mats.wall2,-W/2,H/2,-(D+1.4)/4);box(.1,H,(D-1.4)/2,mats.wall2,-W/2,H/2,(D+1.4)/4);
+box(.1,.9,1.4,mats.wall2,-W/2,.45,0);box(.1,H-2.1,1.4,mats.wall2,-W/2,(H+2.1)/2,0);TAGW=null;
 box(.06,.06,1.4,mats.wood,-W/2+.05,1.5,0);box(.06,1.2,.06,mats.wood,-W/2+.05,1.5,0);
 [-1,1].forEach(s=>{const c=box(.05,1.7,.35,mats.curt,-W/2+.12,1.3,s*.85);c.rotation.y=s*.15});
 box(.08,.04,2.2,mats.wood,-W/2+.14,2.2,0);{const mk=new THREE.Object3D();mk.position.set(-W/2,1.2,0);mk.userData.hole={ax:'z',r0:-.7,r1:.7};scene.add(mk);HOLEM.push(mk)}
@@ -335,7 +337,7 @@ wall('z',5.4,.5,5.3,[[1.2,2.05,0,2.0]],hallW,0,H,parW);wall('z',5.4,5.3,7.6,[],h
 wall('z',4,4.9,7,[[5.9,6.7,0,2.0]],guestW,0,H,hallW);wall('z',4,7,7.9,[],guestW,0,H,siding);
 wall('x',4.9,0,4,[],hallW,-.1,H+.1,guestW);wall('z',0,3.5,5.5,[],siding,-.1,H+.1,hallW);wall('z',.8,4.9,7.9,[],siding,0,H,guestW);
 wall('x',7.9,.8,4,[[1.8,3.0,1.0,2.1]],guestW,0,H,siding);win('x',7.9,1.8,3.0,1.0,2.1,0);
-box(4,H,.01,hallW,2,H/2,3.556);box(4,.1,.1,hallW,2,-.05,3.5);
+TAGW='x';box(4,H,.01,hallW,2,H/2,3.556);TAGW=null;box(4,.1,.1,hallW,2,-.05,3.5);
 wall('x',-3.5,5.4,9,[[6.6,7.6,1.4,2.0]],siding,0,H,bathTile);win('x',-3.5,6.6,7.6,1.4,2.0,0);wall('z',9,-3.5,.5,[],bathTile,0,H,siding);
 wall('x',.5,5.4,9,[],bathTile,0,H,parW);wall('x',.5,9,9.8,[],siding,0,H,parW);
 wall('z',9.8,.5,5.3,[],parW,0,H,siding);wall('x',5.3,5.4,9.8,[[7.8,9.0,1.0,2.1]],parW,0,H,siding);win('x',5.3,7.8,9.0,1.0,2.1,0);
@@ -764,7 +766,7 @@ const BSM=(function(){const sat=v=>Math.max(0,Math.min(1,v));const G=new THREE.G
  hitB(.55,2.0,1.4,.12,1.0,0,()=>slide>0||sliding?'Shelf':'Push shelf',()=>{if(slide>0||sliding)return;clue=true;sliding=true;subtitle('You put your shoulder into it. The shelf grinds sideways along the wall.',3000);if(AC){burst(AC.currentTime,90,1,.5,1.3,'lowpass');burst(AC.currentTime+.2,300,3,.12,1.0,'bandpass')}},shelf);
  // --- the ritual room: stone, candles, a carved circle, robes, an altar with a cradle ---
  const RC={x:-1.6,z:-10.7};
- bx(4,.1,4,stF,-1.6,BF-.05,-10.7);bx(4.1,.1,4.1,stone(3,3),-1.6,BC+.05,-10.7);
+ bx(4,.1,4,stF,-1.6,BF-.05,-10.7);bx(4.1,.06,4.1,stone(3,3),-1.6,BC+.03,-10.7);/* polish: was .1 thick, its top sat exactly at the back-yard grass height and z-fought through it near the butterfly; same underside, top now 4 cm below the grass */
  bx(4.1,H2,.2,stW,-1.6,YC,-8.6,true);bx(4.1,H2,.2,stW,-1.6,YC,-12.8,true);bx(.2,H2,4.2,stW,-3.7,YC,-10.7,true);
  // the passage between the rooms (stone lining)
  bx(.1,H2,.08,stW,.35,YC,-10.16);bx(.1,H2,.08,stW,.35,YC,-11.24);
@@ -3728,7 +3730,11 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   fld('ht',()=>+HUNT.t.toFixed(1),v=>{HUNT.t=+v},{num:1,tol:.5,ro:1});
   fld('pw',()=>Math.round(prowlT),v=>{prowlT=+v},{num:1,tol:3,ro:1});
   fld('ck',()=>+clockT.toFixed(1),v=>{clockT=+v},{num:1,tol:.6,ro:1});
-  fld('gk',()=>XT.gun?XT.gun.S.hits:0,v=>{if(XT.gun)XT.gun.S.hits=Math.max(XT.gun.S.hits,+v|0)},{num:1,ro:1})}// v103: Bang Bang Bang hits, shared
+  fld('gk',()=>XT.gun?XT.gun.S.hits:0,v=>{if(XT.gun)XT.gun.S.hits=Math.max(XT.gun.S.hits,+v|0)},{num:1,ro:1});// v103: Bang Bang Bang hits, shared
+  // polish (Petra): shared object states. The nightstand gun drawer (open/closed), the sugar jar (key taken out), the garage freezer (unlocked, lid up).
+  fld('gd',()=>XT.gun&&XT.gun.S.drawer?1:0,v=>{if(XT.gun)XT.gun.S.drawer=!!v});
+  fld('fj',()=>XT.flash&&XT.flash.S.key?1:0,v=>{if(XT.flash&&v)XT.flash.S.key=true});
+  fld('fo',()=>XT.flash&&XT.flash.S.open?1:0,v=>{if(XT.flash&&v)XT.flash.S.open=true})}
  // who holds the baby: a player id, 'seat:b' / 'seat:h', or '' for the crib
  function holderGet(){const m=CD.mp;return m.carrying?MP.id:(MP.remoteHolder||(m.inSeat?'seat:'+m.seatAt:''))}
  function holderSet(v){const m=CD.mp;v=v||'';
@@ -5056,7 +5062,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   const dx=g.position.x-cam.position.x,dz=g.position.z-cam.position.z,L=Math.hypot(dx,dz);if(L>RANGE||L<.15)return null;const dy=g.position.y-fy;if(dy<-1||dy>3.2)return null;
   const f=new THREE.Vector3();cam.getWorldDirection(f);const fl=Math.hypot(f.x,f.z)||1;if((dx*f.x+dz*f.z)/(L*fl)<Math.cos(CONE))return null;return{dx:dx/L,dz:dz/L,L}}
  // an invisible target between you and it, so E reaches it from a few metres away
- const hit=new THREE.Mesh(new THREE.BoxGeometry(1,1.9,.3),hitM);hit.visible=false;scene.add(hit);
+ const hit=new THREE.Mesh(new THREE.BoxGeometry(1,1.9,.3),hitM);hit.userData.noMap=1;scene.add(hit);// polish: stays visible (hitM draws nothing) so the touch tap raycast (__tapAct visTree) can find it, same fix as Bang Bang Bang
  hit.userData.i={get label(){return 'Hold out the baby bottle'},act(){if(over||busy()||!(CARE.dbg.bottle>0)||!near())return;start()}};
  XT.onUpdate(()=>safe(()=>{const n=!over&&!busy()&&CARE.dbg.bottle>0?near():null,i=inter.indexOf(hit);
   if(n){const d=Math.min(1.3,n.L-.1);hit.position.set(cam.position.x+n.dx*d,cam.position.y-.3,cam.position.z+n.dz*d);hit.lookAt(cam.position.x,hit.position.y,cam.position.z);hit.updateMatrixWorld();if(i<0)inter.push(hit)}
@@ -6596,7 +6602,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   [-1,1].forEach(k=>{bx(.035,.4,.004,inner,k*.05,1.24,-.116,b).rotation.z=-k*.25;bx(.04,.42,.004,col,k*.08,1.24,-.12,b).rotation.z=-k*.25});
   rbx(.405,.17,.245,P(c.obi),0,.93,0,b);if(c.cord)rbx(.42,.024,.26,D(c.cord),0,.93,0,b);
   if(c.knot)bx(.2,.11,.04,P(c.obi),0,.95,.142,b);
-  rig.arms.forEach(a=>{S(.108,.22,.108,0,-.11,0,a);S(.084,.3,.17,0,-.33,.03,a);bx(.088,.024,.15,D(c.inner),0,-.47,.03,a)})}
+  rig.arms.forEach(a=>{S(.108,.22,.108,0,-.11,0,a);S(.084,.3,.17,0,-.33,.03,a);bx(.078,.02,.15,D(c.inner),0,-.4695,.03,a)})}/* polish: the white cuff was wider than the sleeve and hung below it, a white line at the sleeve end in 3/4 view; now just inside the sleeve */
  // Maomao's hagoromo: a soft flat fabric band, a bit wide, looping close behind the back at elbow height and hanging just outside both sleeves
  // (clear of a haori's sleeves too; nothing on the shoulders)
  function shawl(b){const pts=[[-.325,.46,-.04],[-.33,.64,-.04],[-.33,.84,-.03],[-.33,.97,0],[-.31,1.04,.08],[-.25,1.07,.15],[-.13,1.06,.172],[0,1.05,.176],[.13,1.06,.172],[.25,1.07,.15],[.31,1.04,.08],[.33,.97,0],[.33,.84,-.03],[.33,.64,-.04],[.325,.46,-.04]].map(p=>new THREE.Vector3(...p));
@@ -6614,7 +6620,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // ---------- outfits: shirt / legs colors plus extra pieces. bare: sleeveless (skin arms); skinLegs: legs show skin; noLegs: long skirt hides them; robe: replaces the torso ----------
  const OUTFIT={
   classic:{n:'Classic',shirt:null,legs:0x2a2630,x:()=>{}},
-  hoodie:{n:'Hoodie',shirt:0x5a7a9a,legs:0x2a2630,x:(b,s)=>{bx(.3,.16,.08,s,0,1.52,.12,b);bx(.2,.1,.02,P(0x4a6a88),0,1.0,-.115,b)}},
+  hoodie:{n:'Hoodie',shirt:0x5a7a9a,legs:0x2a2630,x:(b,s,r,o)=>{/* polish: under a haori the hood lies flat and tucked in, so it no longer pokes out above the haori collar */if(o&&o.haori)bx(.24,.04,.05,s,0,1.47,.1,b);else bx(.3,.16,.08,s,0,1.52,.12,b);bx(.2,.1,.02,P(0x4a6a88),0,1.0,-.115,b)}},
   sweater:{n:'Sweater',shirt:0xb5584a,legs:0x3a3446,x:b=>{rbx(.392,.05,.232,P(0xe8d8b8),0,1.22,0,b);rbx(.392,.05,.232,P(0xe8d8b8),0,1.06,0,b)}},
   overalls:{n:'Overalls',shirt:0xe6d6a8,legs:0x3c5a86,x:b=>bib(b,0x3c5a86)},
   dress:{n:'Dress',shirt:0x7a4a8a,legs:0,skinLegs:1,x:(b,s)=>{skirt(s,.17,.3,.42,.7,b)}},
