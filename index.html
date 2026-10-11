@@ -1603,7 +1603,7 @@ const HUNT=(function(){let tm=0,warn=0,k=null;
   if(window.__mp&&__mp.client)return;
   if(!entered||ended||window.__dead||window.__tbc||TRAP.on||RLM.on)return;const n=CARE.dbg.noise;if(n>=.97)tm+=dt;else tm=Math.max(0,tm-dt*2);
   if(tm>15&&!warn){warn=1;subtitle('(Something is coming. Quiet her down.)',4000);if((window.__mp&&__mp.active))try{__mp.subAll('(Something is coming. Quiet her down.)',4000)}catch(e){}}if(tm<8)warn=0;
-  if(tm>=30){if((window.__mp&&__mp.active)){tm=0;try{__mp.hunt()}catch(e){console.error(e)}return}fire()}}
+  if(tm>=30){if((window.__mp&&__mp.active)){tm=0;try{/* v103 mpfix: in multiplayer it comes up out of the basement and searches the house for everyone */if(!(__mp.houseHunt&&__mp.houseHunt()))__mp.hunt()}catch(e){console.error(e)}return}fire()}}
  function fire(){if(window.__mp&&__mp.ghost){tm=0;return}try{if(window.__xt&&__xt.hideHunt&&__xt.hideHunt()){tm=0;return}}catch(e){console.error(e)}/*SIA*/try{if(window.__xt&&__xt.invHunt&&__xt.invHunt()){tm=0;return}}catch(e){console.error(e)}k=0;DEMON.dbg.show('scare',true)}
  return{update,fire,get t(){return tm},set t(v){tm=v}}})();
 window.__hunt=HUNT;
@@ -2149,11 +2149,13 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 })();
 // ---------- 7. endings, exit cutscenes, credits ----------
 (function(){const XT=window.__xt;
+ const FLASH_NAME='Flashbang';// v104 (Petra 2026-10-11): id 'flashbang'. Required for Seen It All (it is in ORDER).
+ const CHOIR_NAME='Lullaby Choir';// v103 (Petra 2026-10-11): id 'choir'. Multiplayer only (two or more living players sing together at the crib). Not needed for Seen It All, but shown like every other ending.
  const GUN_NAME='Bang Bang Bang';// v102 (Petra 2026-10-10): the shoot-the-demon ending's name (id 'gun'). Change it here; everything else reads NAMES.gun
  const FRIEND_NAME='Bottle Buddies';// v97 (Petra): the befriend-the-demon ending's name. Change it here; everything else reads NAMES.friend
- const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted',joyride:'Joyride',pacifier:'Pacifier',roof:'Jump Off the Roof',phone:'Call the Parents 10 Times',lights:'Lights Party',derby:'Weapon of Choice: Car',bath:'Bath Time',arson:'A Is for Arson',water:'You... burnt.... the water?',friend:FRIEND_NAME,gun:GUN_NAME},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water','friend','gun'];
+ const NAMES={parents:"Six O'Clock",dawn:'First Light',death:'Taken',cult:'Family',secret:'The Blade',car:'Get Run Over by a Car',left:'You Left',collapse:'The House Collapsed',abstracted:'Abstracted',joyride:'Joyride',pacifier:'Pacifier',roof:'Jump Off the Roof',phone:'Call the Parents 10 Times',lights:'Lights Party',derby:'Weapon of Choice: Car',bath:'Bath Time',arson:'A Is for Arson',water:'You... burnt.... the water?',friend:FRIEND_NAME,gun:GUN_NAME,choir:CHOIR_NAME,flashbang:FLASH_NAME},ORDER=['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water','friend','gun','choir','flashbang'];
  // v79: one line under every ending card's title (Petra)
- const DESC={gun:"A drawer, a box and three bullets. Every demon slayer has to start somewhere.",parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back.",joyride:"You stole their car. Honestly? Fair.",pacifier:"It worked. She hasn't made a sound since. She hasn't blinked, either.",roof:"You fell off a roof and got demoted to baby. The new sitter is very good at her job.",phone:"Ten calls. Nine voicemails. One very short conversation.",lights:"One switch. A hundred flicks. One demon with a migraine.",derby:"You dropped a house on it. Then you ran it over. It was having a bad night.",bath:"Who leaves a bath running? You. You do.",arson:"B is for Babysitter. F is for Fired.",water:"I am sorry but how the <span class=\"redact\" aria-label=\"(redacted)\" style=\"display:inline-block;width:5ch;height:1em;background:#fff;vertical-align:-0.12em\"></span> did you BURN THE WATER!!!!!",friend:"Turns out it was just hungry."};
+ const DESC={flashbang:"What starts with f and ends in g?",choir:"Two voices, one crib, one very old song. Some things cannot stand a lullaby.",gun:"A drawer, a box and three bullets. Every demon slayer has to start somewhere.",parents:"The door opens. Her parents smile at you a little too long. You get paid. You don't ask questions.",dawn:"You pulled her back from the other side. The sun is up and she's sleeping. For now.",death:"She stopped crying. You didn't hear the rest.",cult:"You read every word, and you knelt anyway. Welcome to the family.",secret:"Six odd little objects, one old sword, and a demon who didn't see you coming.",car:"Always look both ways. But how did you even get run over in the first place? It literally warned it was coming",left:"You just... walked away. She's still crying in there. Somebody else's problem now.",collapse:"Why did you even do that? What reason would you have to click a door open that fast??",abstracted:"You pressed the rabbit. The rabbit pressed back.",joyride:"You stole their car. Honestly? Fair.",pacifier:"It worked. She hasn't made a sound since. She hasn't blinked, either.",roof:"You fell off a roof and got demoted to baby. The new sitter is very good at her job.",phone:"Ten calls. Nine voicemails. One very short conversation.",lights:"One switch. A hundred flicks. One demon with a migraine.",derby:"You dropped a house on it. Then you ran it over. It was having a bad night.",bath:"Who leaves a bath running? You. You do.",arson:"B is for Babysitter. F is for Fired.",water:"I am sorry but how the <span class=\"redact\" aria-label=\"(redacted)\" style=\"display:inline-block;width:5ch;height:1em;background:#fff;vertical-align:-0.12em\"></span> did you BURN THE WATER!!!!!",friend:"Turns out it was just hungry."};
  const got=()=>{try{const a=JSON.parse(XT.ls.get('hushEndings')||'[]');return Array.isArray(a)?a.filter(k=>NAMES[k]):[]}catch(e){return[]}};
  XT.endInfo=()=>({order:ORDER.slice(),names:NAMES,desc:DESC,got:got()});
  const css=document.createElement('style');css.textContent=`#xfade{position:fixed;inset:0;z-index:8;background:#000;opacity:0;pointer-events:none;transition:opacity 1.2s;display:flex;align-items:center;justify-content:center;padding:0 16px;text-align:center;font-family:var(--display);font-style:italic;font-size:1.6rem;color:#d8cfc4}#xfade.on{opacity:1}
@@ -2191,6 +2193,8 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   bath:["Bath Time.","You left the bath running. Then the bathroom ran over, then the hallway, then the stairs, which made a surprisingly nice waterfall. The living room has a tide now. Lilith is perfectly fine and perfectly dry, bundled in a towel on the porch with the plumber, who keeps laughing and taking photos. The house is not fine. The house will never be fine again."],
   arson:["A Is for Arson.","It started with the TV remote and ended with the house. The fire department carried you out over one shoulder and Lilith out in the crook of the other arm, wearing a tiny plastic fire helmet, absolutely delighted and not one hair singed. The captain asked who was in charge. You raised your hand. He said, \"You're fired,\" and the whole crew laughed for a full minute. He had been waiting his entire career to say that."],
   water:["You... burnt.... the water?","You poured old motor oil into the bath and tossed in a match, and the water caught fire. Not the house. The water. Four firefighters stood in the bathroom doorway staring at a burning bathtub while one of them, who grew up in Cleveland, nodded like a man who had seen this before. Lilith watched from the hall in a tiny plastic fire helmet, perfectly fine and thrilled about it. The captain told you that you were fired. Then he told you that water is not supposed to do that."],
+  choir:["Hush, Little Baby.","You stood around the crib and sang, badly and out of time and all together, the one lullaby everybody half remembers. Lilith sighed, curled up and fell so deeply asleep that the house itself seemed to hold its breath. Downstairs, something that had waited a very long time listened to the whole song, and then the basement door closed, softly, and it did not open again. Her parents came home to a quiet house and a sitter choir asleep on the nursery floor."],
+  flashbang:["Flashbang.","You pulled the pin, threw, and the whole hallway turned white. The thing from under the floor clawed at its eyes, shrieked like a kettle the size of a house and ran, blind and panicking, all the way back down the basement stairs. You heard the door slam and the bolt slide home, from the inside. It never came up again. Lilith slept through the whole thing, safe and warm upstairs. At six o'clock her parents came home to a faint smell of smoke, a scorch mark on the rug and a sitter who kept saying \"what?\" a little too loudly."],
   gun:["Bang. Bang. Bang.","Three shots, and the thing from under the floor went down and stayed down. By the time your hands stopped shaking it was a heap of grey ash on the floor, and the whole house smelled like struck matches. Lilith slept through all of it, warm and perfectly fine, one tiny fist curled up by her ear. At six o'clock her parents came home to a freshly vacuumed rug, every window open, and you on the bottom stair with a revolver in your lap. Nobody asked a single question. You still got paid. Double, actually."],
   friend:[FRIEND_NAME+".","You held out a baby bottle to the thing from under the floor, and it took it. It drank the whole bottle in one go, burped hard enough to rattle the windows, and spent the rest of the night following you from room to room like a very large, very scaly puppy. Lilith slept through all of it, warm and perfectly fine. At six o'clock her parents found the demon curled up on the nursery rug while you scratched it under the chin. Nobody knew what to say. You still got paid."],
   cult:["Welcome home.","They wrap you in the third robe. It fits. The Order of the Low Door has a new sister, and the Deep has its gift, and nobody ever asks the sitter's name again."]};
@@ -2213,7 +2217,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  // helpers for the cut scenes
  const say=(L,t,st)=>{while(st.i<L.length&&t>=L[st.i][0]){const [,k,txt,d]=L[st.i];subtitle(txt,d*1000);if(k&&XT.voice)XT.voice(txt.replace(/\(.*?\)/g,''),k,d*.85,.4);st.i++}};
  const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
- const CUT={car:()=>null,left:()=>null,collapse:()=>null,joyride:()=>XT.joyCut?XT.joyCut():null,pacifier:()=>null,roof:()=>XT.sixCut?XT.sixCut('roof'):null,phone:()=>XT.sixCut?XT.sixCut('phone'):null,lights:()=>XT.sixCut?XT.sixCut('lights'):null,derby:()=>XT.sixCut?XT.sixCut('derby'):null,bath:()=>XT.sixCut?XT.sixCut('bath'):null,arson:()=>XT.sixCut?XT.sixCut('arson'):null,water:()=>XT.waterCut?XT.waterCut():null,friend:()=>XT.friendCut?XT.friendCut():null,gun:()=>XT.gunCut?XT.gunCut():null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
+ const CUT={flashbang:()=>XT.flashCut?XT.flashCut():null,choir:()=>XT.choirCut?XT.choirCut():null,car:()=>null,left:()=>null,collapse:()=>null,joyride:()=>XT.joyCut?XT.joyCut():null,pacifier:()=>null,roof:()=>XT.sixCut?XT.sixCut('roof'):null,phone:()=>XT.sixCut?XT.sixCut('phone'):null,lights:()=>XT.sixCut?XT.sixCut('lights'):null,derby:()=>XT.sixCut?XT.sixCut('derby'):null,bath:()=>XT.sixCut?XT.sixCut('bath'):null,arson:()=>XT.sixCut?XT.sixCut('arson'):null,water:()=>XT.waterCut?XT.waterCut():null,friend:()=>XT.friendCut?XT.friendCut():null,gun:()=>XT.gunCut?XT.gunCut():null,abstracted:()=>XT.oozeCut?XT.oozeCut():null,
   parents(){if(window.__rlm&&__rlm.on)return null;const {mom,dad}=XT.props;mom.visible=dad.visible=true;subtitle('',1);
    const L=[[2.6,'mom',"We're home! Oh... you're still here.",2.6],[5.6,'mom',"She was so quiet. Wasn't she quiet? We could hear how quiet she was.",3.6],[9.6,'dad',"Thank you. We'll take it from here.",2.6],[12.6,null,"(Their smiles are much too wide. Neither of them blinks.)",3]],st={i:0};
    fadeTo(false);
@@ -2505,7 +2509,8 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  XT.demonSfx=SFX;
  // which pose for the house demon, from what it is doing right now
  let prevAct=null,ceil=false,sT=1.5,t=0,stepT=0,prevVis=false;const tmp=new THREE.Vector3();
- function mode(){if(XT.demon&&XT.demon.force)return XT.demon.force;if(window.__dead||(XT.endings&&XT.endings.done==='death'))return'loom';if(TRAP.on)return'walk';const S=XT.hide&&XT.hide.S;if(S)return S.ph==='search'?'stalk':'walk';
+ XT.demonMode=()=>mode();// v103 mpfix: the multiplayer demon sync reports the pose name
+ function mode(){if(XT.demon&&XT.demon.force)return XT.demon.force;if(window.__dmRM)return window.__dmRM;if(window.__dead||(XT.endings&&XT.endings.done==='death'))return'loom';if(TRAP.on)return'walk';const S=XT.hide&&XT.hide.S;if(S)return S.ph==='search'?'stalk':'walk';
   const a=D.active;if(a==='window')return'window';if(a==='doorway')return'peek';if(a==='scare')return'scare';if(a==='hallway')return ceil?'ceil':'stand';return'stand'}
  function frame(dt){t+=dt;const vis=g.visible;
   // a new appearance: decide how it moves, and let it make a sound
@@ -2933,7 +2938,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   {k:'die',n:'die',x:-3.55,y:F+.42,z:5.9,where:'downstairs bathroom, on the toilet lid'}];
  const NM={};ITEMS.forEach(it=>NM[it.k]=it.n);
  // v102: things you can carry that are not shelf pieces (the Bang Bang Bang revolver and ammo box). They live in inv like the six, but the shelf won't take them
- NM.gun='revolver';NM.ammo='ammo box';const SHK=k=>ITEMS.some(it=>it.k===k);
+ NM.gun='revolver';NM.gun2=NM.gun3=NM.gun4='revolver';/* v103 mpfix: one revolver per player in multiplayer */NM.ammo='ammo box';const SHK=k=>ITEMS.some(it=>it.k===k);
  const SH={ORDER:['die','flake','ball','logo','pot','onion'],onSolve(){XT.ending('secret')}};XT.shelf=SH;
  let inv=[],sel=0,slots=[null,null,null,null,null,null],done=false,wrongKey='',told=false;
  const bills=[];
@@ -3560,7 +3565,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function noise(dur,vol,fr){if(!AC||!master)return;const n=AC.sampleRate*dur,b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const s=AC.createBufferSource(),f=AC.createBiquadFilter(),g=AC.createGain();s.buffer=b;f.type='lowpass';f.frequency.value=fr||300;g.gain.value=vol;s.connect(f);f.connect(g);g.connect(master);s.start()}
  // the end of it: single-player gets the ending; in multiplayer only you die (and the ending is still counted)
  let over=false;
- function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You stole their car. Nobody is coming after you.'],pacifier:['She is quiet now.','She has not looked away from you once.'],roof:['You fell off the roof.','Somebody else is babysitting you now.'],phone:['You got fired.','Over the phone, on call ten.'],lights:['Lights party.','The demon has a migraine.'],derby:['Weapon of choice: car.','The house came down. You drove out.'],bath:['The house flooded.','You left the bath running.'],arson:['The house burned down.','You fed the fireplace.'],water:['The water is on fire.','You set the bath water on fire.'],friend:['You made a friend.','It drank the whole bottle.'],gun:['Bang. Bang. Bang.','Three shots. It went down and stayed down.']}[id];
+ function finish(id){const T={car:['Hit by a car.','You stepped into the road.'],left:['You left.','You walked away from the house.'],collapse:['The house collapsed.','It came down on you.'],joyride:['You drove away.','You stole their car. Nobody is coming after you.'],pacifier:['She is quiet now.','She has not looked away from you once.'],roof:['You fell off the roof.','Somebody else is babysitting you now.'],phone:['You got fired.','Over the phone, on call ten.'],lights:['Lights party.','The demon has a migraine.'],derby:['Weapon of choice: car.','The house came down. You drove out.'],bath:['The house flooded.','You left the bath running.'],arson:['The house burned down.','You fed the fireplace.'],water:['The water is on fire.','You set the bath water on fire.'],friend:['You made a friend.','It drank the whole bottle.'],gun:['Bang. Bang. Bang.','Three shots. It went down and stayed down.'],flashbang:['Flashbang.','It ran for the basement. It is not coming back.']}[id];
   window.__noMove=0;if(window.__mp&&__mp.active){/* same-ending fix: everyone gets this ending (host decides and broadcasts); Hunt keeps the old per-player exit */if(!__mp.hm){safe(()=>XT.ending(id),'end');setTimeout(()=>flash('#000',0,10),900);over=false;return}safe(()=>XT.markEnding(id),'mark');safe(()=>__mp.die(T[0],T[1]),'die');flash('#000',0,900);over=false;return}
   XT.ending(id);setTimeout(()=>flash('#000',0,10),400)}
  OUT.finish=finish;OUT.park=()=>{T.on=false;T.armed=false;car.visible=false;if(beam)beam.intensity=0;if(eng)eng.g.gain.value=0};
@@ -3722,7 +3727,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   fld('sl',()=>XT.shelfDbg.slots.map(q=>q||'').join(','),v=>{const a=String(v).split(',').map(q=>q||null);while(a.length<6)a.push(null);const D=XT.shelfDbg;D.slots=a;D.inv=D.inv.filter(k=>!a.includes(k));D.sync()});
   fld('ht',()=>+HUNT.t.toFixed(1),v=>{HUNT.t=+v},{num:1,tol:.5,ro:1});
   fld('pw',()=>Math.round(prowlT),v=>{prowlT=+v},{num:1,tol:3,ro:1});
-  fld('ck',()=>+clockT.toFixed(1),v=>{clockT=+v},{num:1,tol:.6,ro:1})}
+  fld('ck',()=>+clockT.toFixed(1),v=>{clockT=+v},{num:1,tol:.6,ro:1});
+  fld('gk',()=>XT.gun?XT.gun.S.hits:0,v=>{if(XT.gun)XT.gun.S.hits=Math.max(XT.gun.S.hits,+v|0)},{num:1,ro:1})}// v103: Bang Bang Bang hits, shared
  // who holds the baby: a player id, 'seat:b' / 'seat:h', or '' for the crib
  function holderGet(){const m=CD.mp;return m.carrying?MP.id:(MP.remoteHolder||(m.inSeat?'seat:'+m.seatAt:''))}
  function holderSet(v){const m=CD.mp;v=v||'';
@@ -3752,8 +3758,34 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function myReport(){const RL=!!(window.__rlm&&__rlm.on),c=cam.position,B=XT.bladeFight&&XT.bladeFight.S;
   return{x:+(RL?c.x:iX(c.x)).toFixed(2),z:+(RL?c.z:iZ(c.z)).toFixed(2),y:+fy.toFixed(2),cy:+c.y.toFixed(2),yaw:+yaw.toFixed(3),pi:+pitch.toFixed(3),cr:crouch?1:0,
    hid:XT.hide&&XT.hide.hid?1:0,gh:gone()?1:0,tor:XT.torch&&XT.torch.on?1:0,ar:RL?'r':'h',gl:CD.mp.carrying&&CD.mp.inGlider()?1:0,nu:CD.mp.inNursery()?1:0,
-   inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],dm:MP.demon?1:0,hs:XT.hide&&XT.hide.hid||'',cl:window.__dmCeil?1:0,busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,nm:V.denied?1:0,ent:entered?1:0,gf:window.__genyaF|0}}
+   inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],dm:MP.demon?1:0,hs:XT.hide&&XT.hide.hid||'',cl:window.__dmCeil?1:0,busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,nm:V.denied?1:0,ent:entered?1:0,gf:window.__genyaF|0,dq:demonRep(),sr:XT.hide&&XT.hide.S?1:0,sg:MP.singing&&MP.singing()?1:0,fb:window.__fbF|0}}
  const isDm=id=>!!(MP.hm&&MP.hm.demon===id);
+ // v103 mpfix (Petra 2026-10-10: "when the demon was searching for me once my friend couldn't see it"). The demon figure (DEMON.dbg.g) is one local mesh per
+ // player. Sightings, hunts, prowls and the closet search are aimed at one player and run only on that player's machine, so nobody else ever saw it.
+ // Now whoever has the demon out (or the host, for the house search) reports its pose in their position report (dq), and every other living player
+ // who has no demon of their own out draws the same figure there. Ghosts are left as they were. Hunt mode (a player is the demon) is unchanged.
+ const DMODES=['stand','walk','stalk','scare','peek','window','ceil','loom'];let remDrive=false;
+ const dmLocalOwn=()=>{const D=DEMON.dbg;return !!(D.active||TRAP.on||(XT.hide&&XT.hide.S)||(XT.demon&&XT.demon.force)||window.__cut||(XT.bladeFight&&XT.bladeFight.S))};
+ function demonRep(){if(MP.hm||(window.__rlm&&__rlm.on))return 0;if(MP.host&&MP.hs&&MP.hs.on)return MP.hs.rep();
+  const D=DEMON.dbg,g=D.g,a=D.active;if(remDrive||!g.visible||gone()||a==='painting'||a==='mirror'||a==='monitor'||g.parent!==scene)return 0;
+  const q=g.quaternion;let m=0;try{m=Math.max(0,DMODES.indexOf(XT.demonMode()))}catch(e){}
+  return[+iX(g.position.x).toFixed(2),+iZ(g.position.z).toFixed(2),+g.position.y.toFixed(2),+q.x.toFixed(3),+q.y.toFixed(3),+q.z.toFixed(3),+q.w.toFixed(3),+g.scale.x.toFixed(2),m]}
+ MP.dmPose=(x,y,z,yaw,mode)=>{const q=new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0),yaw);return[+iX(x).toFixed(2),+iZ(z).toFixed(2),+y.toFixed(2),+q.x.toFixed(3),+q.y.toFixed(3),+q.z.toFixed(3),+q.w.toFixed(3),1,Math.max(0,DMODES.indexOf(mode))]};
+ function dmDrive(dt){const g=DEMON.dbg.g;
+  if(dmLocalOwn()){if(remDrive){remDrive=false;window.__dmRM=null}return}
+  if(g.visible&&!remDrive)return;// something local has it out
+  let best=null,bd=1e9;
+  if(!MP.ghost&&!MP.hm&&!(window.__rlm&&__rlm.on)){const C=[];AV.forEach(a=>{if(a.cur&&Array.isArray(a.cur.dq))C.push(a.cur.dq)});if(MP.host&&MP.hs&&MP.hs.on){const r=MP.hs.rep();if(r)C.push(r)}
+   C.forEach(d=>{const x=mX(d[0]),z=mZ(d[1]),dd=Math.hypot(x-cam.position.x,z-cam.position.z);if(dd<bd){bd=dd;best={x,z,d}}})}
+  if(!best){if(remDrive){remDrive=false;window.__dmRM=null;g.visible=false}return}
+  const d=best.d;if(!remDrive||Math.hypot(best.x-g.position.x,best.z-g.position.z)>4){g.position.set(best.x,d[2],best.z);remDrive=true}
+  else{const k=Math.min(1,dt*8);g.position.x+=(best.x-g.position.x)*k;g.position.z+=(best.z-g.position.z)*k;g.position.y=d[2]}
+  g.quaternion.set(d[3],d[4],d[5],d[6]);g.scale.setScalar(d[7]||1);g.visible=true;window.__dmRM=DMODES[d[8]|0]||'stand'}
+ MP.dmSync={get remote(){return remDrive},demonRep,dmDrive};
+ // v103: Bang Bang Bang in multiplayer: the host keeps the shared hit count (field gk) and tells everyone the demon was hit, so whoever has it out sees it stagger
+ function hostGunHit(h){if(!XT.gun)return;XT.gun.S.hits=Math.max(XT.gun.S.hits,Math.min(3,h|0));bcast({t:'gstag'});MP.gunStag()}
+ MP.gunHit=h=>{if(!MP.active)return;if(MP.host)hostGunHit(h);else send({t:'ghit',h})};
+ MP.gunStag=()=>{const D=DEMON.dbg;if(MP.host&&MP.hs&&MP.hs.on)safe(()=>MP.hs.stagger(),'hs stag');if(D.active&&!(XT.demon&&XT.demon.force)&&!(XT.gun&&XT.gun.over)){XT.demon.force='scare';setTimeout(()=>safe(()=>{if(XT.gun&&XT.gun.over)return;if(XT.demon.force==='scare')XT.demon.force=null;D.stop()},'stag'),650)}};
  const gone=()=>MP.ghost||!!(XT.bladeFight&&XT.bladeFight.S&&XT.bladeFight.S.dead);
  const alive=()=>{const L=[];if(MP.host){if(!gone()&&!MP.demon)L.push({id:MP.id,r:myReport()});P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))L.push({id,r:p.rep})})}return L};
  MP.anyCarry=()=>CD.mp.carrying||!!MP.remoteHolder;
@@ -3968,6 +4000,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    else if(a&&bb.parent===a.arm){bb.visible=a.g.visible}}
   else if(CD.mp.bb.visible===false)CD.mp.bb.visible=true}
  XT.onUpdate(dt=>{if(MP.active)frame(dt)});
+ XT.onUpdate(dt=>{if(MP.active&&MP.started)safe(()=>dmDrive(Math.min(.25,+dt||.016)),'dmsync');else if(remDrive){remDrive=false;window.__dmRM=null;DEMON.dbg.g.visible=false}});
  {const oc=XT.cut;XT.cut=function(dt){const r=oc.call(XT,dt);if(MP.active)safe(()=>frame(dt),'frame cut');return r}}
 
  // ---------- voice chat (peer-to-peer audio between everyone) ----------
@@ -4086,6 +4119,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'end':MP.pendingEnd={id:m.id,extra:m.extra};MP.decided=m.id;runPending();break;
   case 'boss':MP.boss=true;setTimeout(()=>safe(()=>XT.bladeFight.start(),'boss'),900);break;
   case 'drop':{const D=XT.shelfDbg;if(D&&D.inv.includes(m.k)){D.inv=D.inv.filter(k=>k!==m.k);D.sync();subtitle('Someone else already has the '+m.k+'.',2200)}break}
+  case 'gstag':safe(()=>MP.gunStag(),'gstag');break;
+  case 'hsrch':case 'hcatch':safe(()=>MP.hsClient&&MP.hsClient(m),'hs');break;
   case 'note':subtitle(m.txt,m.ms||3500);break
   default:if(MP.onC)safe(()=>MP.onC(m),'onC')}}
  let stQ=null;
@@ -4099,7 +4134,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'p':if(!p)break;{const now=performance.now();if(p.rep&&p.last){const dt=(now-p.last)/1000;if(dt>.03&&m.r.ar===p.rep.ar)p.sp=Math.hypot(m.r.x-p.rep.x,m.r.z-p.rep.z)/dt}
    const wasGh=p.rep&&p.rep.gh;p.rep=m.r;p.last=now;pushRep(pid,m.r);if(m.r.ent&&!entered)entered=true;if(m.r.gh&&!wasGh)checkAllDead();
    // shelf items: first come, first served
-   (m.r.inv||[]).forEach(k=>{if(!held[k])held[k]=pid;else if(held[k]!==pid)sendTo(pid,{t:'drop',k})});break}
+   (m.r.inv||[]).forEach(k=>{if(k==='ammo')return;/*v103: shared in MP*/if(!held[k])held[k]=pid;else if(held[k]!==pid)sendTo(pid,{t:'drop',k})});break}
   case 'i':applyIntent(pid,m.f);break;
   case 'jump':CD.noise=Math.min(1,CD.noise+.015);break;
   case 'broke':{const E=CD.EV;if(E.cur&&E.cur.e.id===m.ev)safe(()=>endEventMP(pid),'broke');break}
@@ -4109,6 +4144,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'vote':hostVote(pid);break;
   case 'endreq':if(m.id!=='death'&&XT.endInfo&&XT.endInfo().order.includes(m.id)&&!(MP.hm&&!['dawn','secret','parents'].includes(m.id))){decideEnd(m.id,m.extra);runPending()}break;
   case 'solve':hostSolve();break;
+  case 'ghit':safe(()=>hostGunHit(m.h),'ghit');break;
   case 'gs':safe(()=>hostScare(pid,m),'gs');break;
   case 'gp':safe(()=>hostPossess(pid,m),'gp');break;
   case 'bslash':safe(()=>XT.bladeFight.remoteSlash(),'bslash');break;
@@ -4144,7 +4180,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   if(MP.remoteHolder&&!P.has(MP.remoteHolder))holderSet('');
   // shelf items held
   Object.keys(held).forEach(k=>{const h=held[k];if(h===MP.id?!XT.shelfDbg.inv.includes(k):!(P.get(h)&&P.get(h).rep&&(P.get(h).rep.inv||[]).includes(k)))delete held[k]});
-  XT.shelfDbg.inv.forEach(k=>{if(!held[k])held[k]=MP.id});XT.mpHeld=Object.keys(held).filter(k=>held[k]!==MP.id);
+  XT.shelfDbg.inv.forEach(k=>{if(k!=='ammo'&&!held[k])held[k]=MP.id});XT.mpHeld=Object.keys(held).filter(k=>held[k]!==MP.id);
   if(vote)checkVote();
   const pl=[{id:MP.id,r:myReport()}];P.forEach((p,id)=>{if(p.rep)pl.push({id,r:p.rep})});
   const E=CD.EV,B=XT.bladeFight&&XT.bladeFight.S;
@@ -4164,7 +4200,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   if(!XT.live()||MP.hm)return;const D=DEMON.dbg,ks=MP.k('sight');if(ks!==1&&!D.active&&D.next>0)D.next-=dt*(ks-1)*(.35+1.6*C.noise);
   const kh=MP.k('hunt');if(kh!==1&&HUNT.t>0)HUNT.t+=dt*(kh-1);
   // prowls after midnight, aimed at someone who is alive
-  if(XT.hour()>=24&&!TRAP.on&&HUNT.t<10&&!D.active){const agg=XT.diff?XT.diff().agg:1,nk=XT.nightK?XT.nightK():1;prowlT-=dt*Math.min(agg*nk*MP.k('prowl'),Math.max(agg*nk,2.4));
+  if(XT.hour()>=24&&!TRAP.on&&HUNT.t<10&&!D.active&&!(MP.hs&&MP.hs.on)){const agg=XT.diff?XT.diff().agg:1,nk=XT.nightK?XT.nightK():1;prowlT-=dt*Math.min(agg*nk*MP.k('prowl'),Math.max(agg*nk,2.4));
    if(prowlT<=0){prowlT=140+Math.random()*120/* v97: was 240+rnd*220 */;const id=pickAlive();if(id===MP.id)safe(()=>XT.hide.prowlStart(),'prowl');else if(id)sendTo(id,{t:'prowl'})}}});
 
  // ---------- sessions ----------
@@ -4500,6 +4536,8 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   {id:'arson',n:'A Is for Arson',d:'Find the ending in the fireplace.',h:1},
   {id:'water',n:'You... burnt.... the water?',d:'Find the ending in the bathtub. The other one.',h:1},
   {id:'friend',n:(XT.endInfo?XT.endInfo().names.friend:'Bottle Buddies'),d:'Share something warm with something cold.',h:1},
+  {id:'flashbang',n:(XT.endInfo?XT.endInfo().names.flashbang:'Flashbang'),d:'Some things hate the light.',h:1},
+  {id:'choir',n:(XT.endInfo?XT.endInfo().names.choir:'Lullaby Choir'),d:'Some things cannot stand a lullaby.',h:1},
   {id:'gun',n:(XT.endInfo?XT.endInfo().names.gun:'Bang Bang Bang'),d:'Three shots. One demon. Zero babies woken.',h:1},
   {id:'poison',n:'Poison Taster',d:'Taste the unlabeled bottle in the bathroom cabinet.',h:1},
   {id:'hairpin',n:"Jinshi's Gift",d:'Find the gold hairpin hidden outside.'}];
@@ -4544,7 +4582,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   if(mp&&mp.active&&mp.started&&safe(()=>mp.dbg.roster().length,'n')>=4)unlock('four')},'watch'),250);
  const oe=XT.ending;
  XT.ending=function(id,extra){const r=oe.apply(this,arguments);
-  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water','friend','gun'].includes(id))unlock(id);
+  safe(()=>{if(['parents','dawn','death','cult','secret','car','left','collapse','abstracted','joyride','pacifier','roof','phone','lights','derby','bath','arson','water','friend','gun','choir','flashbang'].includes(id))unlock(id);
    const won=id==='parents'||id==='dawn'||id==='secret';
    if(won){unlock('night1');if((XT.night||1)>=3)unlock('night3');if(XT.diffKey&&XT.diffKey()==='nightmare')unlock('nightmare');if(!run.hid)unlock('nohide');if(!run.cried)unlock('nocry');
     if(window.__mp&&__mp.active)unlock('together')}
@@ -5077,9 +5115,15 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  if(!XT||!OUT||!XT.shelfDbg||typeof DEMON==='undefined')return;const DM=DEMON.dbg,g=DM.g,D=XT.shelfDbg;
  const ROUNDS=12,HITS=3;const S={drawer:false,rounds:ROUNDS,hits:0};let over=false,cool=0,recoil=0,flashT=0;
  const sm=k=>k<=0?0:k>=1?1:k*k*(3-2*k);
- const has=k=>D.inv.includes(k),gone=k=>has(k)||(XT.mpHeld||[]).includes(k);
+ const mpOn=()=>!!(window.__mp&&__mp.active);
+ // v103 mpfix (Petra): in multiplayer the drawer holds one revolver per player (keys gun, gun2, gun3, gun4; each one can be held by one player, and you
+ // can carry only one). The ammo box stays on the workbench in multiplayer: everyone loads from it (it is not a held item there). The three hits are shared.
+ const GUNS=['gun','gun2','gun3','gun4'],isGun=k=>GUNS.includes(k);let nG=1;
+ const nGuns=()=>{if(mpOn()){try{nG=Math.max(nG,Math.min(4,__mp.dbg.roster().length||1))}catch(e){}return nG}return 1};
+ const has=k=>D.inv.includes(k),gone=k=>has(k)||(k==='ammo'&&mpOn()?false:(XT.mpHeld||[]).includes(k));
+ const myGun=()=>D.inv.find(isGun),freeGun=()=>GUNS.slice(0,nGuns()).find(k=>!gone(k)),left=()=>GUNS.slice(0,nGuns()).filter(k=>!gone(k)).length;
  const busy=()=>!!(window.__cut||ended||window.__dead||window.__tbc||seated||CARE.busy()||(XT.hide&&XT.hide.hid)||(window.__mp&&(__mp.ghost||__mp.demon))||(window.__rlm&&__rlm.on)||(XT.bladeFight&&XT.bladeFight.S)||noteOpen);
- const holding=()=>D.inv[D.sel]==='gun';
+ const holding=()=>isGun(D.inv[D.sel]);
  const armed=()=>!over&&started&&!paused&&XT.live()&&!busy()&&holding()&&!CARE.dbg.carrying;
  // ---- the revolver model (barrel along -z, grip down), used in the drawer, in your hand and in the cut scene ----
  function revolver(){const r=new THREE.Group(),st=new THREE.MeshPhongMaterial({color:0x34363c,specular:0x888888,shininess:60}),wd=new THREE.MeshPhongMaterial({color:0x5a3620,shininess:20});
@@ -5096,24 +5140,25 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   B(.02,.13,.34,wood,-.012,0,0);B(.3,.01,.3,inside,.15,-.055,0);B(.3,.08,.01,inside,.15,-.02,-.15);B(.3,.08,.01,inside,.15,-.02,.15);B(.01,.08,.3,inside,.3,-.02,0);
   const kb=new THREE.Mesh(new THREE.SphereGeometry(.012,8,6),new THREE.MeshPhongMaterial({color:0xc8a050,shininess:90}));kb.position.set(-.028,0,0);slide.add(kb);
   const cloth=B(.2,.006,.16,new THREE.MeshPhongMaterial({color:0x6a6048}),.15,-.047,0)}
- const wGun=revolver();wGun.rotation.set(-Math.PI/2,0,1.2);wGun.rotation.order='YXZ';wGun.rotation.set(0,1.2,0);wGun.position.set(.16,-.035,0);wGun.rotation.z=Math.PI/2;slide.add(wGun);wGun.visible=false;
+ const wGuns=[0,1,2,3].map(i=>{const w=revolver();w.rotation.order='YXZ';w.rotation.set(0,1.2,0);w.position.set(.16,-.035+i*.012,[0,-.07,.07,0][i]);w.rotation.z=Math.PI/2;slide.add(w);w.visible=false;return w}),wGun=wGuns[0];
  const hitMat=new THREE.MeshBasicMaterial({visible:false});
  const dHit=new THREE.Mesh(new THREE.BoxGeometry(.08,.16,.38),hitMat);dHit.position.set(-.03,0,0);slide.add(dHit);
- dHit.userData.i={get label(){return S.drawer?'Close the drawer':'Drawer'},act(){safe(()=>{S.drawer=!S.drawer;sfx.drawer();if(S.drawer)subtitle(gone('gun')?'An empty drawer. Just a folded cloth.':'Under a folded cloth: a heavy old revolver.',2600)},'drawer')}};inter.push(dHit);
+ dHit.userData.i={get label(){return S.drawer?'Close the drawer':'Drawer'},act(){safe(()=>{S.drawer=!S.drawer;sfx.drawer();if(S.drawer){const n=left();subtitle(!n?'An empty drawer. Just a folded cloth.':n>1?'Under a folded cloth: '+['','','two','three','four'][n]+' heavy old revolvers.':'Under a folded cloth: a heavy old revolver.',2600)}},'drawer')}};inter.push(dHit);
  const gHit=new THREE.Mesh(new THREE.BoxGeometry(.24,.1,.2),hitMat);gHit.position.set(.16,-.01,0);slide.add(gHit);
- gHit.userData.i={get label(){return 'Take the revolver'},act(){safe(()=>{if(!S.drawer||gone('gun'))return;take('gun')},'take gun')}};
+ gHit.userData.i={get label(){return 'Take the revolver'},act(){safe(()=>{const k=freeGun();if(!S.drawer||!k)return;if(myGun()){subtitle('You already have one.',1600);return}take(k)},'take gun')}};
  // ---- the ammo box, on the basement workbench ----
  const ammo=new THREE.Group();{const ol=new THREE.MeshPhongMaterial({color:0x4a5230,shininess:25}),dk=new THREE.MeshPhongMaterial({color:0x2a2e1c});
   const B=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);ammo.add(o);return o};
   B(.26,.13,.11,ol,0,.065,0);B(.27,.02,.12,dk,0,.135,0);B(.1,.012,.02,dk,0,.152,0);B(.02,.05,.06,dk,.14,.1,0)}
  ammo.position.set(1.8,BF+.93,-7.98);ammo.rotation.y=.25;BSM.G.add(ammo);
  const aHit=new THREE.Mesh(new THREE.BoxGeometry(.32,.22,.2),hitMat);aHit.position.set(0,.08,0);ammo.add(aHit);
- aHit.userData.i={get label(){return 'Take the ammo box'},act(){safe(()=>{if(gone('ammo'))return;take('ammo')},'take ammo')}};
+ aHit.userData.i={get label(){return mpOn()?'Take some rounds from the ammo box':'Take the ammo box'},act(){safe(()=>{if(gone('ammo'))return;take('ammo')},'take ammo')}};
  function take(k){if(has(k))return;D.inv.push(k);D.sel=D.inv.length-1;D.sync();sfx.pick();
-  const both=has('gun')&&has('ammo');
-  if(k==='gun')subtitle(both?'You load the revolver from the ammo box. Six in the cylinder.':'A heavy old revolver, wrapped in an oilcloth.',3200);
+  const both=!!myGun()&&has('ammo');
+  if(isGun(k))subtitle(both?'You load the revolver from the ammo box. Six in the cylinder.':'A heavy old revolver, wrapped in an oilcloth.',3200);
+  else if(mpOn())subtitle(both?'You fill your pockets from the ammo box and load the revolver. There is plenty left for the others.':'An old metal ammo box. You fill your pockets with rounds. There is plenty left for the others.',3600);
   else subtitle(both?'An old metal ammo box. You load the revolver. Six in the cylinder.':'An old metal ammo box. Heavy. Something rattles inside.',3200);
-  if(both&&k==='ammo'){const i=D.inv.indexOf('gun');if(i>=0){D.sel=i;D.sync()}}}
+  if(both&&k==='ammo'){const i=D.inv.indexOf(myGun());if(i>=0){D.sel=i;D.sync()}}}
  // keep the world copies and their targets in step with who has them
  const want=(m,on)=>{const i=inter.indexOf(m);if(on&&i<0)inter.push(m);if(!on&&i>=0)inter.splice(i,1)};
  // ---- sounds ----
@@ -5144,8 +5189,10 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   S.rounds--;recoil=1;flashT=.07;sfx.bang();const s=aimed();
   if(!s){if(seen())subtitle('(You missed.)',1400);return}
   S.hits++;safe(()=>XT.demonSfx&&XT.demonSfx.hiss(g.position.x,g.position.z,1.2),'hiss');
+  const remote=mpOn()&&__mp.dmSync&&__mp.dmSync.remote;if(mpOn()&&S.hits<HITS)safe(()=>__mp.gunHit(S.hits),'mp hit');// v103: the hits are shared; the demon's owner sees it stagger
   if(S.hits>=HITS){finale();return}
   subtitle(S.hits===1?'(It shrieks and jerks back. Black smoke curls out of it.)':'(It staggers, hissing. It is slower now.)',2600);
+  if(remote)return;// someone else's demon: it staggers on their screen (gstag), and that shows here through the sync
   safe(()=>{if(TRAP.cancel)TRAP.cancel()},'trap');XT.demon.force='scare';setTimeout(()=>safe(()=>{if(over)return;XT.demon.force=null;DM.stop()},'stop'),650)}
  let P0=null,G0=null;
  function finale(){over=true;window.__noMove=1;want(hit,false);
@@ -5161,7 +5208,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
  // ---- every frame ----
  XT.onUpdate(dt0=>safe(()=>{const dt=Math.min(.1,+dt0||.016);
   // the drawer slides; the revolver and the ammo box are there until someone has them
-  const o=S.drawer?1:0;slide.position.x+=(-.24*o-slide.position.x)*Math.min(1,dt*12);wGun.visible=o&&!gone('gun')||(slide.position.x<-.02&&!gone('gun'));want(gHit,S.drawer&&!gone('gun'));
+  const o=S.drawer?1:0;slide.position.x+=(-.24*o-slide.position.x)*Math.min(1,dt*12);{const L=GUNS.slice(0,nGuns()).filter(k=>!gone(k)).length,op=o||slide.position.x<-.02;wGuns.forEach((w,i)=>w.visible=!!op&&i<L)}want(gHit,S.drawer&&!!freeGun());
   ammo.visible=!gone('ammo');want(aHit,!gone('ammo'));
   // in your hand
   const show=over?fp.visible:(holding()&&XT.live()&&!CARE.dbg.carrying&&!seated);if(!window.__cut)fp.visible=!!show;
@@ -5198,7 +5245,232 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
     const ty=t<6?P.fy+1.2-.9*sm((t-3.4)/2.4):P.fy+.25;look(gx,ty-(t>14.6?.3*low:0),gz);
     say(L2,t,st);if(t>18.6)fadeOut();return t>20},
    end(){motes.forEach(s=>scene.remove(s));motes.length=0;pile.visible=false;g.scale.setScalar(1);g.rotation.set(0,0,0);XT.demon.force=null;g.visible=false;fp.visible=false}}};
- XT.gun={get S(){return S},fire,aimed,seen,get over(){return over},take,dHit,gHit,aHit,hit,armed};
+ XT.gun={get S(){return S},fire,aimed,seen,get over(){return over},take,dHit,gHit,aHit,hit,armed,GUNS,nGuns,myGun,freeGun,wGuns};
+})();
+
+// ===== v103 mpfix (Petra 2026-10-10): multiplayer only. When she has been too loud for too long, the demon no longer just takes one of you: it comes up
+// out of the basement and searches the whole house for all of you. The host runs it (grid A* from the single-player Hunt). It wanders toward where
+// people are; if it sees someone who is not hidden on its floor it goes for them, and if it reaches them that player is Taken (the normal per-player
+// death, the others keep going). If it comes close to someone hiding, that player gets the normal closet search (hold your breath). After about
+// 75 seconds it goes back down. Everyone sees it through the demon sync (MP.dmSync). Single player is unchanged (HUNT.fire as before).
+(function(){'use strict';const XT=window.__xt,MP=window.__mp;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush house search] '+(t||''),e)}};
+ if(!XT||!MP)return;
+ const DOOR={x:6.65,z:-3.0};// just outside the basement door, on the ground floor (house plan coordinates)
+ const H={on:false,vis:false,x:0,z:0,h:F,yaw:0,t:0,dur:75,path:null,pi:0,tgt:null,chase:null,repT:0,hold:0,stag:0,checked:new Set(),back:false,stepT:0,mv:0,roamT:0,arrive:0};
+ const nav=()=>XT.huntSP&&XT.huntSP.NAV;
+ function living(){const L=[];if(!MP.ghost&&!MP.demon&&!(window.__rlm&&__rlm.on))L.push({id:MP.id,x:cam.position.x,z:cam.position.z,h:fy,hid:!!(XT.hide&&XT.hide.hid),sr:!!(XT.hide&&XT.hide.S)});
+  MP.dbg.P.forEach((p,id)=>{const r=p.rep;if(!r||r.gh||r.dm||r.ar==='r'||!r.ent)return;L.push({id,x:mX(r.x),z:mZ(r.z),h:r.y,hid:!!r.hid,sr:!!r.sr})});return L}
+ const say=(t,ms)=>{subtitle(t,ms);MP.subAll(t,ms)};
+ function goTo(x,z,h){const N=nav();H.path=N?N.path(H.x,H.z,H.h,x,z,h,.8,9000):null;H.pi=0;if(!H.path)H.path=[{x,z,h}];H.arrive=0}
+ function start(){if(!MP.active||!MP.host||MP.hm||MP.ended||ended)return false;if(H.on)return true;const L=living();if(!L.length)return false;
+  Object.assign(H,{on:true,vis:true,x:mX(DOOR.x),z:mZ(DOOR.z),h:F,yaw:0,t:0,dur:70+Math.random()*12,path:null,pi:0,tgt:null,chase:null,hold:1.2,stag:0,back:false,roamT:0});H.checked.clear();
+  say('(The basement door bangs open downstairs. It is out, and it is looking for all of you. Hide.)',5000);
+  safe(()=>XT.demonSfx&&XT.demonSfx.hiss(H.x,H.z,1.2),'hiss');return true}
+ function stop(msg){if(!H.on)return;H.on=false;H.vis=false;H.path=null;if(msg)say(msg,3500);safe(()=>{HUNT.t=0},'t')}
+ function walk(dt,spd){const P=H.path;if(!P||H.pi>=P.length){H.arrive=1;return 0}const w=P[H.pi],dx=w.x-H.x,dz=w.z-H.z,d=Math.hypot(dx,dz);
+  if(d<.05){H.pi++;H.h=w.h;return 0}const s=Math.min(d,spd*dt);H.x+=dx/d*s;H.z+=dz/d*s;if(Math.abs(w.h-H.h)>.05)H.h+=(w.h-H.h)*Math.min(1,s/Math.max(d,.01));
+  let ty=Math.atan2(-dx,-dz),dy=ty-H.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));H.yaw+=dy*Math.min(1,dt*8);
+  doors.forEach(dr=>{if(dr.open)return;const p=dr.pv.getWorldPosition(new THREE.Vector3());if(Math.hypot(p.x-H.x,p.z-H.z)<1.25&&Math.abs(p.y-H.h)<1.8)dr.open=true});return s/Math.max(dt,1e-3)}
+ const sameFloor=p=>Math.abs(p.h-H.h)<1.2;
+ function update(dt){if(!H.on)return;if(!MP.active||!MP.host||MP.ended||ended){stop();return}
+  H.t+=dt;safe(()=>{DEMON.dbg.next=Math.max(DEMON.dbg.next,20);HUNT.t=0},'hold');
+  const L=living();if(!L.length){stop();return}
+  // someone it found hiding is being searched in their own closet: it is there, not out here
+  if(L.some(p=>p.sr)){H.vis=false;H.hold=Math.max(H.hold,1.5);return}
+  if(H.hold>0){H.hold-=dt;if(H.hold>0){H.vis=H.vis&&!H.handoff;return}H.handoff=false;H.vis=true}
+  H.vis=true;if(H.stag>0){H.stag-=dt;H.mv=0;return}
+  if(H.back){H.mv=walk(dt,1.6);if(H.arrive){stop('(The footsteps go back down the basement stairs. The door shuts.)')}return}
+  if(H.t>H.dur){H.back=true;H.chase=null;goTo(mX(DOOR.x),mZ(DOOR.z),F);return}
+  // who can it see from here
+  let see=null,sd=7.5;L.forEach(p=>{if(p.hid||!sameFloor(p))return;const d=Math.hypot(p.x-H.x,p.z-H.z);if(d<sd&&losClear(H.x,H.z,p.x,p.z,H.h)){sd=d;see=p}});
+  if(see&&sd<.95){catchP(see);return}
+  // someone hiding close by: it stops and searches that hiding place (their own closet search)
+  const hp=L.find(p=>p.hid&&!H.checked.has(p.id)&&sameFloor(p)&&Math.hypot(p.x-H.x,p.z-H.z)<2.3);
+  if(hp&&!see){H.checked.add(hp.id);MP.sendTo(hp.id,{t:'hsrch'});H.vis=false;H.handoff=true;H.hold=3;return}
+  if(see){if(!H.chase||H.chase!==see.id){H.chase=see.id;if(see.id===MP.id)subtitle('(It sees you.)',1500);else MP.sendTo(see.id,{t:'sub',txt:'(It sees you.)',ms:1500})}
+   H.repT-=dt;if(H.repT<=0||!H.path){H.repT=.8;goTo(see.x,see.z,see.h)}H.mv=walk(dt,2.5);return}
+  H.chase=null;H.roamT-=dt;
+  if(!H.path||H.arrive||H.roamT<=0){// wander toward someone (the ones not yet searched first), a little off where they are
+   const pool=L.filter(p=>!H.checked.has(p.id));const q=(pool.length?pool:L)[Math.floor(Math.random()*(pool.length?pool:L).length)];
+   const a=Math.random()*Math.PI*2,r=.8+Math.random()*1.4;goTo(q.x+Math.cos(a)*r,q.z+Math.sin(a)*r,q.h);H.roamT=7+Math.random()*4}
+  H.mv=walk(dt,1.5)}
+ function catchP(p){H.hold=2.2;H.vis=false;H.handoff=true;H.chase=null;H.path=null;MP.sendTo(p.id,{t:'hcatch'})}
+ MP.hsClient=m=>{if(MP.ghost)return;
+  if(m.t==='hsrch'){if(XT.hide&&XT.hide.hid)safe(()=>XT.hide.search('hunt'),'search')}
+  else if(m.t==='hcatch'){safe(()=>DEMON.dbg.show('scare',true),'scare');setTimeout(()=>safe(()=>{if(!MP.ghost)TRAP.gameOver('It found you.','It came up out of the basement, looking for all of you.')},'over'),1150)}};
+ MP.houseHunt=start;
+ MP.hs={get on(){return H.on},rep(){return H.on&&H.vis?MP.dmPose(H.x,H.h,H.z,H.yaw,H.stag>0?'scare':H.chase?'stalk':'walk'):0},stagger(){if(H.on)H.stag=Math.max(H.stag,2.2)},start,stop,H,living};
+ XT.onUpdate(dt=>safe(()=>update(Math.min(.25,+dt||.016)),'upd'));
+ // footsteps you can hear for a demon that is out on someone else's screen (or the house search)
+ let sx=0,sz=0,stT=0;XT.onUpdate(dt=>safe(()=>{if(!MP.active||!MP.dmSync||!MP.dmSync.remote||!AC||muted)return;const g=DEMON.dbg.g,m=window.__dmRM;
+  const sp=Math.hypot(g.position.x-sx,g.position.z-sz)/Math.max(dt,1e-3);sx=g.position.x;sz=g.position.z;stT-=dt;if(stT>0||sp<.3||!(m==='walk'||m==='stalk'))return;stT=m==='stalk'?.45:.62;
+  const d=Math.hypot(g.position.x-cam.position.x,g.position.z-cam.position.z,(g.position.y-fy)*2);if(d>20)return;const k=1/(1+d*d*.08);burst(AC.currentTime,95,1.2,.8*k,.14,'lowpass');burst(AC.currentTime+.01,520,2,.1*k,.08,'bandpass')},'steps'));
+})();
+
+// ===== v104 (Petra 2026-10-11): the Flashbang ending (name: FLASH_NAME in the endings block, id 'flashbang'). Description: "What starts with f and ends in g?"
+// A flashbang lies in the padlocked chest freezer in the garage. The padlock key is in the sugar jar on the kitchen counter (the white jar next to the two
+// cereal boxes, by the fridge). Key and flashbang go into the same carry inventory as the revolver (top HUD, Q to switch). Open the freezer with the key,
+// take the flashbang, select it, and when the demon is in sight (within about 9 m) E / click / the touch Use button / a tap on it throws it. She is blinded,
+// panics and flees back into the basement for good. Never near Lilith: it refuses to throw in the nursery, within 6 m of her, or while you carry her.
+// Goes through OUT.finish like Bang Bang Bang (multiplayer: XT.ending, the host decides and broadcasts). No hints anywhere.
+(function(){'use strict';const XT=window.__xt,OUT=window.__out;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush flashbang] '+(t||''),e)}};
+ if(!XT||!OUT||!XT.shelfDbg||typeof DEMON==='undefined')return;const DM=DEMON.dbg,g=DM.g,D=XT.shelfDbg;
+ D.NM.fbkey='small key';D.NM.flash='flashbang';
+ const S={key:false,open:false,took:false,used:false};let over=false,cool=0;
+ const sm=k=>k<=0?0:k>=1?1:k*k*(3-2*k);const mpOn=()=>!!(window.__mp&&__mp.active);
+ const has=k=>D.inv.includes(k),gone=k=>has(k)||(XT.mpHeld||[]).includes(k);
+ const busy=()=>!!(window.__cut||ended||window.__dead||window.__tbc||seated||CARE.busy()||(XT.hide&&XT.hide.hid)||(window.__mp&&(__mp.ghost||__mp.demon))||(window.__rlm&&__rlm.on)||(XT.bladeFight&&XT.bladeFight.S)||noteOpen);
+ const holding=()=>D.inv[D.sel]==='flash';
+ const armed=()=>!over&&started&&!paused&&XT.live()&&!busy()&&holding();
+ const hitMat=new THREE.MeshBasicMaterial({visible:false});
+ const want=(m,on)=>{const i=inter.indexOf(m);if(on&&i<0)inter.push(m);if(!on&&i>=0)inter.splice(i,1)};
+ // ---- Lilith is never near it ----
+ const bpos=()=>{try{return CARE.dbg.babyP}catch(e){return null}};
+ function nearBaby(){if(CARE.dbg.carrying)return true;const R=window.__RP||{x:99,z:99};if(fy>-1&&R.x>-4&&R.x<4&&R.z>-3.5&&R.z<3.5)return true;/* the nursery */
+  const b=bpos();if(b&&Math.hypot(b.x-cam.position.x,(b.y-cam.position.y)*1.5,b.z-cam.position.z)<6)return true;
+  if(g.visible){const c=bpos();if(c&&Math.hypot(c.x-g.position.x,c.z-g.position.z)<6&&Math.abs(c.y-g.position.y)<2.5)return true}return false}
+ // ---- sounds ----
+ const raw=(f,d,gn,type,f1,dl)=>{if(!AC||!master||muted)return;const t=AC.currentTime+(dl||0),o=AC.createOscillator(),e=AC.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);if(f1)o.frequency.exponentialRampToValueAtTime(f1,t+d);e.gain.setValueAtTime(gn,t);e.gain.exponentialRampToValueAtTime(.0005,t+d);o.connect(e);e.connect(master);o.start(t);o.stop(t+d+.05)};
+ const nz=(d,gn,f,type,dl)=>{if(!AC||!master||muted)return;const t=AC.currentTime+(dl||0),n=Math.floor(AC.sampleRate*d),b=AC.createBuffer(1,n,AC.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);
+  const s=AC.createBufferSource(),fl=AC.createBiquadFilter(),e=AC.createGain();s.buffer=b;fl.type=type||'lowpass';fl.frequency.value=f;e.gain.value=gn;s.connect(fl);fl.connect(e);e.connect(master);s.start(t)};
+ const sfx={pick(){nz(.08,.2,1800,'bandpass')},key(){raw(2400,.08,.05,'triangle');raw(3100,.06,.04,'triangle',0,.05)},
+  lock(){nz(.06,.3,2600,'highpass');raw(900,.05,.08,'square',0,.02);nz(.5,.15,700,'bandpass',.12)},pin(){raw(2600,.05,.06,'square');nz(.04,.15,4000,'highpass',.04)},
+  ring(k){raw(3520,2.8*k,.06,'sine');raw(3530,2.6*k,.04,'sine');raw(5200,1.4*k,.015,'sine')},
+  bang(){nz(.6,1,1800);nz(.18,.5,5000,'highpass');raw(90,.35,.6,'sine',30);this.ring(1.2)}};
+ XT.fbRing=k=>sfx.ring(k||1);
+ // a white screen that fades (shared with the Seen It All reward)
+ const W=document.createElement('div');W.id='fbWhite';W.style.cssText='position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:9';document.body.appendChild(W);let wT=0,wD=1;
+ XT.fbWhite=d=>{wD=d||2.4;wT=performance.now()+wD*1000};// real time, not frame time, so it fades the same on slow machines
+ setInterval(()=>{const k=Math.max(0,(wT-performance.now())/(wD*1000)),o=String(+Math.min(1,k*1.6).toFixed(3));if(W.style.opacity!==o)W.style.opacity=o},50);
+ // ---- the key: in the sugar jar on the kitchen counter by the fridge ----
+ const jHit=new THREE.Mesh(new THREE.BoxGeometry(.16,.3,.16),hitMat);XT.place(jHit,8.25,F+1.07,-1.7);
+ jHit.userData.i={get label(){return 'Sugar jar'},act(){safe(()=>{if(S.key||gone('fbkey')){subtitle('Sugar.',1400);return}S.key=true;D.inv.push('fbkey');D.sel=D.inv.length-1;D.sync();sfx.key();
+  subtitle('Buried in the sugar: a small brass key.',3000)},'jar')}};inter.push(jHit);
+ // ---- the freezer: its hit boxes are the meshes labelled Freezer ----
+ const fz=inter.filter(o=>o.userData.i&&o.userData.i.label==='Freezer');const old=fz[0]&&fz[0].userData.i.act;
+ let lid0=null;scene.traverse(o=>{const p=o.isMesh&&o.geometry&&o.geometry.parameters;if(p&&Math.abs(p.width-.92)<1e-3&&Math.abs(p.height-.03)<1e-3&&Math.abs(p.depth-.64)<1e-3&&!lid0)lid0=o});
+ const lidG=new THREE.Group(),lidP=new THREE.Group();let fb=null;
+ if(lid0){lid0.updateMatrixWorld(true);const w=new THREE.Vector3();lid0.getWorldPosition(w);
+  XT.place(lidP,w.x+.46,w.y,w.z);lidP.add(lidG);const lm=new THREE.Mesh(lid0.geometry,lid0.material);lm.position.set(-.46,0,0);lidG.add(lm);lidP.visible=false;
+  const ins=new THREE.Mesh(new THREE.BoxGeometry(.8,.012,.54),new THREE.MeshPhongMaterial({color:0xdfe8ee,emissive:0x182028}));ins.position.set(-.46,.008,0);lidP.add(ins);
+  // the flashbang: a ribbed olive cylinder, a spoon and a pin ring, lying on the frost
+  fb=new THREE.Group();const ol=new THREE.MeshPhongMaterial({color:0x4a5038,shininess:30}),st=new THREE.MeshPhongMaterial({color:0x9a9ca2,specular:0x888888,shininess:70});
+  const c=new THREE.Mesh(new THREE.CylinderGeometry(.03,.03,.12,10),ol);fb.add(c);[-.04,0,.04].forEach(y=>{const r=new THREE.Mesh(new THREE.CylinderGeometry(.032,.032,.008,10),st);r.position.y=y;fb.add(r)});
+  const tp=new THREE.Mesh(new THREE.CylinderGeometry(.018,.022,.03,8),st);tp.position.y=.075;fb.add(tp);const sp=new THREE.Mesh(new THREE.BoxGeometry(.012,.1,.02),st);sp.position.set(.03,.04,0);sp.rotation.z=-.15;fb.add(sp);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(.016,.003,4,12),st);ring.position.set(-.03,.09,0);fb.add(ring);
+  fb.rotation.z=Math.PI/2;fb.rotation.y=.4;fb.position.set(-.5,.04,.05);lidP.add(fb)}
+ const fzI={get label(){if(!S.open)return 'Freezer';return S.took||S.used||gone('flash')?'Freezer':'Take the flashbang'},
+  act(){safe(()=>{if(!S.open){if(!has('fbkey')){if(old)old();return}
+    const i=D.inv.indexOf('fbkey');D.inv.splice(i,1);D.sel=Math.max(0,Math.min(D.sel,D.inv.length-1));D.sync();S.open=true;sfx.lock();
+    subtitle('The little key fits the padlock. The lid comes up with a crack of ice. Alone on the frosted bottom: a flashbang.',4200);return}
+   if(S.took||S.used||gone('flash')){subtitle('Empty. Just frost.',1600);return}
+   S.took=true;D.inv.push('flash');D.sel=D.inv.length-1;D.sync();sfx.pick();subtitle('A flashbang, so cold it burns your fingers.',3000)},'freezer')}};
+ fz.forEach(o=>o.userData.i=fzI);
+ // ---- throwing it ----
+ const v1=new THREE.Vector3(),v2=new THREE.Vector3();
+ function chest(){g.updateMatrixWorld(true);const head=DM.J&&DM.J.head;g.getWorldPosition(v1);if(head){head.getWorldPosition(v2);return v1.lerp(v2,.6)}return v1.set(v1.x,v1.y+1.2,v1.z)}
+ function seen(){if(!g.visible)return null;const a=DM.active;if(a==='painting'||a==='mirror'||a==='monitor')return null;const c=chest(),dx=c.x-cam.position.x,dy=c.y-cam.position.y,dz=c.z-cam.position.z,L=Math.hypot(dx,dy,dz);
+  if(L>9||L<.2)return null;if(typeof losClear==='function'&&!losClear(cam.position.x,cam.position.z,c.x,c.z,fy))return null;return{x:c.x,y:c.y,z:c.z,dx:dx/L,dy:dy/L,dz:dz/L,L}}
+ const hit=new THREE.Mesh(new THREE.BoxGeometry(1,1.9,.3),hitMat);scene.add(hit);// visible mesh, invisible material, so a tap's ray can find it
+ hit.userData.i={get label(){return 'Throw the flashbang'},act(){if(armed())throwIt()}};
+ const proj=fb?fb.clone():new THREE.Mesh(new THREE.SphereGeometry(.03,6,4));proj.visible=false;scene.add(proj);let fly=null,P0=null,G0=null;
+ function throwIt(){const now=performance.now();if(now<cool||!armed())return false;cool=now+700;const s=seen();if(!s)return false;
+  if(nearBaby()){subtitle('Not here. Not this close to Lilith.',2200);return true}
+  const i=D.inv.indexOf('flash');if(i<0)return false;D.inv.splice(i,1);D.sel=Math.max(0,Math.min(D.sel,D.inv.length-1));D.sync();S.used=true;over=true;window.__noMove=1;want(hit,false);sfx.pin();
+  P0={x:cam.position.x,y:cam.position.y,z:cam.position.z,fy};G0={x:g.position.x,z:g.position.z};safe(()=>{if(TRAP.cancel)TRAP.cancel()},'trap');if(!(mpOn()&&__mp.dmSync&&__mp.dmSync.remote))XT.demon.force='stand';
+  fly={t:0,a:{x:cam.position.x+s.dx*.4,y:cam.position.y-.15,z:cam.position.z+s.dz*.4},b:{x:s.x-s.dx*.5,y:s.y,z:s.z-s.dz*.5}};proj.visible=true;subtitle('(You pull the pin and throw.)',1600);return true}
+ function boom(){proj.visible=false;sfx.bang();XT.fbWhite(2.6);safe(()=>XT.demonSfx&&XT.demonSfx.hiss(g.position.x,g.position.z,1.6),'hiss');subtitle('(BANG. Then nothing but white, and a high thin ringing.)',2400);
+  if(mpOn()){setTimeout(()=>{safe(()=>{XT.demon.force=null;DM.stop()},'stop');safe(()=>OUT.finish('flashbang'),'mp');over=false;window.__noMove=0},1600);return}
+  setTimeout(()=>{safe(()=>{XT.demon.force=null;DM.stop()},'stop');safe(()=>OUT.finish('flashbang'),'fin')},1200)}
+ const key=e=>{if(!armed()||!seen())return false;const t=window.__target&&__target();if(t&&t!==hit.userData.i&&!seen())return false;e.stopImmediatePropagation();e.preventDefault&&e.preventDefault();throwIt();return true};
+ addEventListener('keydown',e=>{if(e.code!=='KeyE'||e.repeat||window.__typing)return;safe(()=>key(e),'key')},true);
+ renderer.domElement.addEventListener('mousedown',e=>{if(!document.pointerLockElement)return;safe(()=>key(e),'click')},true);
+ // ---- every frame ----
+ XT.onUpdate(dt0=>safe(()=>{const dt=Math.min(.1,+dt0||.016);
+  lidG.rotation.z+=((S.open?-1.25:0)-lidG.rotation.z)*Math.min(1,dt*6);const op=S.open||lidG.rotation.z<-.02;lidP.visible=op;if(lid0)lid0.visible=!op;if(fb)fb.visible=op&&!S.took&&!S.used&&!gone('flash');
+  if(fly){fly.t+=dt/.55;const k=Math.min(1,fly.t),a=fly.a,b=fly.b;proj.position.set(a.x+(b.x-a.x)*k,a.y+(b.y-a.y)*k+Math.sin(k*Math.PI)*.5,a.z+(b.z-a.z)*k);proj.rotation.x+=dt*14;if(k>=1){fly=null;boom()}}
+  const s=armed()?seen():null;if(s){const d=Math.min(1.3,s.L-.1);hit.position.set(cam.position.x+s.dx*d,cam.position.y-.2,cam.position.z+s.dz*d);hit.lookAt(cam.position.x,hit.position.y,cam.position.z);hit.updateMatrixWorld();want(hit,true)}else want(hit,false)},'upd'));
+ XT.parts.flashbang={save:()=>({k:S.key?1:0,o:S.open?1:0,t:S.took?1:0,u:S.used?1:0}),load:v=>{if(!v)return;S.key=!!v.k;S.open=!!v.o;S.took=!!v.t;S.used=!!v.u}};
+ // ---- the cut scene: blinded, it claws at its eyes, shrieks and bolts away for the basement; far off, the basement door slams ----
+ const look=(x,y,z)=>{const dx=x-cam.position.x,dy=y-cam.position.y,dz=z-cam.position.z;yaw=Math.atan2(-dx,-dz);pitch=Math.atan2(dy,Math.hypot(dx,dz));cam.rotation.set(pitch,yaw,0)};
+ const fadeOut=()=>{const f=document.getElementById('xfade');if(f&&!f.classList.contains('on')){f.hidden=false;f.textContent='';requestAnimationFrame(()=>f.classList.add('on'))}};
+ XT.flashCut=()=>{const st={i:0};const P=P0||{x:cam.position.x,y:cam.position.y,z:cam.position.z,fy};if(!P0)XT.fbWhite(2.2);
+  let dx=(G0?G0.x:P.x-Math.sin(yaw)*2.2)-P.x,dz=(G0?G0.z:P.z-Math.cos(yaw)*2.2)-P.z;const L=Math.hypot(dx,dz)||1;dx/=L;dz/=L;let Dd=Math.min(3,Math.max(1.6,L));while(Dd>1.1&&typeof losClear==='function'&&!losClear(P.x,P.z,P.x+dx*(Dd+.4),P.z+dz*(Dd+.4),P.fy))Dd-=.1;
+  const gx=P.x+dx*Dd,gz=P.z+dz*Dd;g.visible=true;g.scale.setScalar(1);g.rotation.set(0,0,0);g.position.set(gx,P.fy,gz);g.lookAt(P.x,P.fy,P.z);XT.demon.force='stand';const base=g.quaternion.clone();let slam=false;
+  const L2=[[.4,'(It is blind. It claws at its face and shrieks, a sound like a kettle the size of a house.)',3.6],[4.2,'(It spins, hits the wall, and bolts. Not at you. Away from the light.)',3.2],
+   [7.6,'(Far below, the basement door slams. Then the bolt slides home. From the inside.)',3.6],[11.6,'(Upstairs, Lilith sleeps on. She never heard a thing.)',3.2],[15,'(Your ears are still ringing.)',2.4]];
+  return{step(dt,t){cam.position.set(P.x,P.fy+1.6,P.z);g.quaternion.copy(base);
+    if(t<4){g.rotateY(Math.sin(t*9)*.35);g.rotateX(-.15*Math.sin(t*5));g.position.set(gx+Math.sin(t*13)*.05,P.fy,gz+Math.cos(t*11)*.05)}
+    else{const k=sm((t-4)/2.4);g.rotateY(Math.PI);g.position.set(gx+dx*k*7,P.fy,gz+dz*k*7)}
+    let ok=true;if(t>4&&typeof losClear==='function')ok=losClear(P.x,P.z,g.position.x,g.position.z,P.fy);g.visible=t<6.6&&ok;
+    if(t>7.6&&!slam){slam=true;nz(.4,.5,300,'lowpass');nz(.08,.25,1200,'bandpass',.5)}
+    look(gx,P.fy+1.3,gz);while(st.i<L2.length&&t>=L2[st.i][0]){subtitle(L2[st.i][1],L2[st.i][2]*1000);st.i++}if(t>16.4)fadeOut();return t>17.6},
+   end(){g.rotation.set(0,0,0);XT.demon.force=null;g.visible=false}}};
+ XT.flash={get S(){return S},seen,nearBaby,throwIt,jHit,hit,fz,get over(){return over},lid0};
+})();
+
+// ===== v104 (Petra 2026-10-11): the flashbang button, a Seen It All reward (unlocks with the other Seen It All rewards: C.U().seen).
+// [B] (touch: a Flash button with the other reward buttons) flashes the OTHER players' screens white with a ringing sound. Nothing happens to you,
+// nothing happens in single player, and it has no gameplay effect (the demon, Lilith and every ending ignore it). 6 s cooldown.
+// It rides on the synced player report (fb counter in myReport); each client flashes when another player's counter goes up.
+(function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush fbtn] '+(t||''),e)}};if(!XT)return;
+ const C={U:()=>{try{return window.__cust.U()}catch(e){return{}}}};// the Customize block (C.U().seen) loads after this script
+ const CD=6000;let last=-1e9;window.__fbF=0;
+ const can=()=>{const M=window.__mp;return !!(C.U().seen&&M&&M.active&&M.started&&!M.ghost&&!M.demon&&XT.live&&XT.live())};
+ function press(){if(!can())return false;const n=performance.now();if(n-last<CD)return false;last=n;window.__fbF=(window.__fbF|0)+1;return true}
+ XT.fbPress=press;
+ addEventListener('keydown',e=>{if(e.code!=='KeyB'||e.repeat||window.__typing)return;const p=document.getElementById('czP');if(p&&!p.hidden)return;safe(press,'B')});
+ // other players' counters
+ const seenF=new Map();XT.fbGot=0;
+ setInterval(()=>safe(()=>{const M=window.__mp;if(!M||!M.active||!M.started||!M.dbg||!M.dbg.AV){seenF.clear();return}
+  M.dbg.AV.forEach((a,id)=>{if(id===M.id)return;const r=a.last;if(!r)return;const v=r.fb|0;if(!seenF.has(id)){seenF.set(id,v);return}
+   if(v>seenF.get(id)){seenF.set(id,v);XT.fbGot++;if(XT.fbWhite)XT.fbWhite(2.4);if(XT.fbRing)XT.fbRing(1)}else if(v<seenF.get(id))seenF.set(id,v)})},'recv'),150);
+ // touch button, added to the Seen It All reward buttons (#siaT)
+ const mk=setInterval(()=>safe(()=>{const T=document.getElementById('siaT');if(!T)return;clearInterval(mk);const b=document.createElement('button');b.type='button';b.id='siaFlash';b.dataset.k='KeyB';b.setAttribute('aria-label','Flashbang the other players');b.textContent='Flash';T.appendChild(b);
+  ['pointerdown','touchstart','mousedown','click'].forEach(t=>b.addEventListener(t,e=>{e.stopPropagation();if(t==='click'){e.preventDefault();press()}},{passive:false}));
+  setInterval(()=>{const M=window.__mp;b.hidden=!(M&&M.active&&C.U().seen)},300)},'touch'),400);
+})();
+
+// ===== v103 (Petra 2026-10-11): the Lullaby Choir ending (name: CHOIR_NAME in the endings block, id 'choir'). Multiplayer only (not Hunt).
+// Two or more living players stand at the crib and hold [H] (touch: a Sing button, shown only in multiplayer while you are at the crib) at the same time.
+// They sing; when at least two have sung together for a few seconds, Lilith falls deeply asleep, the demon gives up and leaves, and the host ends the
+// night for everyone (XT.ending -> host broadcast). Single player: the key does nothing and the button never shows. No hints anywhere.
+(function(){'use strict';const XT=window.__xt,MP=window.__mp;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush choir] '+(t||''),e)}};
+ if(!XT||!MP)return;
+ const CRIB={x:0,z:-1.85},NEED=2,HOLD=3;let key=false,btn=false,tog=0,hum=null,humT=0;
+ const cribW=()=>({x:mX(CRIB.x),z:mZ(CRIB.z)});
+ const atCrib=(x,z,y)=>{const c=cribW();return Math.abs(y)<.6&&Math.hypot(x-c.x,z-c.z)<2.4};
+ const ok=()=>!!(MP.active&&MP.started&&!MP.hm&&!MP.ghost&&!MP.demon&&!MP.ended&&!ended&&!window.__dead&&!window.__cut&&!(XT.hide&&XT.hide.hid)&&!(window.__rlm&&__rlm.on));
+ const singing=()=>ok()&&(key||btn)&&atCrib(cam.position.x,cam.position.z,fy);
+ MP.singing=singing;
+ addEventListener('keydown',e=>{if(e.code==='KeyH'&&!window.__typing)key=true},true);
+ addEventListener('keyup',e=>{if(e.code==='KeyH')key=false},true);
+ addEventListener('blur',()=>{key=false;btn=false});
+ // your own voice: a soft hummed lullaby line while you hold it
+ const LINE=[67,64,64,64,65,67,64,62,62,62,64,65,62];let li=0;
+ function note(){if(!AC||muted||!master)return;const t=AC.currentTime,m=LINE[li++%LINE.length],f=440*Math.pow(2,(m-69)/12);
+  [0,7].forEach(d=>{const o=AC.createOscillator(),gn=AC.createGain(),lp=AC.createBiquadFilter();o.type='triangle';o.frequency.value=f;o.detune.value=d;lp.type='lowpass';lp.frequency.value=1200;
+   gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(.035,t+.12);gn.gain.linearRampToValueAtTime(.0001,t+.55);o.connect(lp).connect(gn).connect(master);o.start(t);o.stop(t+.6)})}
+ // touch button
+ let tb=null;const mkB=()=>{const B=document.getElementById('tcB');if(!B||tb)return;tb=document.createElement('button');tb.type='button';tb.id='tcSing';tb.textContent='Sing';tb.hidden=true;B.appendChild(tb);
+  tb.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();btn=true});['pointerup','pointercancel','pointerleave'].forEach(k=>tb.addEventListener(k,()=>{btn=false}));
+  ['touchstart','click','mousedown'].forEach(k=>tb.addEventListener(k,e=>e.stopPropagation()))};
+ // host: who is singing at the crib right now
+ function singers(){const L=[];if(singing())L.push(MP.id);
+  MP.dbg.P.forEach((p,id)=>{const r=p.rep;if(!r||r.gh||r.dm||r.ar==='r'||!r.sg)return;if(atCrib(mX(r.x),mZ(r.z),r.y))L.push(id)});return L}
+ XT.onUpdate(dt0=>safe(()=>{const dt=Math.min(.25,+dt0||.016);mkB();
+  if(tb)tb.hidden=!(window.__touchMode&&ok()&&atCrib(cam.position.x,cam.position.z,fy));if(!ok())btn=false;
+  const me=singing();if(me){humT-=dt;if(humT<=0){humT=.5;note()}}else humT=0;
+  if(!MP.active||!MP.host||!MP.started||MP.hm||MP.decided||MP.ended)return;
+  const S=singers();if(S.length>=NEED){tog+=dt;if(tog>=HOLD){tog=-1e9;safe(()=>{if(typeof CARE!=='undefined')CARE.dbg.noise=0},'calm');XT.ending('choir')}}else tog=Math.max(0,tog-dt*2)},'upd'));
+ MP.choir={singers,get t(){return tog},atCrib,cribW};
+ // the cut scene: the nursery, everyone's voices, Lilith asleep, the basement door shutting far below
+ XT.choirCut=()=>{const c=cribW(),st={i:0};const P={x:c.x+1.6,z:c.z+1.2};safe(()=>{DEMON.dbg.stop();DEMON.dbg.g.visible=false},'dm');
+  const L=[[.3,'(You sing. Badly, out of time, all together.)',3.2],[3.8,'(Lilith sighs, curls up, and is gone into the deepest sleep of her life.)',3.6],
+   [7.8,'(Far below, the basement door closes. Softly. It does not open again.)',3.6],[11.8,'(You keep singing for a while anyway.)',3]];
+  return{step(dt,t){cam.position.set(P.x,1.55,P.z);const dx=c.x-P.x,dz=c.z-P.z;yaw=Math.atan2(-dx,-dz);pitch=-.45+.06*Math.sin(t*.4);cam.rotation.set(pitch,yaw,0,'YXZ');
+    while(st.i<L.length&&t>=L[st.i][0]){subtitle(L[st.i][1],L[st.i][2]*1000);st.i++}
+    if(t>14.2){const f=document.getElementById('xfade');if(f&&!f.classList.contains('on')){f.hidden=false;f.textContent='';requestAnimationFrame(()=>f.classList.add('on'))}}return t>15.5},end(){}}};
 })();
 </script>
 
@@ -5906,6 +6178,14 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    [0,1,2].forEach(i=>slide(t+4.1+i*.32,64,55,.22,.05));tuba(t+5.2,31,.2,.12);slide(t+5.2,43,31,1.1,.08);
    mel.forEach(([x,m])=>bell(t+6.8+x*b,m+12,b*1.4,.05));pad(t+6.8,[60,64,67],3.6,.025);bell(t+10.6,84,1.6,.06);bell(t+10.75,88,1.6,.05);return 12.5},
   // v102 Bang Bang Bang: three gunshots, a beat of silence, then a bright little western brass fanfare over a snare roll and a big major chord with a cymbal
+  // v103 Lullaby Choir: a slow 'Hush, little baby' in soft voices (several, a little out of tune with each other), music box on top, ending on a warm chord
+  choir(t){const b=.5,M=[[0,67,1],[1,64,1],[2,64,1],[3,64,.5],[3.5,65,.5],[4,67,1],[5,64,2],[7,62,1],[8,62,1],[9,62,.5],[9.5,64,.5],[10,65,1],[11,62,2],[13,67,1],[14,64,1],[15,64,1],[16,64,.5],[16.5,65,.5],[17,67,1],[18,64,1],[19,62,1],[20,60,3]];
+   M.forEach(([x,m,l])=>{[-9,4,12].forEach((d,i)=>V(t+x*b+i*.03,m-12*(i===2?1:0),l*b*1.05,{w:'triangle',g:.03,a:.08,f:1400,det:[d,-d],sus:.85,r:.25}));bell(t+x*b,m+12,l*b,.025)});
+   [[48,55,64],[43,55,62],[48,55,64],[41,53,60],[43,50,59],[48,55,64]].forEach((c,i)=>pad(t+i*2*b*2,c,4*b,.022));pad(t+23*b,[48,55,60,64],3.5,.03);return 23*b+3.6},
+  // Flashbang: one bang, a long thin ringing, then a quiet relieved little tune in D major
+  flashbang(t){noise(t,.6,1800,.4,.7,'lowpass');kick(t,.5);noise(t+.01,.2,5000,.1,1,'highpass');V(t+.05,{f:3520},3.2,{w:'sine',g:.025,a:.01,r:1.5});V(t+.05,{f:3532},3,{w:'sine',g:.018,a:.01,r:1.5});
+   const s=t+3.4,b=.32;[[0,74,1],[1,73,1],[2,71,1],[3,69,2],[5,71,1],[6,69,1],[7,66,1],[8,62,3]].forEach(([x,m,l])=>V(s+x*b,m,l*b,{w:'triangle',g:.06,a:.02,r:.3}));
+   [[50,57,62],[47,54,62],[43,50,59],[45,52,57],[50,57,62]].forEach((c,i)=>pad(s+i*b*2.2,c,b*2.4,.025));bell(s+11*b,86,1.6,.05);return s-t+11*b+3},
   gun(t){[0,.75,1.5].forEach(x=>{noise(t+x,.45,900,.32,.7,'lowpass');kick(t+x,.45);noise(t+x+.02,.12,3800,.08,1,'highpass')});
    const b=.22,s=t+2.6;for(let i=0;i<10;i++)snare(s+i*b*.5,.05+i*.008);
    const M=[[0,67,1],[1,72,1],[2,72,.5],[2.5,72,.5],[3,76,1],[4,72,1],[5,79,3]];M.forEach(([x,m,l])=>V(s+1.1+x*b*1.6,m,l*b*1.6,{w:'sawtooth',g:.05,a:.02,f:1700,det:[-7,7],sus:.8,r:.15}));
@@ -6047,8 +6327,19 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    q.fillStyle='#120e14';q.fillRect(W*.47-11,H*.34,6,5);q.fillRect(W*.47+5,H*.34,6,5);q.fillStyle='#8a0a1a';q.fillRect(W*.47-2,H*.47,3,10);
    q.save();q.translate(W*.47+20,H*.42);q.rotate(-1.1);q.fillStyle='rgba(240,248,255,.85)';q.fillRect(-6,-18,12,30);q.fillStyle='#fff6e4';q.fillRect(-5,0,10,10);q.fillStyle='#8ad0f0';q.fillRect(-7,-22,14,5);q.fillStyle='#f0c890';q.fillRect(-3,-28,6,6);q.restore();
    const ht=(x,y,s)=>{q.fillStyle='#ff5a8a';q.beginPath();q.moveTo(x,y+s);q.bezierCurveTo(x-s*1.4,y+s*.2,x-s*1.1,y-s*.9,x,y-s*.3);q.bezierCurveTo(x+s*1.1,y-s*.9,x+s*1.4,y+s*.2,x,y+s);q.fill()};ht(W*.66,H*.2,9);ht(W*.74,H*.32,6);ht(W*.6,H*.1,5);ht(W*.3,H*.22,7)},
-  gun(q,W,H){q.fillStyle='#0c0a0e';q.fillRect(0,0,W,H);const g=q.createRadialGradient(W*.3,H*.42,4,W*.3,H*.42,110);g.addColorStop(0,'rgba(255,200,90,.35)');g.addColorStop(1,'rgba(255,200,90,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
-   q.save();q.translate(W*.08,H*.78);q.rotate(-.35);q.fillStyle='#3a3c42';q.fillRect(0,-10,92,14);q.fillRect(40,-16,42,24);q.fillStyle='#55585e';q.beginPath();q.arc(58,-4,13,0,7);q.fill();q.fillStyle='#5a3a22';q.beginPath();q.moveTo(80,4);q.lineTo(104,4);q.lineTo(112,46);q.lineTo(92,48);q.fill();q.restore();
+  choir(q,W,H){q.fillStyle='#0e1020';q.fillRect(0,0,W,H);const g=q.createRadialGradient(W*.5,H*.6,10,W*.5,H*.6,180);g.addColorStop(0,'rgba(255,220,160,.3)');g.addColorStop(1,'rgba(255,220,160,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
+   q.fillStyle='#d8c8a8';q.fillRect(W*.36,H*.62,W*.28,H*.06);q.fillRect(W*.36,H*.5,4,H*.3);q.fillRect(W*.64-4,H*.5,4,H*.3);for(let i=1;i<7;i++)q.fillRect(W*.36+i*W*.04,H*.5,2,H*.12);
+   q.fillStyle='#f4e6d0';q.beginPath();q.ellipse(W*.5,H*.6,18,8,0,0,7);q.fill();
+   [[.2,'#6a7ab0'],[.8,'#b07a8a'],[.12,'#7aa08a'],[.88,'#a89a6a']].forEach(([x,c],i)=>{const y=H*(i<2?.5:.56);q.fillStyle=c;q.beginPath();q.arc(W*x,y,14,0,7);q.fill();q.fillRect(W*x-12,y+12,24,H*.4);q.fillStyle='#1a1420';q.beginPath();q.ellipse(W*x+(x<.5?6:-6),y+4,3,4,0,0,7);q.fill()});
+   q.fillStyle='#f0e0b0';q.font='22px Georgia';[['\u266A',.3,.3],['\u266B',.44,.22],['\u266A',.58,.27],['\u266B',.7,.18]].forEach(([n,x,y])=>q.fillText(n,W*x,H*y));
+   q.fillStyle='#c8c0d8';q.font='italic 13px Georgia';q.fillText('z z z',W*.53,H*.47)},
+  flashbang(q,W,H){q.fillStyle='#0c0a10';q.fillRect(0,0,W,H);q.fillStyle='#1c1820';q.fillRect(W*.72,H*.22,W*.16,H*.7);q.fillStyle='#050406';q.fillRect(W*.745,H*.26,W*.11,H*.66);
+   const g=q.createRadialGradient(W*.32,H*.48,2,W*.32,H*.48,170);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.25,'rgba(255,252,235,.85)');g.addColorStop(1,'rgba(255,250,230,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
+   q.strokeStyle='rgba(255,255,255,.9)';q.lineWidth=2;for(let i=0;i<12;i++){const a=i/12*6.283;q.beginPath();q.moveTo(W*.32+Math.cos(a)*22,H*.48+Math.sin(a)*22);q.lineTo(W*.32+Math.cos(a)*(60+(i%3)*18),H*.48+Math.sin(a)*(60+(i%3)*18));q.stroke()}
+   q.fillStyle='#120e14';q.save();q.translate(W*.8,H*.55);q.rotate(.12);q.beginPath();q.ellipse(0,-34,9,12,0,0,7);q.fill();q.fillRect(-8,-24,16,46);q.fillRect(-9,20,6,34);q.fillRect(3,20,6,30);q.rotate(-.6);q.fillRect(-20,-30,6,30);q.restore();
+   q.fillStyle='#4a5038';q.save();q.translate(W*.14,H*.84);q.rotate(.5);q.fillRect(-7,-14,14,28);q.fillStyle='#9a9ca2';q.fillRect(-8,-16,16,4);q.beginPath();q.arc(10,-18,4,0,7);q.strokeStyle='#9a9ca2';q.stroke();q.restore()},
+  gun(q,W,H){q.fillStyle='#0c0a0e';q.fillRect(0,0,W,H);const g=q.createRadialGradient(W*.47,H*.72,4,W*.47,H*.72,110);g.addColorStop(0,'rgba(255,200,90,.35)');g.addColorStop(1,'rgba(255,200,90,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
+   /* v103 (Petra 02:28Z): the muzzle is at local x=0 and the grip at the far end, so it used to point left, off the card; now it is mirrored and aimed at the ash pile */q.save();const mx=W*.42,my=H*.72;q.translate(mx,my);q.rotate(Math.atan2(H*.84-my,W*.8-mx));q.scale(-1,1);q.fillStyle='#3a3c42';q.fillRect(0,-10,92,14);q.fillRect(40,-16,42,24);q.fillStyle='#55585e';q.beginPath();q.arc(58,-4,13,0,7);q.fill();q.fillStyle='#5a3a22';q.beginPath();q.moveTo(80,4);q.lineTo(104,4);q.lineTo(112,46);q.lineTo(92,48);q.fill();q.restore();
    q.fillStyle='#ffd040';q.font='bold 26px Georgia';q.textAlign='center';[['BANG',.34,.28,-.12],['BANG',.56,.18,.08],['BANG',.5,.42,-.05]].forEach(([w,x,y,r])=>{q.save();q.translate(W*x,H*y);q.rotate(r);q.fillText(w,0,0);q.restore()});q.textAlign='left';
    q.fillStyle='#6a6670';q.beginPath();q.ellipse(W*.8,H*.86,W*.13,H*.06,0,0,7);q.fill();q.fillStyle='#8a8690';q.beginPath();q.ellipse(W*.8,H*.83,W*.07,H*.05,0,Math.PI,0);q.fill();
    q.fillStyle='rgba(170,165,175,.6)';for(let i=0;i<16;i++){q.beginPath();q.arc(W*.7+((i*37)%70),H*.75-((i*23)%60),1.5+(i%3),0,7);q.fill()}},
@@ -6413,9 +6704,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // over it a loose SLEEVELESS dark maroon haori, open at the front, one solid color (Petra v3: no lighter shoulders), covering the back (no 滅 showing);
  // plain black sleeves (Petra v3: the olive spots were only shading)
  // (Petra v11) Genya's sleeveless maroon haori is its own Layers toggle ('ghaori') that goes over ANY outfit; it is no longer part of the uniform
+ // (Petra 2026-10-11) moved into the Haori section (haori:'genya'); it now uses the same fit as Tanjiro's haori (same panels, shoulder bar and rounded
+ // shoulders), just sleeveless, shorter and solid maroon, so it sits on the body instead of floating
  function genyaHaori(b){const mr=P(0x4a1a2a),len=.52,y=1.47-len/2,H=(w,h,d,x,yy,z)=>bx(w,h,d,mr,x,yy,z,b);
-  H(.46,len,.02,0,y,.135);[-1,1].forEach(k=>{H(.02,len,.25,k*.222,y,0);H(.11,len,.02,k*.17,y,-.135);
-   const sh=bx(.13,.035,.29,mr,k*.155,1.487,0,b);sh.rotation.z=-k*.12})}
+  H(.47,len,.02,0,y,.142);[-1,1].forEach(k=>{H(.02,len,.264,k*.226,y,0);H(.12,len,.02,k*.166,y,-.142)});H(.34,.03,.304,0,1.486,0);
+  [-1,1].forEach(k=>sph(.1,mr,1,.8,1.42,k*.2,1.42,0,b))}
  function genyaUni(b,r,o){const bk=P(0x17161e),wt=P(0xeeeae0),wd=D(0xeeeae0);
   /* open rings, so looking down you see only the thin rim, not a white plate */[[.063,1.4615,0x17161e,.1],[.018,1.484,0xeeeae0,.1015]].forEach(([hh,yy,c,rr])=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(rr,rr,hh,8,1,true),P(c,{side:THREE.DoubleSide}));m.position.y=yy;m.rotation.y=Math.PI/8;m.scale.z=.85;b.add(m)});{const nk=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.08,8),P(SKIN[o.skin][1]));nk.position.y=1.46;b.add(nk)}
   [1.3,1.17,1.04].forEach(y=>sph(.012,P(0xd8d8dc,{shininess:80,specular:0xffffff}),1,1,.6,0,y,-.113,b));
@@ -6741,12 +7034,12 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const SLOT=[0xe0705a,0x4fb3a9,0xe0b84a,0x9a7ad8],SLOTH=['bark','chestnut','ink','wheat'];
  const HAIRN={bald:'Bald',short:'Short',long:'Long',ponytail:'Ponytail',bob:'Bob with bangs',buns:'Twin buns',maomao:"Maomao's buns",nezuko:"Nezuko's long hair",miku:"Miku's twin tails",teto:"Teto's drill twin tails",braid:'Long braid',shinobu:"Shinobu's bob",mitsuri:"Mitsuri's braids",muichiro:"Muichiro's long hair",buzz:'Buzz cut',messy:'Short messy',sidepart:'Side part',curtain:'Curtain bangs',spiky:'Spiky',wolf:'Wolf cut',genya:"Genya's mohawk",genyad:"Genya's mohawk (demon form)"};
  const EYEN={dots:'Dots',ydots:'Yellow dots (rabbit)',wide:'Wide',sleepy:'Sleepy',mesm:'Big round (Mesmerizer)',lashes:'Lashes',headlight:'Headlights',genya:"Genya's glare",genyad:"Genya's demon eyes"},MOUTHN={none:'None',smile:'Smile',flat:'Flat',oh:'Gasp',snake:'Snake grin',shark:'Open smile'};
- const NECK={'':'None',pearl:'Pearl necklace',gold:'Gold necklace',silver:'Small silver necklace'},HAORI={'':'None',tanjiro:"Tanjiro's haori",nezuko:'Black haori'};
+ const NECK={'':'None',pearl:'Pearl necklace',gold:'Gold necklace',silver:'Small silver necklace'},HAORI={'':'None',tanjiro:"Tanjiro's haori",nezuko:'Black haori',genya:"Genya's sleeveless haori"};
  const EARC=[0xf2ece4,0x5a2a4a,0x141010,0xf0b0c0,0x8ab0d8,0xe8c030,0x7a9a4a,0xc02030];
  // what unlocks what (keys of U())
  const LOCK={hair:{maomao:'pin',nezuko:'blade',miku:'miku',teto:'tetoh',shinobu:'shinobu',mitsuri:'mitsuri',muichiro:'muichiro',genya:'genya',genyad:'genya'},hc:{jade:'pin',grad:'blade',teal:'miku',teto:'teto',shinobu:'shinobu',mitsuri:'mitsuri',inosuke:'inosuke',zenitsu:'zenitsu',muichiro:'muichiro'},bfly:'shinobu',omask:'obanai',boar:'inosuke',cape:'rengoku',ghaori:'genya',gscar:'genya',gun:'genya',mouth:{snake:'snake',shark:'stare'},eyes:{mesm:'stare',ydots:'abst',headlight:'seen',genya:'genya',genyad:'genya'},skin:{purple:'abst'},cap:'bat',bat:'bat',hb:'stare',
   outfit:{maomao:'pin',nezuko:'blade',robes:'cult',yoveralls:'abst',scales:'snake',miku:'miku',teto:'teto',yara:'bat',mesm:'stare',muichiro:'muichiro',genya:'genya',suit:'closet',suitskirt:'closet',evening:'closet',cardigan:'closet'},
-  haori:{tanjiro:'blade',nezuko:'blade'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen'};
+  haori:{tanjiro:'blade',nezuko:'blade',genya:'genya'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen'};
  const HINT={pin:'A gift someone lost, somewhere outside.',blade:'Prove yourself with a blade.',cult:'Some families never let you leave.',snake:'Something scaly hides down below.',abst:'Follow something that is not really there.',
   miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',genya:'???',seen:'Find every ending.'};
  // DS v89: Demon Slayer unlocks. ONE place to change the triggers: each key is unlocked when hushCustU[key] is set (by the secret pickups/events below).
@@ -6762,7 +7055,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','ghaori','gscar','gun','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -6776,11 +7069,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   if(!of.robe)torso(body,s);
   const arms=[-1,1].map(k=>{const q=new THREE.Group();q.position.set(k*.25,1.4,0);body.add(q);bx(.1,.58,.1,of.bare?sk:s,0,-.28,0,q);bx(.09,.09,.09,sk,0,-.6,0,q);return q});
   const rig={arms,legs};of.x(body,s,rig,o);if(o.bat)batBack(body);
-  if(o.tie&&o.outfit!=='miku')tieLayer(body);if(o.neck)necklace(body,o.neck);if(o.haori)haori(body,rig,o.haori);
+  if(o.tie&&o.outfit!=='miku')tieLayer(body);if(o.neck)necklace(body,o.neck);if(o.haori==='genya')genyaHaori(body);else if(o.haori)haori(body,rig,o.haori);
   const h=new THREE.Group();h.position.set(0,1.62,0);body.add(h);sph(.13,sk,.95,1.1,1,0,0,0,h);
   FITB=body;const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],gr=GRAD[hc],hm=P(gr?0:hc);HAIR[o.hair](hg,hm);FITB=null;
   if(gr)gradHair(hg,hm,gr);
-  if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.that)topHat(h,o);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.ghaori)genyaHaori(body);if(o.cape)cape(body);if(o.gscar)genyaScar(h);if(o.gun)genyaGun(arms[1]);
+  if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.that)topHat(h,o);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.cape)cape(body);if(o.gscar)genyaScar(h);if(o.gun)genyaGun(arms[1]);
   if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.invis)seeThrough(body,INV_OP,1);
   return{legs,arms,head:h}}
  // Nezuko's gradient, fitted to each hairstyle's own height (like her real hair): black at the crown/roots, starting to fade about 30% of the way down
@@ -6837,8 +7130,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   grp('Eyes','eyes',Object.keys(EYES).map(v=>({v,n:EYEN[v]})));
   grp('Mouth','mouth',Object.keys(MOUTH).map(v=>({v,n:MOUTHN[v]})));
   grp('Outfit','outfit',Object.keys(OUTFIT).map(v=>({v,n:OUTFIT[v].n,c:OUTFIT[v].shirt==null?SLOT[0]:OUTFIT[v].shirt})));
-  grp('Haori (over any outfit)','haori',Object.keys(HAORI).map(v=>({v,n:HAORI[v],c:v==='tanjiro'?0x2a7a52:v?0x18161a:null})));
-  grp('Layers (over any outfit)','tog',[['muzzle','Bamboo muzzle',0x7a9a4a],['sheath','Sword sheath',0x1a1a1e],['mask','Snake mask',0x5f8a4a],['tie','Teal tie',0x2ab5ac],['ears','Bunny ears',o.ears==null?0xf2ece4:o.ears],['cap','Red "052" cap',0xc8202e],['hb','Pinstripe cap with bow',0x3a62c4],['bat','Baseball bat (on back)',0xf2f0ee],['bfly','Butterfly hairclip',0xa070d8],['omask','Striped bandage mask',0xeeeae2],['boar','Boar head mask',0x6e6862],['cape','Flame cape',0xe8602a],['ghaori',"Genya's sleeveless haori",0x4a1a2a],['gscar',"Genya's scar",0xc27470],['gun',"Genya's double-barrel pistol (R to fire)",0x2c2e34],['that',"Magician's top hat",0x121016]].map(([v,n,c])=>({v,n,c})));
+  grp('Haori (over any outfit)','haori',Object.keys(HAORI).map(v=>({v,n:HAORI[v],c:v==='tanjiro'?0x2a7a52:v==='genya'?0x4a1a2a:v?0x18161a:null})));
+  grp('Layers (over any outfit)','tog',[['muzzle','Bamboo muzzle',0x7a9a4a],['sheath','Sword sheath',0x1a1a1e],['mask','Snake mask',0x5f8a4a],['tie','Teal tie',0x2ab5ac],['ears','Bunny ears',o.ears==null?0xf2ece4:o.ears],['cap','Red "052" cap',0xc8202e],['hb','Pinstripe cap with bow',0x3a62c4],['bat','Baseball bat (on back)',0xf2f0ee],['bfly','Butterfly hairclip',0xa070d8],['omask','Striped bandage mask',0xeeeae2],['boar','Boar head mask',0x6e6862],['cape','Flame cape',0xe8602a],['gscar',"Genya's scar",0xc27470],['gun',"Genya's double-barrel pistol (R to fire)",0x2c2e34],['that',"Magician's top hat",0x121016]].map(([v,n,c])=>({v,n,c})));
   if(o.that)grp('Top hat position','thp',[{v:0,n:'On top'},{v:1,n:'On the side'}]);
   if(o.ears!=null)grp('Bunny ear color','earc',EARC.map(c=>({v:c,n:'',c})));
   grp('Jewelry','neck',Object.keys(NECK).map(v=>({v,n:NECK[v]})).concat([{v:'pin',n:'Silver hairpin',c:0xd4d8e0,tog:1}]));
@@ -7064,7 +7357,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // ---- the achievement ----
  safe(()=>{const A=XT.ach&&XT.ach.A;if(!A)return;if(!A.some(a=>a.id==='seenall'))A.push({id:'seenall',n:'Seen It All',d:'You are either very stupid, very curious, or very determined.'});
   const btn=document.getElementById('achB'),cnt=()=>{if(btn)btn.textContent='Achievements '+A.filter(a=>XT.ach.got[a.id]).length+'/'+A.length};
-  const chk=()=>safe(()=>{const e=XT.endInfo&&XT.endInfo();/* v96 (Petra): every ending except Six O'Clock (id 'parents'), excluded by id; Bottle Buddies ('friend') is required again per Petra 2026-10-09; Bang Bang Bang ('gun') is required too (it is in ORDER) per Petra 2026-10-10 */const need=e?e.order.filter(k=>k!=='parents'):[];XT.seenAllNeed=need;if(!e||!need.length||!need.every(k=>e.got.includes(k))||XT.ach.got.seenall)return;XT.ach.unlock('seenall');cnt();
+  const chk=()=>safe(()=>{const e=XT.endInfo&&XT.endInfo();/* v96 (Petra): every ending except Six O'Clock (id 'parents'), excluded by id; Bottle Buddies ('friend') is required again per Petra 2026-10-09; Bang Bang Bang ('gun') is required too (it is in ORDER) per Petra 2026-10-10 *//* v103 (Petra 2026-10-11): Lullaby Choir ('choir', multiplayer only) is not needed either, but it is listed and counted like the others *//* v104 (Petra 2026-10-11): Flashbang ('flashbang') is required (it is in ORDER) */const need=e?e.order.filter(k=>k!=='parents'&&k!=='choir'):[];XT.seenAllNeed=need;if(!e||!need.length||!need.every(k=>e.got.includes(k))||XT.ach.got.seenall)return;XT.ach.unlock('seenall');cnt();
    setTimeout(()=>safe(()=>subtitle('Every ending found. New looks are waiting in Customize.',5200)),4300)},'chk');
   const om=XT.markEnding;if(om)XT.markEnding=function(){const r=om.apply(this,arguments);chk();return r};
   const oe=XT.ending;XT.ending=function(){const r=oe.apply(this,arguments);chk();return r};
