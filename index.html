@@ -1028,7 +1028,7 @@ const SAY={hunger:"She's hungry",diaper:'She needs a change',sleepy:"She's getti
 // ---- the baby (one model: lies in the crib, or is carried in your arms) ----
 (window.__cribBaby||[]).forEach(o=>o.visible=false);
 scene.add(cam);
-const bb=new THREE.Group();bb.userData.noMap=1;scene.add(bb);
+const bb=new THREE.Group();bb.userData.noMap=1;bb.userData.noFade=1;/* chatfix: never dusted / faded with a player's body */scene.add(bb);
 const bBody=new THREE.Mesh(new THREE.IcosahedronGeometry(.16,0),mats.blue);bBody.scale.set(1.5,.7,1);bBody.position.set(.05,0,0);bb.add(bBody);
 const bHead=new THREE.Mesh(new THREE.IcosahedronGeometry(.1,0),mats.skin);bHead.position.set(-.22,.02,0);bb.add(bHead);
 box(.22,.04,.24,M(0xf4d8e0),.12,.06,0,bb);sph(.03,M(0xf0b8c8),-.15,.1,0,1,.6,1,bb);
@@ -3999,7 +3999,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    a.legs[0].rotation.x=sw;a.legs[1].rotation.x=-sw;a.arms[0].rotation.x=-sw*.7;a.arms[1].rotation.x=sw*.7;a.head.rotation.x=-r.pi*.6;
    /*GENYA v102: their pistol comes up and flashes when they fire (cosmetic)*/if(window.__cust&&__cust.genyaPose&&a.arms[1].getObjectByName('genyaGun')){const gf=r.gf|0;if(a.gf0==null)a.gf0=gf;else if(gf!==a.gf0){a.gf0=gf;a.gaT=1.6;a.gfl=.12;try{__cust.genyaBang()}catch(e){}}if(a.gaT>0){a.gaT-=dt;a.gfl=(a.gfl||0)-dt;__cust.genyaPose(a,a.gfl>0?2:1);if(a.gaT<=0)__cust.genyaPose(a,0)}}
    a.body.scale.y=r.cr?.62:1;a.body.position.y=0;a.torch.visible=!!r.tor;
-   /*SIA*/a.body.userData.dmMove=spd>.3;a.body.userData.crouch=!!r.cr;const ivq=window.__cust?__cust.invOp(performance.now()/1000):.03;a.g.traverse(o=>{if(o.material&&o!==a.tag){const iv=a.inv&&!r.gh;(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{const b0=m.userData&&m.userData.op0!=null?m.userData.op0:1;m.transparent=!!r.gh||iv||b0<1;m.opacity=b0*(r.gh?.28:iv?ivq:1);if(iv&&m.userData.op0==null)m.depthWrite=false})}});
+   /*SIA*/a.body.userData.dmMove=spd>.3;a.body.userData.crouch=!!r.cr;const ivq=window.__cust?__cust.invOp(performance.now()/1000):.03;/* chatfix (Petra 2026-10-11): Lilith rides on a.arm while this player carries her; never fade her with the holder's ghost / invisibility pass (her materials are shared and never reset, so she stayed invisible after being put down) */const bbX=CD.mp.bb,avT=(o,f)=>{if(o===bbX)return;f(o);for(const c of o.children)avT(c,f)};avT(a.g,o=>{if(o.material&&o!==a.tag){const iv=a.inv&&!r.gh;(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{const b0=m.userData&&m.userData.op0!=null?m.userData.op0:1;m.transparent=!!r.gh||iv||b0<1;m.opacity=b0*(r.gh?.28:iv?ivq:1);if(iv&&m.userData.op0==null)m.depthWrite=false})}});
    const spk=V.levels.get(id)>.03;if(spk!==a.spk||!!r.mu!==a.mu)drawTag(a,a.name,spk,r.mu)});
   // the baby in someone else's arms
   if(MP.remoteHolder&&!CD.mp.act){const a=AV.get(MP.remoteHolder);const bb=CD.mp.bb;if(a&&a.g.visible){if(bb.parent!==a.arm){a.arm.add(bb)}bb.position.set(0,0,0);bb.rotation.set(0,Math.PI/2,0);bb.scale.setScalar(.8);bb.visible=true}
@@ -4410,8 +4410,9 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
 #chat li{color:#efe6da;text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8);line-height:1.35;overflow-wrap:anywhere;transition:opacity .6s}#chat li.old{opacity:0}#chat li b{font-weight:600}#chat li.sys{color:#a89e90;font-style:italic}
 #chat.open ol{background:rgba(10,9,12,.78);border:1px solid #2c2a30;border-radius:6px;padding:.4rem .55rem;overflow:auto;pointer-events:auto}#chat.open li.old{opacity:1}
 #chat input{pointer-events:auto;font:inherit;color:#efe6da;background:rgba(10,9,12,.9);border:1px solid #c9a45c;border-radius:5px;padding:.45rem .6rem;outline:none;min-width:0}
-body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document.head.appendChild(c)}
- const chatEl=document.createElement('div');chatEl.id='chat';chatEl.hidden=true;chatEl.innerHTML='<ol aria-live="polite"></ol><input id="chatIn" maxlength="120" autocomplete="off" placeholder="Say something (Enter to send, Esc to close)" hidden>';document.body.appendChild(chatEl);
+body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
+#chat .cr{display:flex;gap:6px;min-width:0}#chat .cr input{flex:1 1 auto}#chat .cb{display:none;pointer-events:auto;flex:0 0 auto;font:600 .72rem var(--ui,system-ui,sans-serif);color:#efe6da;background:rgba(10,9,12,.9);border:1px solid #c9a45c;border-radius:5px;padding:0 .7rem;min-height:40px;min-width:44px;touch-action:manipulation}body.touch #chat.open .cb{display:block}body.touch #chat.open{z-index:7}`;document.head.appendChild(c)}
+ const chatEl=document.createElement('div');chatEl.id='chat';chatEl.hidden=true;chatEl.innerHTML='<ol aria-live="polite"></ol><form class="cr" action="#" novalidate><input id="chatIn" maxlength="120" autocomplete="off" enterkeyhint="send" placeholder="Say something (Enter to send, Esc to close)" hidden><button type="button" class="cb" data-c="send">Send</button><button type="button" class="cb" data-c="close" aria-label="Close chat">Close</button></form>';document.body.appendChild(chatEl);
  const chatOl=chatEl.querySelector('ol'),chatIn=chatEl.querySelector('input'),LOG=[];const CMAX=120;
  const CRX=new RegExp('['+String.fromCharCode(0)+'-'+String.fromCharCode(31)+String.fromCharCode(127)+'-'+String.fromCharCode(159)+String.fromCharCode(0x200b)+'-'+String.fromCharCode(0x200f)+String.fromCharCode(0x2028)+'-'+String.fromCharCode(0x202e)+String.fromCharCode(0x2066)+'-'+String.fromCharCode(0x2069)+']','g');
  const clean=x=>String(x==null?'':x).replace(CRX,' ').replace(/\s+/g,' ').trim().slice(0,CMAX);
@@ -4424,10 +4425,22 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}`;document
   const msg={t:'chat',id:pid,n:p.name,s:p.slot,g:g?1:0,x};
   if(dm&&mu){const h=Object.assign({},msg,{x:hissOf(x)});roster.forEach(q=>sendTo(q.id,q.id===pid?msg:h))}else{bcast(msg);clientHandle(msg)}}
  function chatOpen(v){if(v===!chatIn.hidden)return;window.__typing=v;chatIn.hidden=!v;chatEl.classList.toggle('open',v);chatEl.hidden=!MP.active;if(v){for(const k in keys)keys[k]=false;chatIn.value='';setTimeout(()=>chatIn.focus(),0)}else chatIn.blur()}
- chatIn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){const x=clean(chatIn.value);if(x)send({t:'chat',x});chatOpen(false)}else if(e.key==='Escape')chatOpen(false)});
+ chatIn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();const x=clean(chatIn.value);if(x)send({t:'chat',x});chatOpen(false)}else if(e.key==='Escape')chatOpen(false)});
  ['keyup','keypress'].forEach(k=>chatIn.addEventListener(k,e=>e.stopPropagation()));chatIn.addEventListener('blur',()=>{if(!chatIn.hidden)setTimeout(()=>{if(document.activeElement!==chatIn)chatOpen(false)},0)});
  addEventListener('keydown',e=>{if(e.key!=='Enter'||e.repeat||window.__typing||!MP.active||!MP.started||paused||window.__cut||MP.ended)return;e.preventDefault();chatOpen(true)});
- MP.chat={CST,open:chatOpen,show:chatShow,clean,get log(){return LOG.map(l=>l.textContent)}};
+ // chatfix (Petra 2026-10-11): touch players get a Chat button next to the other touch buttons; it opens chat and focuses the box inside the tap so the on-screen keyboard comes up.
+ // Send / Close buttons sit beside the box (touch only); they keep the box focused on press, so the blur-closes-chat rule does not fire first.
+ const chatSend=()=>{if(chatIn.hidden)return;const x=clean(chatIn.value);if(x)send({t:'chat',x});chatOpen(false)};
+ // the on-screen keyboard's Send / Go key submits the little form (some phones send no Enter keydown)
+ chatEl.querySelector('form').addEventListener('submit',e=>{e.preventDefault();e.stopPropagation();chatSend()});
+ chatEl.querySelectorAll('.cb').forEach(b=>{['pointerdown','mousedown','touchstart'].forEach(k=>b.addEventListener(k,e=>{e.stopPropagation();if(k!=='touchstart')e.preventDefault()},{passive:false}));
+  b.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();if(b.dataset.c==='send')chatSend();else chatOpen(false)})});
+ let ctb=null;const canChat=()=>MP.active&&MP.started&&!MP.ended&&!paused&&!window.__cut;
+ setInterval(()=>{try{if(!ctb){const B=document.getElementById('tcB');if(B){ctb=document.createElement('button');ctb.type='button';ctb.id='tcChat';ctb.textContent='Chat';ctb.setAttribute('aria-label','Open chat');ctb.hidden=true;B.appendChild(ctb);
+    ['pointerdown','mousedown','touchstart'].forEach(k=>ctb.addEventListener(k,e=>e.stopPropagation(),{passive:true}));
+    ctb.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();if(!canChat())return;chatOpen(true);try{chatIn.focus()}catch(x){}})}}
+   if(ctb){const tc=document.getElementById('tc');ctb.hidden=!(window.__touchMode&&canChat()&&chatIn.hidden&&tc&&!tc.hidden)}}catch(e){}},300);
+ MP.chat={CST,open:chatOpen,send:chatSend,show:chatShow,clean,get log(){return LOG.map(l=>l.textContent)}};
  MP.dbg={drop:id=>dropPlayer(id),roster:()=>roster,P,AV,V,get FL(){return FL},readAll,hostGame,joinGame,hostStart,teardown,held,get sEV(){return sEV},get vote(){return vote},myReport};
 })();
 
@@ -6633,7 +6646,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   // Miku: grey sleeveless top with teal tie, black pleated skirt, black arm sleeves, boots
   miku:{n:"Miku's outfit",shirt:0xb8bcc4,legs:0,skinLegs:1,bare:1,shoe:0x141216,x:(b,s,r,o)=>{const bk=P(0x16151a),tl=P(0x2ab5ac);mikuTat(r.arms[0]);
     // sleeveless top: bare shoulders (skin caps) and a matte collar slab, so nothing reads as a pale plate across the neck
-    const skm=P(SKIN[o.skin][1]);b.children.forEach(c=>{if(!c.isMesh)return;if(c.geometry.type==='SphereGeometry'&&Math.abs(c.position.y-1.36)<.01)c.material=skm;else if(Math.abs(c.position.y-1.42)<.005)c.material=P(0x9ea2aa,{specular:0x080808,shininess:4})});mikuTie(b);
+    const skm=P(SKIN[o.skin][1]);b.children.forEach(c=>{if(!c.isMesh)return;if(c.geometry.type==='SphereGeometry'&&Math.abs(c.position.y-1.36)<.01)c.material=skm;else if(Math.abs(c.position.y-1.42)<.005)c.material=P(0x9ea2aa,{specular:0x080808,shininess:4})});/* chatfix: the Teal tie toggle takes Miku's own tie off (notie) */if(!(o&&o.notie))mikuTie(b);
     skirt(P(0x1c1b20),.215,.31,.26,.8,b,16,.68);skirt(D(0x2ab5ac),.312,.315,.02,.68,b,16,.68);
     r.arms.forEach(a=>{bx(.115,.3,.115,bk,0,-.4,0,a);bx(.121,.025,.121,tl,0,-.25,0,a)});
     r.legs.forEach(q=>{bx(.13,.4,.14,bk,0,-.58,-.005,q);bx(.136,.025,.146,tl,0,-.38,-.005,q)})}},
@@ -6689,7 +6702,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   bx(.15,.36,.004,D(0xc8202e),0,1.21,-.113,b);rbx(.386,.035,.226,P(0xc8202e),0,1.035,0,b);rbx(.384,.1,.224,sk,0,.97,0,b);rbx(.388,.1,.23,P(0x1e2236),0,.88,0,b);
   [-1,1].forEach(k=>{bx(.025,.36,.004,rd,k*.085,1.22,-.117,b).rotation.z=-k*.12;bx(.012,.36,.004,wd,k*.1,1.22,-.118,b).rotation.z=-k*.12});
   rbx(.4,.03,.236,P(0xc8202e),0,1.06,0,b);rbx(.402,.012,.238,P(0xf4f2ee),0,1.06,0,b);
-  const ch=new THREE.Mesh(new THREE.TorusGeometry(.052,.012,4,12),bk);ch.rotation.x=Math.PI/2;ch.position.y=1.5;b.add(ch);
+  /* chatfix: Teto's choker can be taken off in Jewelry (nochk) */if(!(o&&o.nochk)){const ch=new THREE.Mesh(new THREE.TorusGeometry(.052,.012,4,12),bk);ch.rotation.x=Math.PI/2;ch.position.y=1.5;b.add(ch)}
   r.legs.forEach((q,i)=>{if(i===0)bx(.126,.06,.136,P(0xc8202e),0,-.22,0,q);
    bx(.134,.02,.21,P(0xc8202e),0,-.83,-.03,q);bx(.04,.012,.08,P(0xc8202e),0,-.76,-.07,q)});
   r.arms.forEach(a=>{bx(.104,.5,.104,P(0xf4f2ee),0,-.26,0,a);bx(.106,.03,.106,P(0xc8202e),0,-.52,0,a);bx(.108,.012,.108,P(0xf4f2ee),0,-.52,0,a);bx(.098,.1,.098,P(0xc8202e),0,-.6,0,a);bx(.1,.025,.1,P(0xf4f2ee),0,-.57,0,a)})}
@@ -7001,11 +7014,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   return{legs:[dum(),dum()],arms:[dum(),dum()],head:dum(),demon:g}}
  // see-through: everything at very low opacity (hair, clothes, accessories; glows keep their own scale)
  // v95.1 (Petra): far more invisible, just a faint shimmer. invOp(t) is the opacity right now (also used for other players' avatars in multiplayer)
- const INV_OP=.03,invOp=t=>INV_OP+.022*(.5+.5*Math.sin(t*2.6));function seeThrough(root,k,live){if(live){let any=null;root.traverse(o=>{if(!any&&o.isMesh)any=o});if(any)anim(any,t=>{const q=invOp(t);root.traverse(o=>{const L=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];L.forEach(m=>{const b=m.userData.op0!=null?m.userData.op0:1;m.opacity=b*q})})})}root.traverse(o=>{const L=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];L.forEach(m=>{const b=m.userData.op0!=null?m.userData.op0:1;m.transparent=k<1||b<1;m.opacity=b*k;if(k<1&&m.userData.op0==null)m.depthWrite=false})})}
+ const INV_OP=.03,invOp=t=>INV_OP+.022*(.5+.5*Math.sin(t*2.6));function seeThrough(root,k,live){const trv=(o,f)=>{if(o!==root&&o.userData.noFade)return;f(o);for(const c of o.children)trv(c,f)};/* chatfix: skip Lilith if she is in this body's arms */if(live){let any=null;root.traverse(o=>{if(!any&&o.isMesh)any=o});if(any)anim(any,t=>{const q=invOp(t);trv(root,o=>{const L=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];L.forEach(m=>{const b=m.userData.op0!=null?m.userData.op0:1;m.opacity=b*q})})})}trv(root,o=>{const L=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];L.forEach(m=>{const b=m.userData.op0!=null?m.userData.op0:1;m.transparent=k<1||b<1;m.opacity=b*k;if(k<1&&m.userData.op0==null)m.depthWrite=false})})}
  // turn to dust: the body breaks into coloured dust that pours to the floor, settles, then swirls back up and reforms. root: the doll / avatar body group
  function dust(root,opt){opt=opt||{};if(!root||root.userData.dusting)return false;root.updateMatrixWorld(true);const inv=new THREE.Matrix4().copy(root.matrixWorld).invert();
   const tris=[];let tot=0;const a=new THREE.Vector3(),b2=new THREE.Vector3(),c=new THREE.Vector3(),hide=[];
-  root.traverse(o=>{if(!(o.isMesh||o.isSprite||o.isPoints)||!o.visible)return;let p=o;let vis=true;while(p&&p!==root){if(!p.visible)vis=false;p=p.parent}if(!vis)return;hide.push(o);if(!o.isMesh||!o.geometry||!o.geometry.attributes.position)return;
+  root.traverse(o=>{if(!(o.isMesh||o.isSprite||o.isPoints)||!o.visible)return;let p=o;let vis=true;while(p&&p!==root){if(!p.visible||p.userData.noFade)vis=false;p=p.parent}if(!vis)return;hide.push(o);if(!o.isMesh||!o.geometry||!o.geometry.attributes.position)return;
    const m=Array.isArray(o.material)?o.material[0]:o.material;if(m.blending===THREE.AdditiveBlending)return;const col=m.color?m.color.clone():new THREE.Color(1,1,1);if(m.map&&col.r>.95&&col.g>.95&&col.b>.95)col.setRGB(.75,.68,.62);
    const g=o.geometry,P_=g.attributes.position,CA=g.attributes.color,I=g.index,n=I?I.count:P_.count,M=new THREE.Matrix4().multiplyMatrices(inv,o.matrixWorld);
    for(let i=0;i<n;i+=3){const ia=I?I.getX(i):i,ib=I?I.getX(i+1):i+1,ic=I?I.getX(i+2):i+2;a.fromBufferAttribute(P_,ia).applyMatrix4(M);b2.fromBufferAttribute(P_,ib).applyMatrix4(M);c.fromBufferAttribute(P_,ic).applyMatrix4(M);
@@ -7057,11 +7070,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,seen:!!a.seenall||SIA_DBG}}
  const lockKey=(k,v)=>{const L=LOCK[k];if(!L)return null;if(typeof L==='string')return v?L:null;return L[v]||null};
  const isOpen=(k,v,u)=>{const q=lockKey(k,v);return !q||!!(u||U())[q]};
- const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0};
+ const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,notie:0,nochk:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','notie','nochk'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -7140,12 +7153,12 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   grp('Layers (over any outfit)','tog',[['muzzle','Bamboo muzzle',0x7a9a4a],['sheath','Sword sheath',0x1a1a1e],['mask','Snake mask',0x5f8a4a],['tie','Teal tie',0x2ab5ac],['ears','Bunny ears',o.ears==null?0xf2ece4:o.ears],['cap','Red "052" cap',0xc8202e],['hb','Pinstripe cap with bow',0x3a62c4],['bat','Baseball bat (on back)',0xf2f0ee],['bfly','Butterfly hairclip',0xa070d8],['omask','Striped bandage mask',0xeeeae2],['boar','Boar head mask',0x6e6862],['cape','Flame cape',0xe8602a],['gscar',"Genya's scar",0xc27470],['gun',"Genya's double-barrel pistol (R to fire)",0x2c2e34],['that',"Magician's top hat",0x121016]].map(([v,n,c])=>({v,n,c})));
   if(o.that)grp('Top hat position','thp',[{v:0,n:'On top'},{v:1,n:'On the side'}]);
   if(o.ears!=null)grp('Bunny ear color','earc',EARC.map(c=>({v:c,n:'',c})));
-  grp('Jewelry','neck',Object.keys(NECK).map(v=>({v,n:NECK[v]})).concat([{v:'pin',n:'Silver hairpin',c:0xd4d8e0,tog:1}]));
+  grp('Jewelry','neck',Object.keys(NECK).map(v=>({v,n:NECK[v]})).concat([{v:'pin',n:'Silver hairpin',c:0xd4d8e0,tog:1}],o.outfit==='yara'?[{v:'chk',n:"Teto's choker",c:0x141216,tog:1}]:[]));
   grp('Seen It All','tog',[['invis','See-through skin (invisible) [I]',0xbfe6ff],['roof','Roof',0xb8502e],['phone','Phone',0x5ab0ff],['disco','Disco ball',0xd8dce4],['tire','Tire tracks',0x222024],['duck','Rubber duck',0xf6d232],['lighter','Lighter',0xc8202e],['keys','Car keys',0xc8ccd4],['demon','Snake demon',0xf3e58a],['fpud','Fire puddles',0xff7a1a],['snek','Baby snake buddy',0xf3e58a]].map(([v,n,c])=>({v,n,c})));
   sec.innerHTML='';G.forEach(g=>{const h=document.createElement('h3');h.textContent=g.t;sec.appendChild(h);const r=document.createElement('div');r.className='row';sec.appendChild(r);
    g.items.forEach(it=>{const b=document.createElement('button');b.type='button';b.className='ch';
     const lkK=g.k==='tog'||it.tog?it.v:g.k==='earc'?null:g.k,lv=g.k==='tog'||it.tog?1:it.v,locked=lkK&&!isOpen(lkK,lv,u);
-    const on=g.k==='tog'||it.tog?(it.v==='ears'?o.ears!=null:!!o[it.v]):g.k==='earc'?o.ears===it.v:o[g.k]===it.v;
+    const on=g.k==='tog'||it.tog?(it.v==='ears'?o.ears!=null:it.v==='chk'?!o.nochk:it.v==='tie'&&o.outfit==='miku'?!o.notie:!!o[it.v]):g.k==='earc'?o.ears===it.v:o[g.k]===it.v;
     b.setAttribute('aria-pressed',on&&!locked?'true':'false');if(locked){b.classList.add('lk');b.title='Locked: '+HINT[lockKey(lkK,lv)]}
     b.innerHTML=locked?'Locked ???':(it.c!=null?'<span class="sw" style="background:'+swc(it.c)+'"></span>':'')+(it.n||'');if(!it.n)b.setAttribute('aria-label','Color '+hex(it.c));
     b.dataset.k=it.tog?'tog':g.k;b.dataset.v=String(it.v);r.appendChild(b);
@@ -7153,7 +7166,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  function hatSize(){if(!LOOK.that)return;const r0=sec.querySelector('[data-k="thp"]');if(!r0)return;const h2=document.createElement('h3');h2.textContent='Top hat size';const w=document.createElement('div');w.className='row';const rg=document.createElement('input');rg.type='range';rg.id='czThs';rg.min='40';rg.max='100';rg.step='5';rg.value=String(LOOK.ths==null?100:LOOK.ths);rg.setAttribute('aria-label','Top hat size');rg.style.cssText='flex:1 1 220px;min-width:0;accent-color:#c8202e;touch-action:none';const out=document.createElement('span');out.className='e';out.style.cssText='font-size:12px;color:#a49aa8;min-width:3em';out.textContent=rg.value+'%';
   rg.addEventListener('input',()=>{LOOK.ths=+rg.value;out.textContent=rg.value+'%';redoll()});rg.addEventListener('change',()=>{LOOK.ths=+rg.value;save()});w.append(rg,out);r0.parentNode.after(h2,w)}
  function pick(k,v,lockedHint){if(lockedHint){msg.textContent='Locked. '+lockedHint;return}msg.textContent='';const o=LOOK;
-  if(k==='tog'){if(v==='ears')o.ears=o.ears==null?0xf2ece4:null;else o[v]=o[v]?0:1;if(v==='duck'&&o.duck)squeak()}else if(k==='earc')o.ears=v;else o[k]=v;
+  if(k==='tog'){if(v==='ears')o.ears=o.ears==null?0xf2ece4:null;else if(v==='chk')o.nochk=o.nochk?0:1;else if(v==='tie'&&o.outfit==='miku')o.notie=o.notie?0:1;else o[v]=o[v]?0:1;if(v==='duck'&&o.duck)squeak()}else if(k==='earc')o.ears=v;else o[k]=v;
   save();rows();redoll();const f=sec.querySelector('[data-k="'+k+'"][data-v="'+String(v)+'"]');if(f)f.focus()}
  function setInv(on){LOOK.invis=on?1:0;save();if(!pnl.hidden){rows();redoll()}}
  let cvSq=0;function siaActs(u){if(!u.seen)return;const h=document.createElement('h3');h.textContent='Seen It All: actions';const r=document.createElement('div');r.className='row';sec.appendChild(h);sec.appendChild(r);
