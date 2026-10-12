@@ -684,7 +684,7 @@ box(.45,2.1,.36,mahog,6.56,F+1.05,8.3);box(.47,.08,.38,gold,6.56,F+2.12,8.3);box
 const gcH=new THREE.Group(),gcM=new THREE.Group();[gcH,gcM].forEach((g,i)=>{g.position.set(6.315,F+1.75,8.3);scene.add(g);box(.005,i?.13:.08,.012,M(0x1a1a1a),0,(i?.13:.08)/2,0,g)});
 const pend=new THREE.Group();pend.position.set(6.34,F+1.45,8.3);scene.add(pend);box(.005,.5,.01,gold,0,-.25,0,pend);cyl(.05,.05,.01,gold,0,-.52,0,10,pend).rotation.z=Math.PI/2;
 // music box with the basement key (nursery dresser)
-let mbState=0,hasKey=false,basementOpen=false,bAng=0;
+let mbState=0,hasKey=false,basementOpen=false,bAng=0,basementUnlocked=false;
 const mb=box(.16,.1,.22,M(0xf0c8d4),3.66,1.15,-1.0);box(.17,.012,.23,gold,3.66,1.2,-1.0);
 const lid=new THREE.Group();lid.position.set(3.74,1.2,-1.0);scene.add(lid);box(.16,.03,.22,M(0xf0c8d4),-.08,.015,0,lid);box(.04,.005,.04,gold,-.08,.033,0,lid);
 const keyG=new THREE.Group();keyG.position.set(2.885,F+1.735,8.0);keyG.rotation.x=Math.PI/2;scene.add(keyG);cyl(.006,.006,.09,gold,0,0,0,6,keyG).rotation.x=Math.PI/2;{const bw=new THREE.Mesh(new THREE.TorusGeometry(.018,.005,4,10),gold);bw.rotation.x=Math.PI/2;bw.position.z=-.055;keyG.add(bw)}box(.01,.004,.02,gold,0,0,.04,keyG);
@@ -856,7 +856,11 @@ var B_pilot;
 {const gm=window.__ext.out.children.find(o=>o.geometry&&o.geometry.type==='PlaneGeometry'&&o.geometry.parameters.width===170);if(gm){const s=new THREE.Shape();s.moveTo(-85,-85);s.lineTo(85,-85);s.lineTo(85,85);s.lineTo(-85,85);s.lineTo(-85,-85);const h=new THREE.Path();h.moveTo(2.05,7.45);h.lineTo(2.05,11.8);h.lineTo(3.25,11.8);h.lineTo(3.25,7.45);h.lineTo(2.05,7.45);s.holes.push(h);gm.geometry=new THREE.ShapeGeometry(s)}}
 window.__bsm=BSM;
 
-function basementAct(){if(basementOpen)return;if(!hasKey){tryDoor();return}basementOpen=true;solids.forEach(q=>{if((q.r||q).x0===6.2&&(q.r||q).z0===-3.56)q.off=true});subtitle('The key fits.',2500)}
+// basement door state: once unlocked it never locks again and toggles like any other door. Its solid comes off as soon as it opens;
+// closing re-arms the solid in the frame loop once the door has swung shut and nobody is standing in the doorway.
+const bSolids=()=>solids.filter(q=>(q.r||q).x0===6.2&&(q.r||q).z0===-3.56);
+function setBasement(o){o=!!o;if(o)basementUnlocked=true;else if(!basementUnlocked)return;basementOpen=o;if(o)bSolids().forEach(q=>q.off=true)}
+function basementAct(){if(!basementUnlocked){if(!hasKey){tryDoor();return}setBasement(true);subtitle('The key fits.',2500);return}setBasement(!basementOpen)}
 inter.forEach(o=>{if(o.userData.i.label==='Basement door')o.userData.i.act=basementAct});
 // registries for flicker / lamps turning off
 const allL=[];scene.traverse(o=>{if(o.isPointLight)allL.push(o)});allL.forEach(l=>{if(l.userData.base===undefined)l.userData.base=l.intensity;l.userData.fl=1});
@@ -1443,7 +1447,8 @@ window.__demon=DEMON.dbg;
 const TRAP=(function(){const DM=DEMON.dbg,g=DM.g;let S=null;const deadEl=document.getElementById('dead');
  const exits=()=>{const L=doors.filter(d=>d.solid.r).map(d=>({x:(d.solid.r.x0+d.solid.r.x1)/2,z:(d.solid.r.z0+d.solid.r.z1)/2,y:d.solid.y0,d}));L.push({x:6.65,z:-3.5,y:F,bas:1});return L};
  function start(e){if(window.__mp&&__mp.ghost)return false;if(!noteSeen||S||ended||window.__dead||inBase())return false;const P={x:RP.x,z:RP.z};const ex=exits().filter(o=>Math.abs(o.y-fy)<.5).sort((a,b)=>Math.hypot(a.x-P.x,a.z-P.z)-Math.hypot(b.x-P.x,b.z-P.z))[0];if(!ex)return false;
-  if(ex.d)ex.d.open=false;if(ex.bas)basementOpen=false;DM.stop();
+  if(ex.d)ex.d.open=false;if(ex.bas)basementOpen=false;// a locked basement door stays locked; an unlocked one slams shut (setBasement re-opens it below)
+DM.stop();
   // the slam throws you back into the room, away from the door
   {let bx=RP.x-ex.x,bz=RP.z-ex.z;const bl=Math.hypot(bx,bz)||1;bx/=bl;bz/=bl;for(let i=0;i<22;i++){const nx=cam.position.x+bx*.1,nz=cam.position.z+bz*.1;if(blocked(nx,nz))break;cam.position.x=nx;cam.position.z=nz}P.x=iX(cam.position.x);P.z=iZ(cam.position.z);RP.x=P.x;RP.z=P.z}
   const dx=ex.x-P.x,dz=ex.z-P.z,L=Math.hypot(dx,dz)||1;
@@ -1461,7 +1466,7 @@ const TRAP=(function(){const DM=DEMON.dbg,g=DM.g;let S=null;const deadEl=documen
   const u=Math.max(.06,(S.ex.x-RP.x)*S.ux+(S.ex.z-RP.z)*S.uz),legs=S.K*(S.u-u);S.u=u;
   S.D=Math.max(.3,S.D+dt*(8*Math.exp(-S.t/1.2)+2.2*Math.exp(-S.t/12))-legs);S.K=Math.max(1,Math.min(20,S.D/u));
   const D=doorW(),dd=Math.hypot(cam.position.x-D.x,cam.position.z-D.z);
-  if(dd<.9&&S.t>1.2){S.out=1;g.visible=false;if(S.ex.d)S.ex.d.open=true;if(S.ex.bas)basementOpen=true;subtitle('The door gives. You stumble out, gasping.',3500);if(AC)burst(AC.currentTime,200,1,.4,.3,'lowpass');return}
+  if(dd<.9&&S.t>1.2){S.out=1;g.visible=false;if(S.ex.d)S.ex.d.open=true;if(S.ex.bas)setBasement(true);subtitle('The door gives. You stumble out, gasping.',3500);if(AC)burst(AC.currentTime,200,1,.4,.3,'lowpass');return}
   // it walks you down: it keeps G metres behind you, closing at its own pace while your legs open the gap
   S.G+=legs-(.45+.1*S.t)*dt*MPK('trap');const wx=D.x-cam.position.x,wz=D.z-cam.position.z,wl=Math.hypot(wx,wz)||1;
   g.visible=true;g.scale.setScalar(1);g.rotation.set(0,0,0);{let gv=Math.max(.4,S.G);while(gv>.4&&!losClear(cam.position.x,cam.position.z,cam.position.x-wx/wl*gv,cam.position.z-wz/wl*gv,fy))gv-=.2;g.position.set(cam.position.x-wx/wl*gv+wz/wl*.25,fy,cam.position.z-wz/wl*gv-wx/wl*.25)}g.lookAt(cam.position.x,fy,cam.position.z);
@@ -1759,6 +1764,7 @@ RP.x=iX(cam.position.x);RP.z=iZ(cam.position.z);
 cam.rotation.set(pitch,yaw,0);
 mobile.rotation.y+=dt*.15;rocker.rotation.x=Math.sin(t*.8)*.05;
 lamp.intensity=1.2+Math.sin(t*23)*.04+(Math.random()<.01?-.5:0);
+if(!basementOpen&&bAng<.3)bSolids().forEach(q=>{if(!q.off)return;q.off=false;if(!seated&&ov(q,cam.position.x,cam.position.z,R)&&fy<F+1&&fy>F-1)q.off=true});
 if(!basementOpen&&bAng<=0){bDoor.position.x=mX(6.65);if(rattle>0){rattle-=dt;bDoor.position.z=mZ(-3.5)+Math.sin(rattle*120)*.01}else bDoor.position.z=mZ(-3.5)}
 doors.forEach(d=>{const tg=d.open?1.45*d.dir:0;if(d.sp&&(Math.abs(tg-d.pv.rotation.y)<.02||d.open!==d.spO))d.sp=0;d.pv.rotation.y+=(tg-d.pv.rotation.y)*Math.min(1,dt*(d.sp||5));const sw=Math.abs(d.pv.rotation.y)>.3;
  // a door closing on you (E in the doorway, a slam) stays passable until you step clear, so it can never lock you inside its slab
@@ -1929,7 +1935,7 @@ function busyWorld(){return (window.__rlm&&__rlm.on)||(BSM.R&&BSM.R.st>=2)||TRAP
 XT.snap=function(){if(busyWorld()||!entered)return lastSnap||{clockT};
  const C=CARE.dbg,sx=seated?seated.px:cam.position.x,sz=seated?seated.pz:cam.position.z,sy=seated?seated.pfy:fy;
  const s={v:2,clockT,pos:{x:iX(sx),z:iZ(sz),y:sy,yaw,pitch},entered,noteSeen,nineDone,basementEntered,
-  N:Object.assign({},C.N),noise:C.noise,bottle:C.bottle,hasKey,fpOpen,basementOpen,shelf:BSM.slide>0,clue:!!BSM.clue,
+  N:Object.assign({},C.N),noise:C.noise,bottle:C.bottle,hasKey,fpOpen,basementOpen,basementUnlocked,shelf:BSM.slide>0,clue:!!BSM.clue,
   doors:doors.map(d=>!!d.open),sw:switches.map(q=>!!q.get()),light:!!lightOn,ext:{},
   baby:safe(()=>{const m=C.mp;return{c:m.carrying?1:0,seat:m.inSeat?m.seatAt:null,a:C.asleep?1:0,nap:+(m.napT||0).toFixed(1)}},'baby')||null};
  for(const k in XT.parts)safe(()=>{s.ext[k]=XT.parts[k].save()},'save '+k);
@@ -1938,7 +1944,7 @@ XT.restore=function(s){if(!s||!s.pos)return;
  safe(()=>{fy=s.pos.y;vy=0;grounded=true;seated=null;cam.position.x=mX(s.pos.x);cam.position.z=mZ(s.pos.z);cam.position.y=fy+1.6;yaw=s.pos.yaw||0;pitch=s.pos.pitch||0;RP.x=s.pos.x;RP.z=s.pos.z},'pos');
  entered=!!s.entered;noteSeen=!!s.noteSeen;nineDone=!!s.nineDone||(18+clockT/HOUR_SEC>=24);basementEntered=!!s.basementEntered;
  safe(()=>{const C=CARE.dbg;for(const k in s.N)if(k in C.N)C.N[k]=+s.N[k]||0;C.noise=+s.noise||0;if(s.bottle)C.bottle=s.bottle},'care');
- safe(()=>{if(s.hasKey&&!hasKey){hasKey=true;keyG.visible=false;keyHit.visible=false;const i=inter.indexOf(keyHit);if(i>=0)inter.splice(i,1)}fpOpen=!!s.fpOpen;if(s.basementOpen&&hasKey)basementAct()},'key');
+ safe(()=>{if(s.hasKey&&!hasKey){hasKey=true;keyG.visible=false;keyHit.visible=false;const i=inter.indexOf(keyHit);if(i>=0)inter.splice(i,1)}fpOpen=!!s.fpOpen;if((s.basementOpen||s.basementUnlocked)&&hasKey){basementUnlocked=true;setBasement(!!s.basementOpen)}},'key');
  safe(()=>{(s.doors||[]).forEach((o,i)=>{if(doors[i])doors[i].open=o})},'doors');
  safe(()=>{(s.sw||[]).forEach((v,i)=>{const q=switches[i];if(q&&q.get()!==v)q.set(v)});if(typeof s.light==='boolean'&&s.light!==lightOn)setLight(s.light)},'lights');
  safe(()=>{if(s.shelf&&!(BSM.slide>0)){const o=inter.find(m=>{try{return m.userData.i.label==='Push shelf'}catch(e){return false}});if(o)o.userData.i.act()}},'shelf');
@@ -3709,7 +3715,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   fld('lt',()=>lightOn?1:0,v=>{if(lightOn!==!!v)setLight(!!v)});
   fld('fp',()=>fpOpen?1:0,v=>{fpOpen=!!v});
   fld('key',()=>hasKey?1:0,v=>{if(v&&!hasKey){hasKey=true;keyG.visible=false;keyHit.visible=false;const i=inter.indexOf(keyHit);if(i>=0)inter.splice(i,1)}});
-  fld('bo',()=>basementOpen?1:0,v=>{if(v&&!basementOpen){basementOpen=true;solids.forEach(q=>{if((q.r||q).x0===6.2&&(q.r||q).z0===-3.56)q.off=true})}else if(!v&&basementOpen)basementOpen=false});
+  fld('bo',()=>basementOpen?1:basementUnlocked?2:0,v=>{v=+v;if(v===1)setBasement(true);else if(v===2){basementUnlocked=true;setBasement(false)}});// 0 locked, 1 open, 2 unlocked but shut (never re-locks)
   fld('sh',()=>BSM.slide>0?1:0,v=>{if(v&&!(BSM.slide>0))BSM.mpSlide()});
   fld('rs',()=>BSM.R.st>=2?BSM.R.st:0,v=>{const R=BSM.R;if(v<2||v===R.st)return;if(R.st<2)BSM.ritual();if(v===5&&R.st!==5)BSM.close();else R.st=v});
   BSM.bulbs.forEach((b,i)=>fld('b'+i,()=>b.on?1:0,v=>{if(!!b.on!==!!v)b.set(v?1:0)}));
@@ -3734,7 +3740,8 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   // polish (Petra): shared object states. The nightstand gun drawer (open/closed), the sugar jar (key taken out), the garage freezer (unlocked, lid up).
   fld('gd',()=>XT.gun&&XT.gun.S.drawer?1:0,v=>{if(XT.gun)XT.gun.S.drawer=!!v});
   fld('fj',()=>XT.flash&&XT.flash.S.key?1:0,v=>{if(XT.flash&&v)XT.flash.S.key=true});
-  fld('fo',()=>XT.flash&&XT.flash.S.open?1:0,v=>{if(XT.flash&&v)XT.flash.S.open=true})}
+  fld('fo',()=>XT.flash&&XT.flash.S.open?1:0,v=>{if(XT.flash&&v)XT.flash.S.open=true});
+  fld('hz',()=>MP.hzGet?MP.hzGet():'',v=>{if(MP.hzSet)MP.hzSet(v)},{ro:1})}// Hide & Seek round state (host only)
  // who holds the baby: a player id, 'seat:b' / 'seat:h', or '' for the crib
  function holderGet(){const m=CD.mp;return m.carrying?MP.id:(MP.remoteHolder||(m.inSeat?'seat:'+m.seatAt:''))}
  function holderSet(v){const m=CD.mp;v=v||'';
@@ -3939,7 +3946,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function runPending(){if(!MP.pendingEnd||MP.ended)return true;if(window.__cut&&window.__cut.noSkip)return true;
   if(window.__cut&&!window.__cut.noSkip){/* replace any other cut scene */}return XT.ending(MP.pendingEnd.id,MP.pendingEnd.extra)}
  MP.decideEnd=decideEnd;
- function checkAllDead(){if(!MP.host||MP.decided||!MP.started)return;let any=!gone()&&!MP.demon;for(const k in AWAY)if(!AWAY[k].gh&&!AWAY[k].dm)any=true;P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))any=true});
+ function checkAllDead(){if(MP.hz)return;if(!MP.host||MP.decided||!MP.started)return;let any=!gone()&&!MP.demon;for(const k in AWAY)if(!AWAY[k].gh&&!AWAY[k].dm)any=true;P.forEach((p,id)=>{if(p.rep&&!p.rep.gh&&!isDm(id))any=true});
   if(!any){const B=XT.bladeFight&&XT.bladeFight.S;decideEnd('death',B?{h:'Taken.',p:'The swords were not enough. She was faster than all of you.'}:{h:'Taken.',p:'One by one, it found all of you.'});runPending()}}
 
  // ---------- skip hour: a vote ----------
@@ -4086,6 +4093,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
     // gentle falloff: full within 6 m, never under 40%, a little quieter through floors
     g=d<=6?1:Math.max(.4,1-(d-6)*.075);if(floorOf(c.cy-1.6,c.ar)!==myF)g=Math.max(.4,g*.75)}
    if(MP.hm)g=1;// Hunt: everyone at full volume, no position clue
+   if(MP.hz&&!MP.ghost&&(c?c.gh:(a&&a.last&&a.last.gh)))g=0;// Hide & Seek: the living cannot hear ghosts
    if(!isFinite(g))g=1;const v=g*(window.__voiceVol!=null?__voiceVol:1)*(muted?0:Math.min(1.25,VOL/.8));r.el.volume=Math.max(0,Math.min(1,v));r.el.muted=v<=0})}
  addEventListener('keydown',e=>{if(e.code!=='KeyM'||e.repeat||!MP.active)return;if(V.denied){retryMic();subtitle(MERR[V.err]||'No microphone: you are muted.',2500);return}setMute(!V.muted);subtitle(V.muted?'Microphone muted':'Microphone on',1200)});
  // HUD: mic + players, each with a voice status
@@ -4145,10 +4153,10 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   case 'jump':CD.noise=Math.min(1,CD.noise+.015);break;
   case 'broke':{const E=CD.EV;if(E.cur&&E.cur.e.id===m.ev)safe(()=>endEventMP(pid),'broke');break}
   case 'nottrap':safe(()=>CD.mp.scream(),'scream');break;
-  case 'dead':if(p){p.rep=Object.assign({},p.rep||{},{gh:1});pushRep(pid,p.rep)}if(MP.remoteHolder===pid)holderSet('');bcast({t:'note',txt:'('+MP.nameOf(pid)+' is gone.)',ms:3000},pid);if(pid!==MP.id)subtitle('('+MP.nameOf(pid)+' is gone.)',3000);checkAllDead();break;
+  case 'dead':if(p){p.rep=Object.assign({},p.rep||{},{gh:1});pushRep(pid,p.rep)}if(MP.remoteHolder===pid)holderSet('');if(!MP.hz){bcast({t:'note',txt:'('+MP.nameOf(pid)+' is gone.)',ms:3000},pid);if(pid!==MP.id)subtitle('('+MP.nameOf(pid)+' is gone.)',3000)}checkAllDead();break;
   case 'chat':safe(()=>hostChat(pid,m),'chat');break;
   case 'vote':hostVote(pid);break;
-  case 'endreq':if(m.id!=='death'&&XT.endInfo&&XT.endInfo().order.includes(m.id)&&!(MP.hm&&!['dawn','secret','parents'].includes(m.id))){decideEnd(m.id,m.extra);runPending()}break;
+  case 'endreq':if(!MP.hz&&m.id!=='death'&&XT.endInfo&&XT.endInfo().order.includes(m.id)&&!(MP.hm&&!['dawn','secret','parents'].includes(m.id))){decideEnd(m.id,m.extra);runPending()}break;
   case 'solve':hostSolve();break;
   case 'ghit':safe(()=>hostGunHit(m.h),'ghit');break;
   case 'gs':safe(()=>hostScare(pid,m),'gs');break;
@@ -4238,7 +4246,7 @@ const p=roster.find(q=>q.id===id);
   if(p&&MP.started&&!MP.decided&&p.tok){const r=P.get(id)&&P.get(id).rep;AWAY[p.tok]={id,name:p.name,slot:p.slot,join:p.join,gh:r&&r.gh?1:p.gh?1:0,dm:isDm(id)?1:0,t:performance.now(),pos:r&&r.ar!=='r'?{x:r.x,z:r.z,y:r.y,yaw:r.yaw}:null}}conns.delete(id);P.delete(id);roster=roster.filter(q=>q.id!==id);cleanCall(id);
   if(MP.remoteHolder===id)holderSet('');Object.keys(held).forEach(k=>{if(held[k]===id)delete held[k]});
   syncAvatars();lobbyDraw();bcastRoster(true);micHud();if(p&&MP.started){const t=AWAY[p.tok]?'('+p.name+' lost the connection. Their place is kept for 2 minutes.)':'('+p.name+' left.)';subtitle(t,3000);bcast({t:'note',txt:t,ms:3000})}if(vote)checkVote();checkAllDead()}
- const cfg=()=>({diff:XT.diffKey?XT.diffKey():'normal',night:XT.night||1,mode:MP.hm?'hunt':'coop',demon:MP.hm?MP.hm.demon:null});
+ const cfg=()=>({diff:XT.diffKey?XT.diffKey():'normal',night:XT.night||1,mode:MP.hm?'hunt':MP.hz?'hide':'coop',demon:MP.hm?MP.hm.demon:null,seeker:MP.hz?MP.hz.seeker:null});
  function netErr(t){return t==='peer-unavailable'?'No game with that code. Check it and try again.':t==='network'||t==='server-error'||t==='socket-error'||t==='socket-closed'?'Could not reach the matchmaking server. Multiplayer works on petradavis.github.io/hush':t==='browser-incompatible'?'This browser cannot do peer-to-peer connections.':'Connection failed ('+(t||'unknown')+').'}
  function joinGame(code){if(!peerOK()){loadPeer();lobbyStatus('Loading multiplayer, try again in a moment...');return}code=(code||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');if(!code||MP.active||peer){if(!code)lobbyStatus('Type the code first.',true);return}
   myName=nameIn.value.trim().slice(0,16);const tok=++cTok;busy('Connecting to '+code+'...');initMic();peer=mkPeer();const my=peer;let to=null;armTimeout(tok,my,'join');
@@ -4279,6 +4287,7 @@ const p=roster.find(q=>q.id===id);
  // ---------- starting the night together ----------
  function startGame(c,late){if(MP.started)return;MP.started=true;buildFieldsOnce();lobbyEl.hidden=true;invEl.hidden=true;
   if(c&&c.mode==='hunt'&&c.demon){MP.hm={demon:c.demon};MP.demon=c.demon===MP.id;safe(()=>MP.onHunt&&MP.onHunt(late),'hunt start')}
+  if(c&&c.mode==='hide'&&c.seeker){MP.hz={seeker:c.seeker};MP.seeker=c.seeker===MP.id;safe(()=>MP.onHide&&MP.onHide(late),'hide start')}
   safe(()=>{if(c&&XT.parts.diff)XT.parts.diff.load(c.diff);if(c&&XT.parts.night)XT.parts.night.load(c.night)},'cfg');
   // fewer spare batteries for a bigger group
   safe(()=>{const ids=Object.keys(XT.torch.items),keep=Math.max(2,Math.round(ids.length*MP.k('spare')));ids.slice(keep).forEach(id=>XT.torch.mpTake(id))},'spares');
@@ -4291,6 +4300,7 @@ const p=roster.find(q=>q.id===id);
  // host start
  let starting=false;function hostStart(){if(!MP.host||MP.started||starting)return;
   if(MP.mode==='hunt'){if(roster.length<2){lobbyStatus('Hunt needs at least 2 players.',true);return}MP.hm={demon:roster[Math.floor(Math.random()*roster.length)].id}}
+  if(MP.mode==='hide'){if(roster.length<2){lobbyStatus('Hide & Seek needs at least 2 players.',true);return}MP.hz={seeker:roster[Math.floor(Math.random()*roster.length)].id}}
   starting=true;graceT=performance.now()+45000;const c=cfg();bcast({t:'start',cfg:c});
   // let the start message leave before this page freezes building the night
   setTimeout(()=>{starting=false;safe(()=>startGame(c,false),'start')},600)}
@@ -4331,7 +4341,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  lobbyEl.innerHTML='<div class="pp" role="dialog" aria-label="Play together"><h2>Play together</h2>'+
   '<label>Your name<input id="mpName" maxlength="16" autocomplete="nickname" placeholder="Player 1"></label>'+
   '<div id="mpPre"><div class="row"><button type="button" id="mpHost">Host a game</button></div><div class="or">or join with a code</div><div class="row"><input id="mpCode" maxlength="8" placeholder="CODE" aria-label="Game code" autocapitalize="characters"><button type="button" id="mpJoin">Join</button></div></div>'+
-  '<div id="mpIn" hidden><div class="code" id="mpCodeShow"></div><div class="mode" id="mpMode" role="radiogroup" aria-label="Mode"><button type="button" data-m="coop" role="radio">Co-op</button><button type="button" data-m="hunt" role="radio">Hunt</button></div><div class="sm" id="mpModeD"></div><div class="mode" id="mpNight" role="radiogroup" aria-label="Night"><button type="button" data-n="1" role="radio">Night 1</button><button type="button" data-n="2" role="radio">Night 2</button><button type="button" data-n="3" role="radio">Night 3</button></div><div class="mode" id="mpDiff" role="radiogroup" aria-label="Difficulty"><button type="button" data-d="easy" role="radio">Easy</button><button type="button" data-d="normal" role="radio">Normal</button><button type="button" data-d="nightmare" role="radio">Nightmare</button></div><div class="row"><button type="button" id="mpCopy">Copy invite link</button></div><ul id="mpRoster"></ul><details id="mpVd"><summary>Voice check</summary><pre id="mpVdT"></pre></details></div>'+
+  '<div id="mpIn" hidden><div class="code" id="mpCodeShow"></div><div class="mode" id="mpMode" role="radiogroup" aria-label="Mode"><button type="button" data-m="coop" role="radio">Co-op</button><button type="button" data-m="hunt" role="radio">Hunt</button><button type="button" data-m="hide" role="radio">Hide &amp; Seek</button></div><div class="sm" id="mpModeD"></div><div class="mode" id="mpNight" role="radiogroup" aria-label="Night"><button type="button" data-n="1" role="radio">Night 1</button><button type="button" data-n="2" role="radio">Night 2</button><button type="button" data-n="3" role="radio">Night 3</button></div><div class="mode" id="mpDiff" role="radiogroup" aria-label="Difficulty"><button type="button" data-d="easy" role="radio">Easy</button><button type="button" data-d="normal" role="radio">Normal</button><button type="button" data-d="nightmare" role="radio">Nightmare</button></div><div class="row"><button type="button" id="mpCopy">Copy invite link</button></div><ul id="mpRoster"></ul><details id="mpVd"><summary>Voice check</summary><pre id="mpVdT"></pre></details></div>'+
   '<div class="st" id="mpSt" role="status" aria-live="polite"></div><div class="row"><button type="button" class="ghost" id="mpBack" hidden>Back</button></div><p class="sm">Up to 4 players. One baby, one house. The host\'s difficulty and night are used. Voice chat is on: press M to mute.</p>'+
   '<div class="row"><button type="button" id="mpStart" hidden>Start the night</button><button type="button" class="ghost" id="mpClose">Close</button></div></div>';
  document.body.appendChild(lobbyEl);
@@ -4355,6 +4365,8 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
   const o=btn.textContent;btn.textContent=ok?'Link copied':u;setTimeout(()=>{btn.textContent=o},ok?1600:6000)}
  L$('mpCopy').onclick=()=>copyLink(L$('mpCopy'));invEl.onclick=e=>{e.stopPropagation();copyLink(invEl)};
  function lobbyStatus(t,err){const s=L$('mpSt');s.textContent=t||'';s.className='st'+(err?' err':'')}
+ // Hide & Seek (Petra 2026-10-12): the seeker is random each round; the night and difficulty rows do not apply, so they are hidden
+ function seekDraw(){const hz=MP.mode==='hide';L$('mpNight').style.display=hz?'none':'';L$('mpDiff').style.display=hz?'none':''}
  function lobbyDraw(){const inS=MP.active;L$('mpPre').hidden=inS;L$('mpIn').hidden=!inS;nameIn.disabled=inS;L$('mpStart').hidden=!(MP.host&&!MP.started);
   L$('mpCodeShow').textContent=MP.code||'';invEl.hidden=!(inS&&!MP.started&&TITLE.on);
   L$('mpRoster').innerHTML=roster.slice().sort((a,b)=>a.slot-b.slot).map(p=>'<li><i style="background:'+COL[p.slot%4]+'"></i>'+esc(p.name)+(p.id===MP.id?' (you)':'')+(p.join===0||p.id===MP.hostId?' &middot; host':'')+'</li>').join('');
@@ -4364,7 +4376,8 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
   {const hu=true;// Hunt is always available in multiplayer (v65)
    L$('mpMode').querySelectorAll('button').forEach(b=>{const m=b.dataset.m,on=MP.mode===m;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');
     b.disabled=!MP.host||MP.started||(m==='hunt'&&!hu);if(m==='hunt')b.textContent=hu?'Hunt':'???'});
-   L$('mpModeD').textContent=MP.mode==='hunt'?'Hunt: one of you, picked at random, is the snake demon. The rest must survive until 6 AM, or find the katana and cut her down. Needs 2 or more players.':hu?'Co-op: everyone looks after her together.':'Co-op: everyone looks after her together. Another mode is hidden somewhere in the house.'}
+   L$('mpModeD').textContent=MP.mode==='hide'?'Hide & Seek: one random seeker, everyone else hides. 30 seconds to hide, 5 minutes to find them all. Found hiders become ghosts. Rounds repeat with a new seeker. No demon tonight. Needs 2 or more players.':MP.mode==='hunt'?'Hunt: one of you, picked at random, is the snake demon. The rest must survive until 6 AM, or find the katana and cut her down. Needs 2 or more players.':hu?'Co-op: everyone looks after her together.':'Co-op: everyone looks after her together. Another mode is hidden somewhere in the house.'}
+  safe(seekDraw,'seek');if(inS&&MP.host&&!MP.started&&MP.mode==='hide'&&roster.length<2){lobbyStatus('Hide & Seek needs at least 2 players. Share the code.');return}
   if(inS&&MP.host&&!MP.started&&MP.mode==='hunt'&&roster.length<2){lobbyStatus('Hunt needs at least 2 players. Share the code.');return}
   if(inS&&!MP.host&&!MP.started)lobbyStatus('Waiting for the host to start the night. ('+roster.length+'/'+MAXP+')');else if(inS&&MP.host&&!MP.started)lobbyStatus(roster.length+'/'+MAXP+' players. Start when everyone is here.')}
  setInterval(()=>safe(()=>{if(lobbyEl.hidden||!MP.active)return;relayTest();const el=L$('mpVdT');if(el)el.textContent=voiceDiag()},'vd'),2000);
@@ -4395,7 +4408,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  function lobbyReturn(){let r=null;try{r=JSON.parse(localStorage.getItem('hushLobby')||'null')}catch(e){}try{localStorage.removeItem('hushLobby')}catch(e){}
   if(!r||!r.code||Date.now()-r.t>300000||/[#&]join=/.test(location.hash))return false;
   loadPeer();let n=0;const iv=setInterval(()=>{if(MP.active){clearInterval(iv);return}if(!MP.available||!peerOK()){if(++n>40)clearInterval(iv);return}clearInterval(iv);MP.openLobby();
-   if(r.host){Object.assign(PREF,r.slots||{});if(r.mode==='hunt')MP.mode='hunt';hostGame(r.code,0)}else{LR.n=30;LR.code=r.code;codeIn.value=r.code;setTimeout(()=>joinGame(r.code),1500)}},250);return true}
+   if(r.host){Object.assign(PREF,r.slots||{});if(r.mode==='hunt'||r.mode==='hide')MP.mode=r.mode;hostGame(r.code,0)}else{LR.n=30;LR.code=r.code;codeIn.value=r.code;setTimeout(()=>joinGame(r.code),1500)}},250);return true}
  // in a multiplayer game the end screens lead back to the lobby
  {const lb=b=>{if(!b||!MP.active||b.dataset.lb)return;b.dataset.lb=1;b.textContent='Back to the lobby';b.onclick=e=>{e&&e.stopPropagation&&e.stopPropagation();MP.backToLobby()}};
   setInterval(()=>{if(!MP.active||!MP.started)return;lb(document.querySelector('#xend:not([hidden]) #xBack'));lb(document.querySelector('#hEnd:not([hidden]) button'));const nx=document.querySelector('#xend #xNext');if(nx)nx.remove()},300)}
@@ -4744,7 +4757,8 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
  const can=()=>S.has&&!S.used&&XT.live()&&!(window.__mp&&(__mp.ghost||__mp.demon||(__mp.active&&__mp.heldByOther()))) &&!(window.__rlm&&__rlm.on)&&inCribNow();
  // hook the crib: while you carry the pacifier and she is lying in the crib, E gives it to her
  const cm=inter.find(m=>m.position&&m.position.x===crib.x&&m.position.y===.85&&m.position.z===crib.z&&m.userData.i);
- if(cm){const o=cm.userData.i;cm.userData.i={get label(){return can()?'Give her the pacifier':o.label},act(){if(can()){give();return}o.act()}}}
+ /*pacifier fix 2026-10-12: E on the crib used to give it at once, so a player who had picked up the box without noticing (no HUD item) ended the night for everyone when they went to pick her up. Now the first press only asks; a second press within 4 s gives it.*/let askT=-1e9;
+ if(cm){const o=cm.userData.i;cm.userData.i={get label(){return can()?'Give her the pacifier':o.label},act(){if(can()){const n=performance.now();if(n-askT<4000){askT=-1e9;give();return}askT=n;subtitle('The bone pacifier from the black box is in your pocket. Use the crib again to give it to her.',4000);return}o.act()}}}
  let hum=null,stare=0,duck=null;
  function give(){S.used=true;S.has=false;build();window.__pacStare=1;stare=.001;
   for(const k in N)N[k]=0;C.noise=0;C.asleep=false;C.eyeO=1;
@@ -5281,7 +5295,8 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
   MP.dbg.P.forEach((p,id)=>{const r=p.rep;if(!r||r.gh||r.dm||r.ar==='r'||!r.ent)return;L.push({id,x:mX(r.x),z:mZ(r.z),h:r.y,hid:!!r.hid,sr:!!r.sr})});return L}
  const say=(t,ms)=>{subtitle(t,ms);MP.subAll(t,ms)};
  function goTo(x,z,h){const N=nav();H.path=N?N.path(H.x,H.z,H.h,x,z,h,.8,9000):null;H.pi=0;if(!H.path)H.path=[{x,z,h}];H.arrive=0}
- function start(){if(!MP.active||!MP.host||MP.hm||MP.ended||ended)return false;if(H.on)return true;const L=living();if(!L.length)return false;
+ function start(){if(!MP.active||!MP.host||MP.hm||MP.hz||MP.ended||ended)return false;if(H.on)return true;const L=living();if(!L.length)return false;
+  safe(()=>{if(basementUnlocked&&!basementOpen)setBasement(true)},'bdoor');// she bangs the basement door open on her way up
   Object.assign(H,{on:true,vis:true,x:mX(DOOR.x),z:mZ(DOOR.z),h:F,yaw:0,t:0,dur:70+Math.random()*12,path:null,pi:0,tgt:null,chase:null,hold:1.2,stag:0,back:false,roamT:0});H.checked.clear();
   say('(The basement door bangs open downstairs. It is out, and it is looking for all of you. Hide.)',5000);
   safe(()=>XT.demonSfx&&XT.demonSfx.hiss(H.x,H.z,1.2),'hiss');return true}
@@ -5298,7 +5313,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
   if(L.some(p=>p.sr)){H.vis=false;H.hold=Math.max(H.hold,1.5);return}
   if(H.hold>0){H.hold-=dt;if(H.hold>0){H.vis=H.vis&&!H.handoff;return}H.handoff=false;H.vis=true}
   H.vis=true;if(H.stag>0){H.stag-=dt;H.mv=0;return}
-  if(H.back){H.mv=walk(dt,1.6);if(H.arrive){stop('(The footsteps go back down the basement stairs. The door shuts.)')}return}
+  if(H.back){H.mv=walk(dt,1.6);if(H.arrive){safe(()=>setBasement(false),'bdoor');stop('(The footsteps go back down the basement stairs. The door shuts.)')}return}
   if(H.t>H.dur){H.back=true;H.chase=null;goTo(mX(DOOR.x),mZ(DOOR.z),F);return}
   // who can it see from here
   let see=null,sd=7.5;L.forEach(p=>{if(p.hid||!sameFloor(p))return;const d=Math.hypot(p.x-H.x,p.z-H.z);if(d<sd&&losClear(H.x,H.z,p.x,p.z,H.h)){sd=d;see=p}});
@@ -5422,7 +5437,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
     if(t<4){g.rotateY(Math.sin(t*9)*.35);g.rotateX(-.15*Math.sin(t*5));g.position.set(gx+Math.sin(t*13)*.05,P.fy,gz+Math.cos(t*11)*.05)}
     else{const k=sm((t-4)/2.4);g.rotateY(Math.PI);g.position.set(gx+dx*k*7,P.fy,gz+dz*k*7)}
     let ok=true;if(t>4&&typeof losClear==='function')ok=losClear(P.x,P.z,g.position.x,g.position.z,P.fy);g.visible=t<6.6&&ok;
-    if(t>7.6&&!slam){slam=true;nz(.4,.5,300,'lowpass');nz(.08,.25,1200,'bandpass',.5)}
+    if(t>7.6&&!slam){slam=true;safe(()=>setBasement(false),'bdoor');nz(.4,.5,300,'lowpass');nz(.08,.25,1200,'bandpass',.5)}
     look(gx,P.fy+1.3,gz);while(st.i<L2.length&&t>=L2[st.i][0]){subtitle(L2[st.i][1],L2[st.i][2]*1000);st.i++}if(t>16.4)fadeOut();return t>17.6},
    end(){g.rotation.set(0,0,0);XT.demon.force=null;g.visible=false}}};
  XT.flash={get S(){return S},seen,nearBaby,throwIt,jHit,hit,fz,get over(){return over},lid0};
@@ -5459,7 +5474,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
  const CRIB={x:0,z:-1.85},NEED=2,HOLD=3;let key=false,btn=false,tog=0,hum=null,humT=0;
  const cribW=()=>({x:mX(CRIB.x),z:mZ(CRIB.z)});
  const atCrib=(x,z,y)=>{const c=cribW();return Math.abs(y)<.6&&Math.hypot(x-c.x,z-c.z)<2.4};
- const ok=()=>!!(MP.active&&MP.started&&!MP.hm&&!MP.ghost&&!MP.demon&&!MP.ended&&!ended&&!window.__dead&&!window.__cut&&!(XT.hide&&XT.hide.hid)&&!(window.__rlm&&__rlm.on));
+ const ok=()=>!!(MP.active&&MP.started&&!MP.hm&&!MP.hz&&!MP.ghost&&!MP.demon&&!MP.ended&&!ended&&!window.__dead&&!window.__cut&&!(XT.hide&&XT.hide.hid)&&!(window.__rlm&&__rlm.on));
  const singing=()=>ok()&&(key||btn)&&atCrib(cam.position.x,cam.position.z,fy);
  MP.singing=singing;
  addEventListener('keydown',e=>{if(e.code==='KeyH'&&!window.__typing)key=true},true);
@@ -5480,7 +5495,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
  XT.onUpdate(dt0=>safe(()=>{const dt=Math.min(.25,+dt0||.016);mkB();
   if(tb)tb.hidden=!(window.__touchMode&&ok()&&atCrib(cam.position.x,cam.position.z,fy));if(!ok())btn=false;
   const me=singing();if(me){humT-=dt;if(humT<=0){humT=.5;note()}}else humT=0;
-  if(!MP.active||!MP.host||!MP.started||MP.hm||MP.decided||MP.ended)return;
+  if(!MP.active||!MP.host||!MP.started||MP.hm||MP.hz||MP.decided||MP.ended)return;
   const S=singers();if(S.length>=NEED){tog+=dt;if(tog>=HOLD){tog=-1e9;safe(()=>{if(typeof CARE!=='undefined')CARE.dbg.noise=0},'calm');XT.ending('choir')}}else tog=Math.max(0,tog-dt*2)},'upd'));
  MP.choir={singers,get t(){return tog},atCrib,cribW};
  // the cut scene: the nursery, everyone's voices, Lilith asleep, the basement door shutting far below
@@ -5909,7 +5924,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // ---------- single-player Hunt: grid A* through the house (all three floors and both stairs; doors count as open) ----------
   const NAV=(function(){const G=.3,cache=new Map();let cK=-1,cT=0;
   const withFy=(h,f)=>{const s=fy;fy=h;try{return f()}finally{fy=s}};
-  let dS=null;const isDoor=s=>{if(!dS)dS=new Set(doors.map(d=>d.solid));return dS.has(s)};
+  let dS=null;const isDoor=s=>{if(!dS)dS=new Set(doors.map(d=>d.solid));return dS.has(s)||(basementUnlocked&&bSolids().includes(s))};// the basement door counts as a door: walkers open it (walk below)
   const blk=(x,z,h)=>withFy(h,()=>groundAt(x,z)>h+.45||solids.some(s=>!isDoor(s)&&ov(s,x,z,.24)&&s.y1>h+.36&&s.y0<h+1.7));
   const sup=(x,z,h)=>withFy(h,()=>{let g=groundAt(x,z);for(const s of solids)if(!isDoor(s)&&ov(s,x,z,.12)&&s.y1<=h+.37&&s.y1>g)g=s.y1;return g});
   // one cell: can you stand at (ix,iz) arriving at height h, and how high is the floor there
@@ -5956,6 +5971,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   function stop(){N.path=null;N.goal=null;N.arrive=null}
   function walk(dt,spd){if(!N.path)return 0;if(N.pi>=N.path.length){const cb=N.arrive;stop();if(cb)safe(cb,'arrive');return 0}
    const w=N.path[N.pi],dx=w.x-N.x,dz=w.z-N.z,d=Math.hypot(dx,dz);if(d<.04){N.pi++;if(Math.abs(w.h-N.h)<.5)N.h=w.h;return 0}
+   if(!basementOpen&&basementUnlocked&&Math.hypot(N.x-mX(6.65),N.z-mZ(-3.5))<1.25)setBasement(true);// she opens a shut basement door in her way
    const s=Math.min(d,spd*dt),ux=dx/d,uz=dz/d;let mv=0;const nx=N.x+ux*s,nz=N.z+uz*s;
    if(!NAV.blk(nx,nz,N.h)){N.x=nx;N.z=nz;mv=s}else{if(!NAV.blk(nx,N.z,N.h)){N.x=nx;mv=s*.7}else if(!NAV.blk(N.x,nz,N.h)){N.z=nz;mv=s*.7}}
    const sh=NAV.sup(N.x,N.z,N.h);if(sh-N.h<=.46)N.h=sh;
@@ -6076,7 +6092,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
      if(XT.hour()>=24)setTimeout(()=>{if(!clawHit())flee(dm())},250);else flee(dm())}else MP.onC({t:'hspot',r:'empty'})}}
   // ---------- start and end ----------
   function start(){MP.sp=true;MP.hm={demon:'me'};MP.demon=true;MP.ended=false;TITLE.begin(false)}
-  function begin(){entered=true;safe(()=>{if(!basementOpen){basementOpen=true;solids.forEach(q=>{if((q.r||q).x0===6.2&&(q.r||q).z0===-3.56)q.off=true})}},'bsm');
+  function begin(){entered=true;safe(()=>setBasement(true),'bsm');
    body();const p=at('door');N.x=p.x;N.z=p.z;N.h=p.h;N.yaw=Math.PI;N.on=true;N.idleT=0;safe(()=>MP.onHunt(),'onHunt');
    setTimeout(()=>subtitle('The sitter has let herself in. Stalk her, scare her away from the baby. After midnight, hunt her. (No other babysitter is coming.)',6000),3000)}
   function end(id){if(N.ended)return;N.ended=true;MP.ended=true;safe(()=>MP.huntEnd(id==='death'?'death':id==='secret'?'secret':'dawn'),'end')}
@@ -6093,6 +6109,182 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  {const sg=saveGame;saveGame=function(){if(MP.sp)return;return sg.apply(this,arguments)}}
  {const sk=skipHour;skipHour=function(){if(MP.sp&&XT.hour()>=24){subtitle('No skipping after midnight in Hunt.',1800);return}return sk.apply(this,arguments)}}
  XT.hunt={ST,get av(){return av},get skill(){return skI},pickSkill,act,claw,useE,hits,setHiss,huntUnlocked:()=>huntUnlocked()};
+})();
+</script>
+<script type="text/x-hush">
+// ===== Hide & Seek (Petra 2026-10-12): a multiplayer-only mode. One player is the seeker (random, or picked by the host in the lobby); the rest hide.
+// 30 s to hide (the seeker is frozen and blind), then 5 minutes to find everyone. A found hider is out and becomes a ghost (living players cannot see ghosts).
+// Found: the seeker presses E (touch: Use) facing a hider within 1.5 m, or opens the hiding spot a hider is in (E on the closet / bed / tub: "Search ...").
+// Hints: at Lilith's crib the seeker presses H (touch: Ask Lilith), picks one of the remaining hiders, and Lilith tells which floor they are on. One hint per hider per round.
+// Hiders win if anyone is still hidden when time runs out; the seeker wins by finding everyone. Name tags are hidden. Voice and text chat work as usual.
+// The demon, night events, phone calls, endings, achievements and the endings gallery counter are all off. Host authoritative: the round state is one field ('hz', in buildFields).
+(function(){'use strict';const XT=window.__xt,MP=window.__mp;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush hz] '+(t||''),e)}};
+ if(!XT||!MP)return;
+ const HIDE_S=30,SEEK_S=300,WAIT_S=25,BREAK_S=12,SESSION=5,TAG_R=1.5,TAG_R_HOST=2.3,SEARCH_R=2.6,HINT_R=2.4;
+ const on=()=>!!(MP.hz&&MP.active&&MP.started);
+ const C=()=>CARE.dbg;
+ // round state (the host's is the truth; clients copy it from the field)
+ let Z={ph:'wait',t:WAIT_S,seeker:null,ids:[],out:[],asked:[],win:'',why:'',rn:1,sc:{},surv:[]},rnSeen=1,dl=0,t0=0,endShown=false;
+ const now=()=>performance.now();
+ MP.hzState=()=>Z;
+ MP.hzGet=()=>on()?JSON.stringify(Z):'';
+ MP.hzSet=v=>{if(!v||MP.host)return;try{Z=JSON.parse(v)}catch(e){}if(Z.rn!==rnSeen)newRoundLocal()};
+ const isSeeker=id=>Z.seeker===(id==null?MP.id:id);
+ const name=id=>MP.nameOf(id);
+ const away=id=>{const A=MP.away||{};for(const k in A)if(A[k].id===id)return true;return false};
+ const present=id=>MP.roster().some(p=>p.id===id)||away(id);
+ const left=()=>Z.ids.filter(id=>!Z.out.includes(id)&&present(id));
+
+ // ---------- the normal night is off ----------
+ const du=DEMON.update;DEMON.update=function(){if(MP.hz)return;return du.apply(this,arguments)};
+ const hu=HUNT.update;HUNT.update=function(){if(MP.hz)return;return hu.apply(this,arguments)};
+ const ts=TRAP.start;TRAP.start=function(){if(MP.hz)return false;return ts.apply(this,arguments)};
+ safe(()=>{const H=XT.hide,ps=H.prowlStart;H.prowlStart=function(){if(MP.hz)return;return ps.apply(this,arguments)};const hh=XT.hideHunt;XT.hideHunt=function(){if(MP.hz)return true;return hh.apply(this,arguments)}},'hide');
+ {const oe=XT.ending;XT.ending=function(){if(MP.hz)return true;return oe.apply(this,arguments)}}
+ {const om=XT.markEnding;XT.markEnding=function(){if(MP.hz)return;return om.apply(this,arguments)}}
+ if(XT.achUnlock){const oa=XT.achUnlock;XT.achUnlock=function(){if(MP.hz)return;return oa.apply(this,arguments)}}
+
+ // ---------- start ----------
+ MP.onHide=()=>{document.body.classList.add('hz');Z={ph:'wait',t:WAIT_S,seeker:MP.hz.seeker,ids:MP.roster().map(p=>p.id).filter(id=>id!==MP.hz.seeker),out:[],asked:[],win:'',why:'',rn:1,sc:{},surv:[]};rnSeen=1;t0=now();dl=t0+WAIT_S*1000;
+  // no intro: skip the cut scene and start inside the house
+  let n=0;const iv=setInterval(()=>{if(++n>80){clearInterval(iv);return}safe(()=>{if(window.__cut)XT.skipCut();else{entered=true;clearInterval(iv)}},'skip')},500);
+  setTimeout(()=>subtitle(isSeeker()?'Hide & Seek: you are the seeker. Count to thirty...':'Hide & Seek: '+name(Z.seeker)+' is the seeker. Hide! You have 30 seconds.',6000),1200)};
+
+ // ---------- host: the round ----------
+ function hostUpdate(){if(!MP.host)return;const T=now();
+  if(!dl)dl=T+Math.max(0,Z.t)*1000;// a new host after a hand-off
+  // new players mid-round sit it out as ghosts
+  MP.roster().forEach(p=>{if(p.id!==Z.seeker&&!Z.ids.includes(p.id)){Z.ids.push(p.id);if(Z.ph!=='wait')Z.out.push(p.id)}});
+  if(Z.ph==='end'){if(T>=dl){newRound();return}Z.t=Math.max(0,Math.ceil((dl-T)/1000));return}
+  if(!present(Z.seeker)){finish('hide','The seeker left.');return}
+  if(Z.ph==='wait'){const P=MP.dbg.P;let ready=!window.__cut;MP.roster().forEach(p=>{if(p.id===MP.id)return;const q=P.get(p.id);if(!q||!q.rep||q.rep.ct)ready=false});
+   if(ready||T>=dl){Z.ph='hide';dl=T+HIDE_S*1000;MP.subAll('(Hide! '+name(Z.seeker)+' is counting to thirty.)',3500)}}
+  else if(Z.ph==='hide'){if(T>=dl){Z.ph='seek';dl=T+SEEK_S*1000;MP.toAll({t:'zgo'})}}
+  else if(Z.ph==='seek'){if(!left().length){finish('seek','Everyone was found.');return}if(T>=dl){finish('hide',left().length===1?name(left()[0])+' was never found.':left().length+' hiders were never found.');return}}
+  Z.t=Math.max(0,Math.ceil((dl-T)/1000))}
+ function finish(w,why){Z.ph='end';Z.win=w;Z.why=why;Z.surv=left();Z.surv.forEach(id=>{const q=Z.sc[id]||(Z.sc[id]=[0,0]);q[1]++});Z.champ=[];if(Z.rn%SESSION===0){const pts=id=>{const q=Z.sc[id]||[0,0];return q[0]+q[1]},ids=MP.roster().map(p=>p.id),top=Math.max(0,...ids.map(pts));if(top>0)Z.champ=ids.filter(id=>pts(id)===top);if(Z.champ.length)MP.toAll({t:'zrw',ids:Z.champ})}
+  dl=now()+BREAK_S*1000;Z.t=BREAK_S;MP.toAll({t:'zend',w,why})}
+ // Petra 00:54Z: no lobby between rounds. After the scoreboard a new round starts with a new random seeker (not the last one, when there is a choice)
+ function newRound(){const ids=MP.roster().map(p=>p.id);let pool=ids.filter(id=>id!==Z.seeker);if(!pool.length)pool=ids;const sk=pool[Math.floor(Math.random()*pool.length)];
+  Z={ph:'hide',t:HIDE_S,seeker:sk,ids:ids.filter(id=>id!==sk),out:[],asked:[],win:'',why:'',rn:(Z.rn|0)+1,sc:(Z.rn%SESSION===0)?{}:Z.sc,surv:[]};MP.hz.seeker=sk;dl=now()+HIDE_S*1000;newRoundLocal();MP.subAll('(New round! '+name(sk)+' is the seeker. Hide!)',4000)}
+ // every player: back to life, back to the front hall
+ function newRoundLocal(){rnSeen=Z.rn;MP.hz.seeker=Z.seeker;MP.seeker=Z.seeker===MP.id;endShown=false;en.hidden=true;closePick();
+  safe(()=>{if(XT.hide&&XT.hide.hid)XT.hide.leave()},'leave');
+  if(MP.ghost){MP.ghost=false;const g=document.getElementById('mpGhost');if(g)g.hidden=true}
+  safe(()=>{seated=null;const sl=(MP.roster().find(p=>p.id===MP.id)||{slot:0}).slot;fy=F;vy=0;cam.position.set(mX(4.8)+(sl-1.5)*.6,F+1.6,mZ(7.6));yaw=0;pitch=0;if(typeof STR!=='undefined'&&blocked(cam.position.x,cam.position.z))STR.unstick()},'spawn');
+  subtitle(MP.seeker?'New round: you are the seeker. Count to thirty...':'New round: '+name(Z.seeker)+' is the seeker. Hide!',4000)}
+ // a tag or a search from the seeker
+ function hostTag(pid,m){if(Z.ph!=='seek'||pid!==Z.seeker)return;const sr=MP.repOf(pid);if(!sr||sr.gh)return;
+  let hit=[];
+  if(m.spot){const s=XT.hide.SPOTS.find(q=>q.id===m.spot);if(!s||!s.hb)return;const w=s.hb.getWorldPosition(new THREE.Vector3());if(Math.hypot(mX(sr.x)-w.x,mZ(sr.z)-w.z)>SEARCH_R)return;
+   hit=left().filter(id=>{const r=MP.repOf(id);return r&&!r.gh&&r.hid&&r.hs===m.spot})}
+  else if(m.id){const r=MP.repOf(m.id);if(r&&left().includes(m.id)&&!r.gh&&!r.hid&&r.ar===sr.ar&&Math.abs(r.cy-sr.cy)<1.3&&Math.hypot(r.x-sr.x,r.z-sr.z)<=TAG_R_HOST)hit=[m.id]}
+  if(!hit.length){if(m.spot)MP.sendTo(pid,{t:'zno',spot:m.spot});return}
+  hit.forEach(id=>{Z.out.push(id);const q=Z.sc[pid]||(Z.sc[pid]=[0,0]);q[0]++;MP.toAll({t:'zfound',id,by:pid})})}
+ // floor names for the hint
+ function floorOf(r){if(!r)return 'somewhere';if(r.ar==='r')return 'somewhere very strange';const y=r.y;
+  if(y<-4.3)return 'in the basement';if(y>-1.45)return 'upstairs';
+  if(r.z>9.8)return 'outside';if(r.x<-4&&r.z>-3.5&&r.z<3.5)return 'in the garage';return 'on the ground floor'}
+ function hostHint(pid,m){if(Z.ph!=='seek'||pid!==Z.seeker)return;const sr=MP.repOf(pid);if(!sr||!nearCrib(mX(sr.x),mZ(sr.z),sr.y))return;
+  const id=m.id;if(!left().includes(id)||Z.asked.includes(id))return;Z.asked.push(id);
+  MP.sendTo(pid,{t:'zhr',id,n:name(id),f:floorOf(MP.repOf(id))})}
+ const nearCrib=(x,z,y)=>y>-1.45&&Math.hypot(x-mX(crib.x),z-mZ(crib.z))<=HINT_R;
+
+ // ---------- messages ----------
+ {const oh=MP.onH;MP.onH=(pid,m)=>{if(MP.hz){if(m.t==='zt')return safe(()=>hostTag(pid,m),'tag');if(m.t==='zh')return safe(()=>hostHint(pid,m),'hint')}if(oh)return oh(pid,m)}}
+ {const oc=MP.onC;MP.onC=m=>{if(MP.hz)switch(m.t){
+   case 'zgo':subtitle(isSeeker()?'Ready or not, here you come! Find them all in 5 minutes.':'(Ready or not... '+name(Z.seeker)+' is looking for you.)',4000);return;
+   case 'zfound':if(m.id===MP.id)safe(beFound,'found');else subtitle('('+name(m.id)+' was found!)',3000);return;
+   case 'zno':subtitle('Nobody in there.',1500);return;
+   case 'zhr':if(!Z.asked.includes(m.id))Z.asked.push(m.id);safe(()=>{XT.voice&&XT.voice('ba ba da','child',1.1,.3)},'coo');subtitle('Lilith babbles and points. '+m.n+' is '+m.f+'.',5000);return;
+   case 'zend':return;
+   case 'zrw':if((m.ids||[]).includes(MP.id))safe(unlockReward,'reward');else subtitle('('+m.ids.map(name).join(' and ')+' topped the 5 rounds.)',4000);return}
+  if(oc)return oc(m)}}
+ {const orj=MP.onRejoin;MP.onRejoin=(old,nw,aw)=>{if(MP.hz&&MP.host){const sw=a=>a.map(x=>x===old?nw:x);Z.ids=sw(Z.ids);Z.out=sw(Z.out);Z.asked=sw(Z.asked);if(Z.seeker===old){Z.seeker=nw;MP.hz.seeker=nw}}if(orj)return orj(old,nw,aw)}}
+ const send=m=>{if(MP.host)MP.onH(MP.id,m);else MP.send(m)};
+ // Petra 00:57Z: top of the scoreboard after 5 rounds (score = finds as seeker + rounds survived as a hider; ties all win) unlocks a reward, kept in localStorage
+ // like the other Customize unlocks (hushCustU.hideseek; Customize lock key 'hideseek'). PLACEHOLDER item until Petra names the reward: 'Seeker crown' (look field hsCrown).
+ function unlockReward(){let o={};try{o=JSON.parse(localStorage.getItem('hushCustU')||'{}')||{}}catch(e){}const was=!!o.hideseek;o.hideseek=1;try{localStorage.setItem('hushCustU',JSON.stringify(o))}catch(e){}
+  subtitle(was?'You topped the scoreboard again!':'You topped the scoreboard after 5 rounds! Reward unlocked in Customize: Seeker crown.',6000)}
+ MP.hzUnlockReward=unlockReward;
+ function beFound(){if(MP.ghost)return;MP.die('Found.','');setTimeout(()=>subtitle(name(Z.seeker)+' found you. You are a ghost now: watch, haunt and chat.',5000),50)}
+
+ // ---------- seeker: tag (E) ----------
+ const fw=new THREE.Vector3();
+ function tagTarget(){if(!on()||Z.ph!=='seek'||!isSeeker()||MP.ghost)return null;cam.getWorldDirection(fw);let best=null,bd=TAG_R;
+  MP.dbg.AV.forEach((a,id)=>{const r=a.cur;if(!r||r.gh||r.hid||id===MP.id||Z.out.includes(id))return;if(r.ar==='r')return;
+   const x=mX(r.x),z=mZ(r.z),dx=x-cam.position.x,dz=z-cam.position.z,d=Math.hypot(dx,dz);if(d>bd||Math.abs(r.cy-cam.position.y)>1.3)return;
+   const c=(dx*fw.x+dz*fw.z)/(d*Math.hypot(fw.x,fw.z)||1);if(d>.45&&c<.5)return;bd=d;best=id});return best}
+ addEventListener('keydown',e=>{if(e.code!=='KeyE'||e.repeat||window.__typing||!on())return;
+  if(isSeeker()&&(Z.ph==='wait'||Z.ph==='hide')){e.stopImmediatePropagation();return}
+  const id=tagTarget();if(id){e.stopImmediatePropagation();send({t:'zt',id});subtitle('Tagged '+name(id)+'!',1500)}},true);
+ // the hiding spots: for the seeker, E opens and searches it instead of hiding in it
+ safe(()=>XT.hide.SPOTS.forEach(s=>{if(!s.hb)return;const o=s.hb.userData.i;s.hb.userData.i={get label(){return on()&&isSeeker()?(Z.ph==='seek'?'Search: '+o.label.replace(/^Hide (in|under|behind) /,'').replace(/^Squeeze between /,''):'Wait'):o.label},
+  act(){if(on()&&isSeeker()){if(Z.ph==='seek'){send({t:'zt',spot:s.id});safe(()=>XT.hinge&&XT.hinge(cam.position.x,cam.position.z,1,false),'creak')}return}return o.act()}}}),'spots');
+
+ // ---------- seeker: the hint (H at the crib) ----------
+ const pk=document.createElement('div');pk.id='zPick';pk.hidden=true;document.body.appendChild(pk);
+ function canHint(){return on()&&Z.ph==='seek'&&isSeeker()&&!MP.ghost&&nearCrib(cam.position.x,cam.position.z,fy)}
+ function openPick(){if(!canHint())return;const L=left().filter(id=>!Z.asked.includes(id));
+  if(!L.length){subtitle('Lilith yawns. She has told you all she knows this round.',2500);return}
+  pk.innerHTML='<div class="pp" role="dialog" aria-label="Ask Lilith"><h2>Ask Lilith</h2><p>Who should she tell you about? One hint per person each round.</p>'+L.map(id=>'<button type="button" data-id="'+String(id).replace(/"/g,'')+'">'+MP.chat.clean(name(id)).replace(/[<>&]/g,'')+'</button>').join('')+'<button type="button" class="x" data-id="">Never mind</button></div>';
+  pk.hidden=false;if(document.pointerLockElement)document.exitPointerLock();window.__typing=true}
+ function closePick(){pk.hidden=true;window.__typing=false}
+ pk.addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('button');if(!b)return;const id=b.dataset.id;closePick();if(id)send({t:'zh',id})});
+ ['keydown','keyup','mousedown','pointerdown'].forEach(k=>pk.addEventListener(k,e=>{e.stopPropagation();if(k==='keydown'&&e.key==='Escape')closePick()}));
+ addEventListener('keydown',e=>{if(e.code!=='KeyH'||e.repeat||window.__typing||!on())return;e.stopImmediatePropagation();if(canHint())openPick();else if(isSeeker()&&Z.ph==='seek')subtitle('Go to Lilith\'s crib to ask her for a hint. [H]',2000)},true);
+
+ // ---------- HUD, blindfold, touch button, end screen ----------
+ const css=document.createElement('style');css.textContent=`#zHud{position:fixed;z-index:4;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 10px);font:600 .74rem var(--ui,system-ui,sans-serif);letter-spacing:.06em;color:#efe6da;background:rgba(12,10,16,.72);border:1px solid #6a5a3a;border-radius:6px;padding:.35rem .8rem;text-align:center;pointer-events:none;max-width:calc(100% - 32px)}#zHud b{color:#e0b84a;letter-spacing:.16em}#zHud small{display:block;font-weight:400;color:#b8ae9e;font-size:.66rem}
+#zBlind{position:fixed;inset:0;z-index:8;background:#030304;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;color:#d8cfc0;font-family:var(--display,serif);text-align:center;padding:16px}#zBlind b{font-size:4rem;font-family:var(--ui,system-ui);font-weight:300}
+#zPick{position:fixed;inset:0;z-index:12;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(6,4,6,.7)}#zPick .pp{width:min(22rem,100%);background:#efe4cb;color:#1e1a2a;padding:1rem 1.2rem;font-family:'Caveat','Segoe Print',cursive;display:flex;flex-direction:column;gap:.45rem}#zPick h2{margin:0;font-size:2rem}#zPick p{margin:0;font:.75rem/1.4 var(--ui,system-ui);color:#5a4a40}#zPick button{font:600 .85rem var(--ui,system-ui);color:#f4ecdc;background:#3a1e1a;border:1px solid #5a2e28;border-radius:5px;padding:.55rem .9rem;cursor:pointer;min-height:44px}#zPick button.x{background:none;color:#3a2a2a;border-color:#8a7a60}
+#zT{position:fixed;z-index:6;right:calc(env(safe-area-inset-right,0px) + 14px);top:calc(env(safe-area-inset-top,0px) + 24%);}#zT button{min-width:66px;height:44px;border-radius:22px;font:600 .62rem var(--ui,system-ui);color:#f0e6d6;background:rgba(20,18,24,.6);border:1px solid rgba(224,184,112,.6);touch-action:manipulation;padding:0 .8rem}
+#zEnd .sb{font:.85rem/1.5 var(--ui,system-ui);color:#d8cfc0}#zEnd .sb p{margin:.2rem 0}#zEnd table{margin:.4rem auto;border-collapse:collapse}#zEnd td,#zEnd th{padding:.15rem .7rem;text-align:left}#zEnd .nx{font:.8rem var(--ui,system-ui);color:#c9a45c;margin:0}
+#zEnd{position:fixed;inset:0;z-index:11;background:rgba(5,4,5,.92);color:var(--fg,#eee);display:flex;align-items:center;justify-content:center;padding:24px 16px;text-align:center}#zEnd .in{max-width:30rem;display:flex;flex-direction:column;gap:.9rem}#zEnd .tag{font:.7rem var(--ui,system-ui);letter-spacing:.2em;text-transform:uppercase;color:#c9a45c;margin:0}#zEnd h1{font-family:var(--display,serif);font-weight:400;font-size:2.1rem;margin:0}#zEnd p.txt{font-family:var(--display,serif);color:#bfb6a8;font-size:1.05rem;line-height:1.5;margin:0}#zEnd button{align-self:center;font:600 .85rem var(--ui,system-ui);color:#f0e6e0;background:#3a0e10;border:1px solid #6a2024;border-radius:6px;padding:.6rem 1.4rem;cursor:pointer;min-height:44px}
+body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(css);
+ const hud=document.createElement('div');hud.id='zHud';hud.hidden=true;document.body.appendChild(hud);
+ const bl=document.createElement('div');bl.id='zBlind';bl.hidden=true;bl.innerHTML='<div>You are the seeker. Eyes closed, counting...</div><b>30</b><div style="font-size:.85rem;opacity:.7">They are hiding. You can move when the count ends.</div>';document.body.appendChild(bl);
+ const tb=document.createElement('div');tb.id='zT';tb.hidden=true;tb.innerHTML='<button type="button">Ask Lilith</button>';document.body.appendChild(tb);
+ ['pointerdown','mousedown','touchstart'].forEach(k=>tb.addEventListener(k,e=>e.stopPropagation(),{passive:true}));tb.querySelector('button').addEventListener('click',e=>{e.stopPropagation();e.preventDefault();openPick()});
+ const en=document.createElement('div');en.id='zEnd';en.hidden=true;en.innerHTML='<div class="in"><p class="tag">Hide &amp; Seek</p><h1></h1><p class="txt"></p><div class="sb"></div><p class="nx"></p><button type="button">Leave to the lobby</button></div>';document.body.appendChild(en);
+ en.querySelector('button').onclick=e=>{e.stopPropagation();MP.ended=true;MP.backToLobby()};const esc=x=>MP.chat.clean(x).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+ const mmss=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+ function draw(){if(!on()){hud.hidden=bl.hidden=tb.hidden=true;return}
+  if(Z.ph==='end'){hud.hidden=bl.hidden=tb.hidden=true;if(!endShown)showEnd();en.querySelector('.nx').textContent='Next round in '+Z.t+' s';return}
+  const sk=isSeeker(),n=left().length;hud.hidden=false;
+  hud.innerHTML='<b>HIDE &amp; SEEK</b> &middot; '+(Z.ph==='wait'?'Getting ready...':Z.ph==='hide'?'Hiding '+mmss(Z.t):'Seeking '+mmss(Z.t)+' &middot; '+n+' hidden')+
+   '<small>'+(sk?(Z.ph==='seek'?'[E] tag someone close, or search a hiding spot &middot; [H] at the crib: ask Lilith':'You are the seeker'):MP.ghost?'You were found. You are a ghost.':'Seeker: '+MP.chat.clean(name(Z.seeker)).replace(/[<>&]/g,'')+(MP.hzSeekerFloor()?' &middot; '+MP.hzSeekerFloor():'')+' (red marker)')+'</small>';
+  bl.hidden=!(sk&&(Z.ph==='wait'||Z.ph==='hide'));if(!bl.hidden)bl.querySelector('b').textContent=Z.ph==='wait'?'...':String(Z.t);
+  tb.hidden=!(window.__touchMode&&canHint())}
+ function showEnd(){endShown=true;closePick();const sk=isSeeker(),seekWon=Z.win==='seek',won=sk?seekWon:!seekWon;
+  en.querySelector('h1').textContent=seekWon?name(Z.seeker)+' found everyone.':'The hiders win.';
+  en.querySelector('.txt').textContent=(won?'You win! ':'You lose. ')+(Z.why||'');
+  const ids=MP.roster().map(p=>p.id),sc=id=>Z.sc[id]||[0,0];let top=null;ids.forEach(id=>{if(sc(id)[0]>0&&(!top||sc(id)[0]>sc(top)[0]))top=id});
+  en.querySelector('.sb').innerHTML='<p>Round '+(((Z.rn-1)%SESSION)+1)+' of '+SESSION+(Z.champ&&Z.champ.length?' &middot; Top of the 5 rounds: <b>'+Z.champ.map(id=>esc(name(id))).join(', ')+'</b> (reward unlocked)':'')+'</p><p>'+(top?'Most found: <b>'+esc(name(top))+'</b> ('+sc(top)[0]+')':'Nobody has found anyone yet.')+'</p><p>Survived this round: '+(Z.surv.length?Z.surv.map(id=>'<b>'+esc(name(id))+'</b>').join(', '):'nobody')+'</p>'+
+   '<table><tr><th></th><th>Found</th><th>Survived</th><th>Score</th></tr>'+ids.map(id=>'<tr><td>'+esc(name(id))+'</td><td>'+sc(id)[0]+'</td><td>'+sc(id)[1]+'</td><td>'+(sc(id)[0]+sc(id)[1])+'</td></tr>').join('')+'</table>';
+  en.hidden=false;if(document.pointerLockElement)document.exitPointerLock()}
+ setInterval(()=>safe(draw,'hud'),250);
+
+ // ---------- Petra 00:52Z: hiders see where the seeker is: a red marker over the seeker that shows through walls, and the seeker's floor in the HUD ----------
+ const mk=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const q=c.getContext('2d');q.fillStyle='#ff3a2a';q.strokeStyle='#fff';q.lineWidth=4;q.beginPath();q.moveTo(8,10);q.lineTo(56,10);q.lineTo(32,56);q.closePath();q.fill();q.stroke();
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false,depthWrite:false}));s.scale.set(.35,.35,1);s.renderOrder=999;s.visible=false;s.userData.noMap=1;scene.add(s);return s})();
+ const seekRep=()=>{const a=MP.dbg.AV.get(Z.seeker);return a&&a.cur};
+ MP.hzSeekerFloor=()=>{const r=seekRep();return r?floorOf(r):''};
+ XT.onUpdate(()=>safe(()=>{const r=on()&&!isSeeker()&&(Z.ph==='hide'||Z.ph==='seek')?seekRep():null;if(!r||r.ar==='r'){mk.visible=false;return}
+  mk.position.set(mX(r.x),r.cy+.55,mZ(r.z));mk.visible=true},'marker'));
+ // ---------- every frame ----------
+ let pin=null,carryMsg=0;
+ XT.onUpdate(()=>{if(!on())return;
+  if(MP.host)safe(hostUpdate,'host');
+  // a quiet night: the clock stays at half past six (no events, calls or scares), Lilith sleeps and stays in her crib
+  safe(()=>{clockT=HOUR_SEC*.5;const c=C();if(MP.host){c.asleep=true;c.mp.napT=9999;c.noise=0;for(const k in c.N)c.N[k]=0;if(c.EV)c.EV.next=999}
+   if(c.mp.carrying&&!c.mp.act){c.mp.carrying=false;c.mp.inCrib();if(now()-carryMsg>4000){carryMsg=now();subtitle('Let her sleep. She is the referee tonight.',2000)}}},'quiet');
+  // name tags off
+  MP.dbg.AV.forEach(a=>{if(a.tag)a.tag.visible=false});
+  // the seeker is frozen until the count ends
+  if(isSeeker()&&(Z.ph==='wait'||Z.ph==='hide')){if(!pin)pin={x:cam.position.x,z:cam.position.z,y:fy};cam.position.x=pin.x;cam.position.z=pin.z;
+   ['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight'].forEach(k=>keys[k]=false);if(window.__joy){__joy.x=0;__joy.y=0}}else pin=null});
+ MP.hzDbg={get Z(){return Z},endIn(sec){dl=now()+sec*1000},tagTarget,openPick,canHint,floorOf,left};
 })();
 </script>
 <script type="text/x-hush">
@@ -6912,6 +7104,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   const sc=new THREE.Mesh(new THREE.PlaneGeometry(.042,.086),new THREE.MeshBasicMaterial({map:patTexN('sia-scr',64,q=>{const g=q.createLinearGradient(0,0,64,64);g.addColorStop(0,'#5ab0ff');g.addColorStop(1,'#b070f0');q.fillStyle=g;q.fillRect(0,0,64,64);q.fillStyle='rgba(255,255,255,.85)';for(let i=0;i<4;i++)for(let j=0;j<5;j++)q.fillRect(6+i*14,6+j*12,9,8)}),fog:false}));
   sc.rotation.y=Math.PI;sc.position.z=-.0052;g.add(sc);bx(.006,.002,.002,P(0x333338),0,.044,-.005,g)}
  // a tiny sparkly disco ball that floats above the head, slowly turning, throwing glints
+ function hsCrown(h){/* Hide & Seek reward, PLACEHOLDER (swap for Petra's choice): a small gold crown */const m=new THREE.MeshPhongMaterial({color:0xe0b84a,shininess:80,specular:0x806020,flatShading:true});const g=new THREE.Group();g.position.y=.15;h.add(g);
+  const r=new THREE.Mesh(new THREE.CylinderGeometry(.085,.08,.04,10,1,true),m);r.material.side=THREE.DoubleSide;g.add(r);for(let i=0;i<5;i++){const a=i/5*Math.PI*2,c=new THREE.Mesh(new THREE.ConeGeometry(.018,.05,4),m);c.position.set(Math.sin(a)*.08,.04,Math.cos(a)*.08);g.add(c)}}
  function disco(h){const mt=patTexN('sia-disco',64,q=>{for(let i=0;i<8;i++)for(let j=0;j<8;j++){const v=120+Math.random()*135|0;q.fillStyle='rgb('+v+','+v+','+(v+10>255?255:v+10)+')';q.fillRect(i*8,j*8,8,8);q.fillStyle='#202028';q.fillRect(i*8,j*8,8,1);q.fillRect(i*8,j*8,1,8)}},1);
   const g=new THREE.Group();g.position.set(0,.5,0);h.add(g);const b=new THREE.Mesh(new THREE.SphereGeometry(.075,14,10),new THREE.MeshPhongMaterial({map:mt,color:0xffffff,emissive:0x3a3a48,shininess:200,specular:0xffffff,flatShading:true}));g.add(b);
   bx(.02,.012,.02,P(0xb8bcc4,{shininess:100,specular:0xffffff}),0,.08,0,g);
@@ -7058,23 +7252,23 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // what unlocks what (keys of U())
  const LOCK={hair:{maomao:'pin',nezuko:'blade',miku:'miku',teto:'tetoh',shinobu:'shinobu',mitsuri:'mitsuri',muichiro:'muichiro',genya:'genya',genyad:'genya'},hc:{jade:'pin',grad:'blade',teal:'miku',teto:'teto',shinobu:'shinobu',mitsuri:'mitsuri',inosuke:'inosuke',zenitsu:'zenitsu',muichiro:'muichiro'},bfly:'shinobu',omask:'obanai',boar:'inosuke',cape:'rengoku',ghaori:'genya',gscar:'genya',gun:'genya',mouth:{snake:'snake',shark:'stare'},eyes:{mesm:'stare',ydots:'abst',headlight:'seen',genya:'genya',genyad:'genya'},skin:{purple:'abst'},cap:'bat',bat:'bat',hb:'stare',
   outfit:{maomao:'pin',nezuko:'blade',robes:'cult',yoveralls:'abst',scales:'snake',miku:'miku',teto:'teto',yara:'bat',mesm:'stare',muichiro:'muichiro',genya:'genya',suit:'closet',suitskirt:'closet',evening:'closet',cardigan:'closet'},
-  haori:{tanjiro:'blade',nezuko:'blade',genya:'genya'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen'};
+  haori:{tanjiro:'blade',nezuko:'blade',genya:'genya'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen',hsCrown:'hideseek'};
  const HINT={pin:'A gift someone lost, somewhere outside.',blade:'Prove yourself with a blade.',cult:'Some families never let you leave.',snake:'Something scaly hides down below.',abst:'Follow something that is not really there.',
-  miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',genya:'???',seen:'Find every ending.'};
+  miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',genya:'???',seen:'Find every ending.',hideseek:'Top the scoreboard after 5 rounds of Hide & Seek.'};
  // DS v89: Demon Slayer unlocks. ONE place to change the triggers: each key is unlocked when hushCustU[key] is set (by the secret pickups/events below).
  const DS_KEYS=['shinobu','mitsuri','obanai','inosuke','zenitsu','rengoku','muichiro','genya'];const dsU=(k,a,o)=>!!o[k];
  const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
  const own=()=>{try{return JSON.parse(LS.get('hushCustU')||'{}')||{}}catch(e){return{}}};
  const SIA_DBG=(()=>{try{return new URLSearchParams(location.search).get('seenall')==='1'}catch(e){return false}})();
  function U(){let a={};try{a=JSON.parse(LS.get('hushAch')||'{}')||{}}catch(e){}const o=own();
-  return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,seen:!!a.seenall||SIA_DBG}}
+  return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,hideseek:!!o.hideseek,seen:!!a.seenall||SIA_DBG}}
  const lockKey=(k,v)=>{const L=LOCK[k];if(!L)return null;if(typeof L==='string')return v?L:null;return L[v]||null};
  const isOpen=(k,v,u)=>{const q=lockKey(k,v);return !q||!!(u||U())[q]};
- const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,notie:0,nochk:0};
+ const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,hsCrown:0,notie:0,nochk:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','notie','nochk'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','hsCrown','notie','nochk'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -7093,7 +7287,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   FITB=body;const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],gr=GRAD[hc],hm=P(gr?0:hc);HAIR[o.hair](hg,hm);FITB=null;
   if(gr)gradHair(hg,hm,gr);
   if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.that)topHat(h,o);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.cape)cape(body);if(o.gscar)genyaScar(h);if(o.gun)genyaGun(arms[1]);
-  if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.invis)seeThrough(body,INV_OP,1);
+  if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.hsCrown)hsCrown(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.invis)seeThrough(body,INV_OP,1);
   return{legs,arms,head:h}}
  // Nezuko's gradient, fitted to each hairstyle's own height (like her real hair): black at the crown/roots, starting to fade about 30% of the way down
  // (around ear/shoulder height), clearly orange over the lower ~55%, brightest at the tips. Only meshes using the hair material are recoloured,
@@ -7155,6 +7349,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   if(o.ears!=null)grp('Bunny ear color','earc',EARC.map(c=>({v:c,n:'',c})));
   grp('Jewelry','neck',Object.keys(NECK).map(v=>({v,n:NECK[v]})).concat([{v:'pin',n:'Silver hairpin',c:0xd4d8e0,tog:1}],o.outfit==='yara'?[{v:'chk',n:"Teto's choker",c:0x141216,tog:1}]:[]));
   grp('Seen It All','tog',[['invis','See-through skin (invisible) [I]',0xbfe6ff],['roof','Roof',0xb8502e],['phone','Phone',0x5ab0ff],['disco','Disco ball',0xd8dce4],['tire','Tire tracks',0x222024],['duck','Rubber duck',0xf6d232],['lighter','Lighter',0xc8202e],['keys','Car keys',0xc8ccd4],['demon','Snake demon',0xf3e58a],['fpud','Fire puddles',0xff7a1a],['snek','Baby snake buddy',0xf3e58a]].map(([v,n,c])=>({v,n,c})));
+  grp('Hide & Seek','tog',[['hsCrown','Seeker crown',0xe0b84a]].map(([v,n,c])=>({v,n,c})));
   sec.innerHTML='';G.forEach(g=>{const h=document.createElement('h3');h.textContent=g.t;sec.appendChild(h);const r=document.createElement('div');r.className='row';sec.appendChild(r);
    g.items.forEach(it=>{const b=document.createElement('button');b.type='button';b.className='ch';
     const lkK=g.k==='tog'||it.tog?it.v:g.k==='earc'?null:g.k,lv=g.k==='tog'||it.tog?1:it.v,locked=lkK&&!isOpen(lkK,lv,u);
