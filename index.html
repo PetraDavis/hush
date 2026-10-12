@@ -6708,6 +6708,16 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
     const cv=new THREE.CatmullRomCurve3(pts),t=new THREE.Mesh(new THREE.TubeGeometry(cv,20,.026,7,false),m);t.scale.set(1,1,1);h.add(t);
     const e=cv.getPoint(1);sph(.026,m,1,1,1,e.x,e.y,e.z,h);
     const s=bx(.035,.14,.08,m,k*.124,-.03,-.04,h);s.rotation.z=k*.06})},
+  // hair2 (Petra 2026-10-12): curtain bangs + a longish ponytail. The bangs and short back are the 'curtain' cut; a band ties the tail high
+  // at the back of the head, and one tapered tube hangs to mid torso (Petra 01:47), fitted down the back over collars, hoods and haori (fitOver back=1).
+  // Low poly: one 22x6 tube, a 10-segment band and a 6-sided tip; every hair piece uses the hair material so colours and gradients work.
+  cpony:(h,m)=>{HAIR.curtain(h,m);{const b=new THREE.Mesh(new THREE.SphereGeometry(.05,10,6),m);b.scale.set(1,.9,.7);b.position.set(0,.045,.155);h.add(b)}
+   const pts=fitOver(h,[[0,.045,.19],[0,.005,.205],[0,-.07,.19],[0,-.15,.16],[0,-.25,.135],[0,-.37,.125],[0,-.49,.125]].map(p=>new THREE.Vector3(...p)),0,.032,1);
+   const cv=new THREE.CatmullRomCurve3(pts),T=22,R=6,g=new THREE.TubeGeometry(cv,T,.036,R,false),p=g.attributes.position,c=new THREE.Vector3(),v=new THREE.Vector3();
+   for(let i=0;i<=T;i++){const u=i/T,k=u<.12?.8+u*1.6:1-.62*Math.pow((u-.12)/.88,1.3);cv.getPointAt(u,c);for(let j=0;j<=R;j++){const n=i*(R+1)+j;v.fromBufferAttribute(p,n).sub(c).multiplyScalar(k).add(c);p.setXYZ(n,v.x,v.y,v.z)}}
+   g.computeVertexNormals();h.add(new THREE.Mesh(g,m));
+   const e=cv.getPointAt(1),te=cv.getTangentAt(1),tp=new THREE.Mesh(new THREE.ConeGeometry(.0137,.04,6),m);tp.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),te);tp.position.copy(e).addScaledVector(te,.018);h.add(tp);
+   const t0=cv.getPointAt(.05),tt=cv.getTangentAt(.05),tie=new THREE.Mesh(new THREE.CylinderGeometry(.037,.037,.02,10),P(0x1a1618));tie.position.copy(t0);tie.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),tt);h.add(tie)},
   spiky:(h,m)=>{cap(h,m);
    [[0,.14,-.08,-.9,0,.11],[-.06,.135,-.07,-.8,.45,.1],[.06,.135,-.07,-.8,-.45,.1],[0,.165,-.01,-.35,0,.12],[-.075,.145,0,-.2,.75,.11],[.075,.145,0,-.2,-.75,.11],[-.04,.15,.07,.45,.4,.11],[.04,.15,.07,.45,-.4,.11],[0,.11,.12,1.15,0,.1],[-.1,.09,-.04,-.3,1.1,.08],[.1,.09,-.04,-.3,-1.1,.08],[-.08,.08,.1,.9,.8,.09],[.08,.08,.1,.9,-.8,.09]].forEach(([x,y,z,a,b,l])=>{const c=new THREE.Mesh(new THREE.ConeGeometry(.038,l,5),m);c.rotation.set(a,0,b);c.position.set(x,y,z);h.add(c)});
    {const bk=new THREE.Mesh(new THREE.SphereGeometry(.13,12,8),m);bk.scale.set(1.03,.58,.62);bk.position.set(0,-.02,.06);h.add(bk)}},
@@ -7029,7 +7039,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  function wingMesh(k,sc){const P0=WING[k],sh=new THREE.Shape();P0.forEach(([x,y],i)=>i?sh.lineTo(x,y):sh.moveTo(x,y));const g=new THREE.ShapeGeometry(sh),p=g.attributes.position,uv=[];
   for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i);uv.push((4+x*120)/128,k==='up'?(4+y*120)/128:1-(4-y*140)/128)}g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.scale(sc,sc,1);
   return new THREE.Mesh(g,new THREE.MeshPhongMaterial({map:wingTex(k),emissiveMap:wingTex(k),emissive:0x8a8a8a,side:THREE.DoubleSide,transparent:true,alphaTest:.5,shininess:30}))}
- function butterfly(h,hair){const q=new THREE.Group();q.position.set(0,.04,.178);if(hair==='bald')q.position.set(0,.04,.145);if(hair==='shinobu')q.position.set(0,.035,.208);if(hair==='braid')q.position.set(0,.05,.19);
+ function butterfly(h,hair){const q=new THREE.Group();q.position.set(0,.04,.178);if(hair==='bald')q.position.set(0,.04,.145);if(hair==='shinobu')q.position.set(0,.035,.208);if(hair==='braid')q.position.set(0,.05,.19);if(hair==='cpony')q.position.set(0,.06,.215);
   q.rotation.x=.35;h.add(q);
   [-1,1].forEach(k=>{const s=new THREE.Group();s.rotation.y=-k*.3;q.add(s);const u=wingMesh('up',.17),l=wingMesh('lo',.12);u.rotation.z=-k*.05;l.rotation.z=-k*.1;[u,l].forEach(m=>{m.scale.x=k<0?-1:1;m.position.set(k*.002,.01,0);s.add(m)})});
   const bd=new THREE.Mesh(new THREE.CylinderGeometry(.008,.006,.07,6),P(0x1a1020));bd.position.y=.0;q.add(bd);sph(.01,P(0x1a1020),1,1,1,0,.038,0,q);
@@ -7250,12 +7260,12 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
    f.type='bandpass';f.frequency.value=2200;f.Q.value=3;e.gain.setValueAtTime(0,t);e.gain.linearRampToValueAtTime(.12,t+.01);e.gain.exponentialRampToValueAtTime(.0005,t+.13);o.connect(f).connect(e).connect(d);o.start(t);o.stop(t+.15)})},'squeak')}
  // ---------- end SEEN IT ALL items ----------
  // ---------- the look ----------
- const HC={bark:['Bark',0x2a1a12],chestnut:['Chestnut',0x6a3a1a],ink:['Ink',0x141010],wheat:['Wheat',0x8a6a3a],ash:['Ash',0xb8b0a4],plum:['Plum',0x5a2a4a],jade:["Maomao's green",0x1e3a2c],grad:["Nezuko's gradient",'grad'],teal:["Miku's teal",0x39c5bb],teto:["Teto's red",0xc8243a],shinobu:["Shinobu's gradient",'shinobu'],mitsuri:["Mitsuri's gradient",'mitsuri'],inosuke:["Inosuke's gradient",'inosuke'],zenitsu:["Zenitsu's gold",'zenitsu'],muichiro:["Muichiro's gradient",'muichiro']};
+ const HC={bark:['Bark',0x2a1a12],chestnut:['Chestnut',0x6a3a1a],ink:['Ink',0x141010],wheat:['Wheat',0x8a6a3a],ash:['Ash',0xb8b0a4],plum:['Plum',0x5a2a4a],jade:["Maomao's green",0x1e3a2c],grad:["Nezuko's gradient",'grad'],teal:["Miku's teal",0x39c5bb],teto:["Teto's red",0xc8243a],shinobu:["Shinobu's gradient",'shinobu'],mitsuri:["Mitsuri's gradient",'mitsuri'],inosuke:["Inosuke's gradient",'inosuke'],zenitsu:["Zenitsu's gold",'zenitsu'],muichiro:["Muichiro's gradient",'muichiro'],silver:['Black to silver','silver']};
  // DS v89: gradient hair colors: [roots, mid, tips]; HC entries whose value is a key here are gradients
- const GRAD={grad:[0x121010,0xe8742a,0xffa448],shinobu:[0x141018,0x6a3a9a,0xa070d8,.5,.7],mitsuri:[0xf07aa8,0x7ac06a,0xa4e08a,.5,.68],inosuke:[0x12142a,0x1f3f8f,0x2a4fa8,.62,.82],muichiro:[0x121418,0x2a8a7a,0x6ad0b8],zenitsu:[0xf2c838,0xe8962a,0xf07a1a,.6,.8]};
+ const GRAD={grad:[0x121010,0xe8742a,0xffa448],silver:[0x0e0e10,0x9a9aa4,0xe2e3e8,.34,.6],shinobu:[0x141018,0x6a3a9a,0xa070d8,.5,.7],mitsuri:[0xf07aa8,0x7ac06a,0xa4e08a,.5,.68],inosuke:[0x12142a,0x1f3f8f,0x2a4fa8,.62,.82],muichiro:[0x121418,0x2a8a7a,0x6ad0b8],zenitsu:[0xf2c838,0xe8962a,0xf07a1a,.6,.8]};
  const SKIN={peach:['Peach',0xe2c0a0],porcelain:['Porcelain',0xf0d8c4],honey:['Honey',0xc8956a],umber:['Umber',0x8a5a3a],deep:['Deep',0x5a3a26],purple:['Rabbit purple',0x8a5ac8]};
  const SLOT=[0xe0705a,0x4fb3a9,0xe0b84a,0x9a7ad8],SLOTH=['bark','chestnut','ink','wheat'];
- const HAIRN={bald:'Bald',short:'Short',long:'Long',ponytail:'Ponytail',bob:'Bob with bangs',buns:'Twin buns',maomao:"Maomao's buns",nezuko:"Nezuko's long hair",miku:"Miku's twin tails",teto:"Teto's drill twin tails",braid:'Long braid',shinobu:"Shinobu's bob",mitsuri:"Mitsuri's braids",muichiro:"Muichiro's long hair",buzz:'Buzz cut',messy:'Short messy',sidepart:'Side part',curtain:'Curtain bangs',spiky:'Spiky',wolf:'Wolf cut',genya:"Genya's mohawk",genyad:"Genya's mohawk (demon form)"};
+ const HAIRN={bald:'Bald',short:'Short',long:'Long',ponytail:'Ponytail',bob:'Bob with bangs',buns:'Twin buns',maomao:"Maomao's buns",nezuko:"Nezuko's long hair",miku:"Miku's twin tails",teto:"Teto's drill twin tails",braid:'Long braid',shinobu:"Shinobu's bob",mitsuri:"Mitsuri's braids",muichiro:"Muichiro's long hair",buzz:'Buzz cut',messy:'Short messy',sidepart:'Side part',curtain:'Curtain bangs',cpony:'Curtain bangs ponytail',spiky:'Spiky',wolf:'Wolf cut',genya:"Genya's mohawk",genyad:"Genya's mohawk (demon form)"};
  const EYEN={dots:'Dots',ydots:'Yellow dots (rabbit)',wide:'Wide',sleepy:'Sleepy',mesm:'Big round (Mesmerizer)',lashes:'Lashes',headlight:'Headlights',genya:"Genya's glare",genyad:"Genya's demon eyes"},MOUTHN={none:'None',smile:'Smile',flat:'Flat',oh:'Gasp',snake:'Snake grin',shark:'Open smile'};
  const NECK={'':'None',pearl:'Pearl necklace',gold:'Gold necklace',silver:'Small silver necklace'},HAORI={'':'None',tanjiro:"Tanjiro's haori",nezuko:'Black haori',genya:"Genya's sleeveless haori"};
  const EARC=[0xf2ece4,0x5a2a4a,0x141010,0xf0b0c0,0x8ab0d8,0xe8c030,0x7a9a4a,0xc02030];
