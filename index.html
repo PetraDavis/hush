@@ -6548,7 +6548,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   flashbang(q,W,H){q.fillStyle='#0c0a10';q.fillRect(0,0,W,H);q.fillStyle='#1c1820';q.fillRect(W*.72,H*.22,W*.16,H*.7);q.fillStyle='#050406';q.fillRect(W*.745,H*.26,W*.11,H*.66);
    const g=q.createRadialGradient(W*.32,H*.48,2,W*.32,H*.48,170);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.25,'rgba(255,252,235,.85)');g.addColorStop(1,'rgba(255,250,230,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
    q.strokeStyle='rgba(255,255,255,.9)';q.lineWidth=2;for(let i=0;i<12;i++){const a=i/12*6.283;q.beginPath();q.moveTo(W*.32+Math.cos(a)*22,H*.48+Math.sin(a)*22);q.lineTo(W*.32+Math.cos(a)*(60+(i%3)*18),H*.48+Math.sin(a)*(60+(i%3)*18));q.stroke()}
-   q.fillStyle='#120e14';q.save();q.translate(W*.8,H*.55);q.rotate(.12);q.beginPath();q.ellipse(0,-34,9,12,0,0,7);q.fill();q.fillRect(-8,-24,16,46);q.fillRect(-9,20,6,34);q.fillRect(3,20,6,30);q.rotate(-.6);q.fillRect(-20,-30,6,30);q.restore();
+   /* refine 2026-10-12 (Petra: the fleeing figure was hard to see): she was drawn #120e14 on the #0c0a10 room inside the #050406 doorway, black on black, and the flash glow (radius 170 around x=.32W) fades to nothing before it reaches her at x=.8W. Now a soft spill of the flash reaches the doorway, her body is a lighter grey-violet, and the side facing the flash gets a bright rim, with her red demon eye catching the light. Same flat shapes. */{const sp=q.createRadialGradient(W*.8,H*.55,4,W*.8,H*.55,W*.17);sp.addColorStop(0,'rgba(255,248,225,.28)');sp.addColorStop(1,'rgba(255,248,225,0)');q.fillStyle=sp;q.fillRect(0,0,W,H);const fig=(dx)=>{q.save();q.translate(W*.8+dx,H*.55);q.rotate(.12);q.beginPath();q.ellipse(0,-34,9,12,0,0,7);q.fill();q.fillRect(-8,-24,16,46);q.fillRect(-9,20,6,34);q.fillRect(3,20,6,30);q.rotate(-.6);q.fillRect(-20,-30,6,30);q.restore()};q.fillStyle='#fff4dc';fig(-2.5);q.fillStyle='#5a4a66';fig(0);q.save();q.translate(W*.8,H*.55);q.rotate(.12);q.fillStyle='#ff3040';q.fillRect(-7,-37,3,2);q.restore()}
    q.fillStyle='#4a5038';q.save();q.translate(W*.14,H*.84);q.rotate(.5);q.fillRect(-7,-14,14,28);q.fillStyle='#9a9ca2';q.fillRect(-8,-16,16,4);q.beginPath();q.arc(10,-18,4,0,7);q.strokeStyle='#9a9ca2';q.stroke();q.restore()},
   gun(q,W,H){q.fillStyle='#0c0a0e';q.fillRect(0,0,W,H);const g=q.createRadialGradient(W*.47,H*.72,4,W*.47,H*.72,110);g.addColorStop(0,'rgba(255,200,90,.35)');g.addColorStop(1,'rgba(255,200,90,0)');q.fillStyle=g;q.fillRect(0,0,W,H);
    /* v103 (Petra 02:28Z): the muzzle is at local x=0 and the grip at the far end, so it used to point left, off the card; now it is mirrored and aimed at the ash pile */q.save();const mx=W*.42,my=H*.72;q.translate(mx,my);q.rotate(Math.atan2(H*.84-my,W*.8-mx));q.scale(-1,1);q.fillStyle='#3a3c42';q.fillRect(0,-10,92,14);q.fillRect(40,-16,42,24);q.fillStyle='#55585e';q.beginPath();q.arc(58,-4,13,0,7);q.fill();q.fillStyle='#5a3a22';q.beginPath();q.moveTo(80,4);q.lineTo(104,4);q.lineTo(112,46);q.lineTo(92,48);q.fill();q.restore();
@@ -6847,9 +6847,35 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
    const a=p.clone().addScaledVector(w,W/2).addScaledVector(out,.008),c=p.clone().addScaledVector(w,-W/2).addScaledVector(out,.008);pos.push(a.x,a.y,a.z,p.x,p.y,p.z,c.x,c.y,c.z);
    if(i<N){const j=i*3;idx.push(j,j+3,j+1,j+1,j+3,j+4,j+1,j+4,j+2,j+2,j+4,j+5)}}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
-  b.add(new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0xa8d0e8,emissive:0x2a3a48,side:THREE.DoubleSide})))}
+  {const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0xa8d0e8,emissive:0x2a3a48,side:THREE.DoubleSide}));m.userData.noFit=1;b.add(m)}}
+ // (refine 2026-10-12, Petra: "the side panels sit a few centimetres off the body") The haori used to be one fixed-size box shell (front panels at
+ // z=-.142, back at +.142, sides at x=+-.226), sized to clear the bulkiest thing that can be under it (the robe obi and cord, the overalls bib,
+ // Genya's belt). On the plain torso (.38 x .22, so x=+-.19, z=+-.11) that left a 2-3 cm gap on every side. Now each panel is measured
+ // like Rengoku's cape: rays are cast in toward the body at several heights, and every panel is bent row by row to sit .004 outside the farthest
+ // hit at that height (never narrowing on the way down, so panels also flare out over skirts and obi bows instead of cutting through them).
+ // Not measured: the arms, Maomao's shawl band and the bat on the back (userData.noFit), which hang outside the haori on purpose.
+ function fitHaori(b,rig,len,mk){const top=1.47,bot=top-len,N=Math.ceil((top-.05-bot)/.02),ys=[];for(let j=0;j<=N;j++)ys.push(top-.05-(top-.05-bot)*j/N);
+  b.updateMatrixWorld(true);const skip=new Set();rig.arms.forEach(a=>a.traverse(c=>skip.add(c)));b.traverse(c=>{if(c.userData.noFit)c.traverse(d=>skip.add(d))});const ms=[];b.traverse(c=>{if(c.isMesh&&!skip.has(c))ms.push(c)});
+  const mats=[];ms.forEach(m=>(Array.isArray(m.material)?m.material:[m.material]).forEach(x=>{if(!mats.includes(x))mats.push(x)}));const sides=mats.map(x=>{const s=x.side;x.side=THREE.DoubleSide;return s});
+  const rc=new THREE.Raycaster(),bq=b.matrixWorld,cast=(o,d)=>{rc.set(o.applyMatrix4(bq),d.transformDirection(bq));rc.far=1;const h=rc.intersectObjects(ms,false);return h.length?1-h[0].distance:null};
+  const prof=(fn,lo,hi,def)=>{let prev=def;const r=ys.map((y,j)=>{let m=null;fn(y).forEach(v=>{if(v!=null&&(m==null||v>m))m=v});if(m==null)m=j?prev:def;m=Math.min(hi,Math.max(lo,m));if(j)m=Math.max(m,prev);return prev=m});/* drape: no sudden steps; a flare over a skirt or obi starts a little higher, sloping out at most .5 per unit of height */for(let j=N-1;j>=0;j--)r[j]=Math.max(r[j],r[j+1]-.5*(ys[j]-ys[j+1]));return r};
+  const xs=[.11,.14,.17,.2,.22],zs=[-.1,-.05,0,.05,.1];
+  const F=prof(y=>[].concat(...[-1,1].map(k=>xs.map(x=>cast(new THREE.Vector3(k*x,y,-1),new THREE.Vector3(0,0,1))))),.1,.24,.11),
+   Bk=prof(y=>[].concat(...[-1,1].map(k=>xs.map(x=>cast(new THREE.Vector3(k*x,y,1),new THREE.Vector3(0,0,-1))))),.1,.24,.11),
+   Sd=prof(y=>y>1.32?[]/* the round shoulder caps bulge out above here; the haori's own shoulder pieces cover them */:[].concat(...[-1,1].map(k=>zs.map(z=>cast(new THREE.Vector3(k,y,z),new THREE.Vector3(-k,0,0))))),.18,.34,.19);
+  mats.forEach((x,i)=>x.side=sides[i]);
+  const at=(a,y)=>{if(y>=ys[0])return a[0];for(let j=1;j<=N;j++)if(y>=ys[j]){const t=(ys[j-1]-y)/(ys[j-1]-ys[j]);return a[j-1]+(a[j]-a[j-1])*t}return a[N]},e=.004,t=.02;
+  // bend a panel: rebuild its box with N rows and move each vertex with map(local x,local y,local z, body y)
+  const bend=(o,map)=>{const g=o.geometry.parameters,ng=new THREE.BoxGeometry(g.width,g.height,g.depth,1,N,1),p=ng.attributes.position;
+   for(let i=0;i<p.count;i++){const v=map(p.getX(i)/g.width+.5,p.getY(i)+o.position.y,p.getZ(i)/g.depth+.5);p.setXYZ(i,v[0]-o.position.x,v[1]-o.position.y,v[2]-o.position.z)}
+   ng.computeVertexNormals();o.geometry.dispose();o.geometry=ng;return o};
+  const y=top-len/2;
+  bend(mk(.47,len,.02,0,y,.142,b),(u,yy,w)=>[(u-.5)*.47,yy,at(Bk,yy)+e+w*t]);
+  [-1,1].forEach(k=>{bend(mk(.02,len,.264,k*.226,y,0,b),(u,yy,w)=>{const xo=at(Sd,yy)+e;return[k*(xo+(k>0?u:1-u)*t),yy,w<.5?-(at(F,yy)+e+t):at(Bk,yy)+e+t]});
+   bend(mk(.12,len,.02,k*.166,y,-.142,b),(u,yy,w)=>{const xo=at(Sd,yy)+e+t,ui=k>0?u:1-u;return[k*(.106+ui*(xo-.106)),yy,-(at(F,yy)+e+(1-w)*t)]})});
+  return{F:yy=>at(F,yy)+e+t}}
  function haori(b,rig,kind){const T=kind==='nezuko'?null:TEX.check(),S=T?SURF(0,T,.16):SURF(0x18161a),len=kind==='nezuko'?1.02:.9,y=1.47-len/2,edge=D(0x0c0b0e);
-  S(.47,len,.02,0,y,.142,b);[-1,1].forEach(k=>{S(.02,len,.264,k*.226,y,0,b);S(.12,len,.02,k*.166,y,-.142,b);bx(.025,len-.02,.004,edge,k*.118,y,-.153,b)});S(.34,.03,.304,0,1.486,0,b);const hm=T?patMat(T,4,4,1):P(0x18161a);[-1,1].forEach(k=>sph(.1,hm,1,.8,1.42,k*.2,1.42,0,b));
+  const fit=fitHaori(b,rig,len,S);[-1,1].forEach(k=>{const m=bx(.025,len-.02,.004,edge,k*.118,y,-.153,b),fz=fit.F(1.47-len);m.position.z=-(fz+.002);if(fit.F(1.47)!==fz){/* the trim follows the front panel if it flares */const g=m.geometry,p=g.attributes.position;for(let i=0;i<p.count;i++)p.setZ(i,p.getZ(i)-(fit.F(p.getY(i)+y)-fz))}});S(.34,.03,.304,0,1.486,0,b);const hm=T?patMat(T,4,4,1):P(0x18161a);[-1,1].forEach(k=>sph(.1,hm,1,.8,1.42,k*.2,1.42,0,b));
   rig.arms.forEach(a=>{S(.12,.42,.2,0,-.19,.025,a)})}
  const bib=(b,c)=>{const d=P(c);rbx(.4,.3,.24,d,0,.98,0,b);bx(.24,.2,.02,d,0,1.2,-.115,b);[-1,1].forEach(k=>bx(.04,.2,.235,d,k*.1,1.32,0,b))};
  // ---------- outfits: shirt / legs colors plus extra pieces. bare: sleeveless (skin arms); skinLegs: legs show skin; noLegs: long skirt hides them; robe: replaces the torso ----------
@@ -6860,7 +6886,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   overalls:{n:'Overalls',shirt:0xe6d6a8,legs:0x3c5a86,x:b=>bib(b,0x3c5a86)},
   dress:{n:'Dress',shirt:0x7a4a8a,legs:0,skinLegs:1,x:(b,s)=>{skirt(s,.17,.3,.42,.7,b)}},
   pajamas:{n:'Pajamas',shirt:0xa8c4e0,legs:0xa8c4e0,x:(b,s,r)=>{const w=P(0xf2f2f6);[.95,1.12,1.3].forEach(y=>rbx(.392,.03,.232,w,0,y,0,b));r.legs.forEach(q=>[-.57,-.27].forEach(y=>bx(.125,.03,.135,w,0,y,0,q)))}},
-  maomao:{n:"Maomao's robe",shirt:0xe89ab0,robe:1,x:(b,s,r)=>{robe(b,r,{base:0xe89ab0,inner:0xf6f2ea,collar:0xf6f2ea,obi:0xa8d8a0});const rb=P(0x94c88c);bx(.07,.06,.035,P(0xa8d8a0),.05,.93,-.135,b);bx(.03,.28,.012,rb,.035,.75,-.129,b);bx(.03,.24,.012,rb,.07,.77,-.131,b);shawl(b);sph(.04,P(0xc02030),1,.8,1,.14,.94,-.15,b);sph(.022,P(0x9a1020),1,1,1,.14,.95,-.18,b);bx(.05,.02,.02,P(0x3a8a3a),.18,.92,-.15,b).rotation.z=-.5}},
+  maomao:{n:"Maomao's robe",shirt:0xe89ab0,robe:1,x:(b,s,r)=>{robe(b,r,{base:0xe89ab0,inner:0xf6f2ea,collar:0xf6f2ea,obi:0xa8d8a0});const rb=P(0x94c88c);bx(.07,.06,.035,P(0xa8d8a0),.05,.93,-.135,b);bx(.03,.28,.012,rb,.035,.75,-.129,b);bx(.03,.24,.012,rb,.07,.77,-.131,b);shawl(b);/* refine: under a haori the rose is pinned on the haori front instead (noFit, so the panel stays flat) */sph(.04,P(0xc02030),1,.8,1,.14,.94,-.15,b).userData.noFit=1;sph(.022,P(0x9a1020),1,1,1,.14,.95,-.18,b).userData.noFit=1;{const l=bx(.05,.02,.02,P(0x3a8a3a),.18,.92,-.15,b);l.rotation.z=-.5;l.userData.noFit=1}}},
   nezuko:{n:"Nezuko's kimono",shirt:0xf2a6bd,robe:1,x:(b,s,r)=>{robe(b,r,{base:0xf2a6bd,tex:TEX.asa(),cell:.12,inner:0xf6f2ea,collar:0x8a3a2a,obi:0x6a2a24,cord:0xe8d870,knot:1})}},
   robes:{n:'Red cult robes',shirt:0x8e1a1e,legs:0x8e1a1e,x:(b,s)=>{skirt(s,.2,.32,.86,.45,b);rbx(.41,.06,.245,P(0x2a0808),0,.86,0,b);bx(.06,.5,.01,P(0xd8b060),0,1.15,-.115,b)}},
   yoveralls:{n:'Yellow overalls',shirt:0xe8c030,skinTop:1,bare:1,legs:0xe8c030,x:b=>bib(b,0xe8c030)},
@@ -6947,8 +6973,8 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  // (Petra v11) Genya's sleeveless maroon haori is its own Layers toggle ('ghaori') that goes over ANY outfit; it is no longer part of the uniform
  // (Petra 2026-10-11) moved into the Haori section (haori:'genya'); it now uses the same fit as Tanjiro's haori (same panels, shoulder bar and rounded
  // shoulders), just sleeveless, shorter and solid maroon, so it sits on the body instead of floating
- function genyaHaori(b){const mr=P(0x4a1a2a),len=.52,y=1.47-len/2,H=(w,h,d,x,yy,z)=>bx(w,h,d,mr,x,yy,z,b);
-  H(.47,len,.02,0,y,.142);[-1,1].forEach(k=>{H(.02,len,.264,k*.226,y,0);H(.12,len,.02,k*.166,y,-.142)});H(.34,.03,.304,0,1.486,0);
+ function genyaHaori(b,rig){const mr=P(0x4a1a2a),len=.52,y=1.47-len/2,H=(w,h,d,x,yy,z)=>bx(w,h,d,mr,x,yy,z,b);
+  fitHaori(b,rig,len,(w,h,d,x,yy,z)=>H(w,h,d,x,yy,z));H(.34,.03,.304,0,1.486,0);
   [-1,1].forEach(k=>sph(.1,mr,1,.8,1.42,k*.2,1.42,0,b))}
  function genyaUni(b,r,o){const bk=P(0x17161e),wt=P(0xeeeae0),wd=D(0xeeeae0);
   /* open rings, so looking down you see only the thin rim, not a white plate */[[.063,1.4615,0x17161e,.1],[.018,1.484,0xeeeae0,.1015]].forEach(([hh,yy,c,rr])=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(rr,rr,hh,8,1,true),P(c,{side:THREE.DoubleSide}));m.position.y=yy;m.rotation.y=Math.PI/8;m.scale.z=.85;b.add(m)});{const nk=new THREE.Mesh(new THREE.CylinderGeometry(.075,.075,.08,8),P(SKIN[o.skin][1]));nk.position.y=1.46;b.add(nk)}
@@ -7039,7 +7065,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   const w=new THREE.Group();w.position.set(-.1,.04,-.02);w.rotation.z=.3;w.scale.setScalar(.8);q.add(w);const bm=()=>patMat(TEX.bow(),1,1,1);
   [-1,1].forEach(k=>{const l=new THREE.Mesh(new THREE.BoxGeometry(.11,.075,.03),bm());l.position.set(k*.065,0,0);l.rotation.z=k*.25;w.add(l)});bx(.035,.045,.036,P(0xc8202e),0,0,0,w)}
  // a baseball bat across the back: white barrel, navy grip, red knob and band
- function batBack(b){const q=new THREE.Group();q.position.set(0,1.1,.16);q.rotation.z=.75;b.add(q);bat(q)}
+ function batBack(b){const q=new THREE.Group();q.position.set(0,1.1,.16);q.rotation.z=.75;q.userData.noFit=1;b.add(q);bat(q)}
  function bat(q){const w=P(0xf2f0ee),n=P(0x1e2236),r=P(0xc8202e);const c=(rt,rb,l,m,y)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,l,8),m);o.position.y=y;q.add(o)};
   c(.038,.024,.5,w,.2);c(.039,.039,.04,r,.36);c(.02,.02,.24,n,-.17);c(.032,.032,.03,r,-.3);return q}
  function mikuTie(b){const t=D(0x2ab5ac);bx(.05,.04,.006,t,0,1.36,-.118,b);const bl=bx(.045,.2,.004,t,0,1.24,-.118,b);bx(.045,.03,.004,t,0,1.13,-.118,b).rotation.z=.785}
@@ -7322,7 +7348,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   if(!of.robe)torso(body,s);
   const arms=[-1,1].map(k=>{const q=new THREE.Group();q.position.set(k*.25,1.4,0);body.add(q);bx(.1,.58,.1,of.bare?sk:s,0,-.28,0,q);bx(.09,.09,.09,sk,0,-.6,0,q);return q});
   const rig={arms,legs};of.x(body,s,rig,o);if(o.bat)batBack(body);
-  if(o.tie&&o.outfit!=='miku')tieLayer(body);if(o.neck)necklace(body,o.neck);if(o.haori==='genya')genyaHaori(body);else if(o.haori)haori(body,rig,o.haori);
+  if(o.tie&&o.outfit!=='miku')tieLayer(body);if(o.neck)necklace(body,o.neck);if(o.haori==='genya')genyaHaori(body,rig);else if(o.haori)haori(body,rig,o.haori);
   const h=new THREE.Group();h.position.set(0,1.62,0);body.add(h);sph(.13,sk,.95,1.1,1,0,0,0,h);
   FITB=body;const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],gr=GRAD[hc],hm=P(gr?0:hc);HAIR[o.hair](hg,hm);FITB=null;
   if(gr)gradHair(hg,hm,gr);
