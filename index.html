@@ -3982,7 +3982,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const torch=new THREE.Mesh(new THREE.CylinderGeometry(.025,.02,.14,6),new THREE.MeshBasicMaterial({color:0xfff0c0}));torch.rotation.x=Math.PI/2;torch.position.set(.25,1.2,-.25);torch.visible=false;body.add(torch);
   // the name tag (canvas sprite), with a speaking ring
   const cv=document.createElement('canvas');cv.width=320;cv.height=72;const tex=new THREE.CanvasTexture(cv);const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));tag.scale.set(.95,.21,1);tag.position.set(0,2.05,0);g.add(tag);
-  g.visible=false;scene.add(g);const a={g,body,legs,arms,head,arm,torch,tag,cv,tex,buf:[],cur:null,last:null,ph:0,slot:p.slot,name:'',spk:false,mu:false,gh:false,inRealm:false};/*CUSTOMIZE v81 hook H2*/a.lkK=window.__cust?__cust.key(p):'';/*SIA*/a.inv=window.__cust&&__cust.eff(p).invis?1:0;a.cam=window.__cust&&__cust.eff(p).hsCamo?1:0;a.dz=window.__cust?__cust.eff(p).dz:0;drawTag(a,p.name);return a}
+  g.visible=false;scene.add(g);const a={g,body,legs,arms,head,arm,torch,tag,cv,tex,buf:[],cur:null,last:null,ph:0,slot:p.slot,name:'',spk:false,mu:false,gh:false,inRealm:false};/*CUSTOMIZE v81 hook H2*/a.lkK=window.__cust?__cust.key(p):'';/*SIA*/a.inv=window.__cust&&__cust.eff(p).invis?1:0;a.cam=window.__cust&&__cust.eff(p).hsCamo?1:0;a.dz=window.__cust?__cust.eff(p).dz:0;/* necktag: an invisible player can switch their own name tag off [N] *//* merge108: Hide & Seek hides every name tag; a rebuild mid-round must not bring one back */a.tag.visible=!(MP.hz&&MP.active&&MP.started)&&!(window.__cust&&__cust.eff(p).notag);drawTag(a,p.name);return a}
  function drawTag(a,name,spk,mu){a.name=name;a.spk=!!spk;a.mu=!!mu;const q=a.cv.getContext('2d');q.clearRect(0,0,320,72);q.font='600 30px ui-monospace,Menlo,Consolas,monospace';const w=Math.min(250,q.measureText(name).width);
   const x0=160-w/2-28;q.fillStyle='rgba(8,8,12,.62)';q.beginPath();if(q.roundRect)q.roundRect(x0-10,10,w+58,50,25);else q.rect(x0-10,10,w+58,50);q.fill();
   q.fillStyle=COL[a.slot%4];q.beginPath();q.arc(x0+12,35,9,0,7);q.fill();if(spk){q.strokeStyle='#f4ecd0';q.lineWidth=4;q.beginPath();q.arc(x0+12,35,16,0,7);q.stroke()}
@@ -4111,7 +4111,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function clientHandle(m){if(MP.active&&!MP.host)lastHostMsg=performance.now();switch(m.t){
   case 'gfx':safe(()=>playScare(m),'gfx');break;
   case 'gpx':safe(()=>playPossess(m),'gpx');break;
-  case 'welcome':MP.id=m.pid;roster=m.roster;if(m.diff)MP.hostDiff=m.diff;if(m.night)MP.hostNight=m.night|0;if(m.mode)MP.mode=m.mode;MP.hostHu=!!m.hu;MP.code=m.code;MP.hostId=m.host;lastHostMsg=performance.now();reconnecting=false;syncAvatars();lobbyDraw();callMissing();
+  case 'welcome':MP.id=m.pid;roster=m.roster;if(m.diff)MP.hostDiff=m.diff;if(m.night)MP.hostNight=m.night|0;if(m.mode)MP.mode=m.mode;MP.hostHu=!!m.hu;MP.code=m.code;MP.hostId=m.host;lastHostMsg=performance.now();reconnecting=false;syncAvatars();lobbyDraw();callMissing();/* necktag: always re-send my current look after a (re)join */safe(()=>{if(window.__cust&&hostConn&&hostConn.open)hostConn.send({t:'look',lk:__cust.mine()})},'lk');
    if(m.started&&!MP.started){MP.rj=m.rj||null;startGame(m.cfg,true)}break;
   case 'hdm':if(MP.hm){MP.hm.demon=m.id;MP.demon=m.id===MP.id}break;
   case 'roster':roster=m.roster;if(m.diff)MP.hostDiff=m.diff;if(m.night)MP.hostNight=m.night|0;if(m.mode)MP.mode=m.mode;MP.hostHu=!!m.hu;syncAvatars();lobbyDraw();callMissing();micHud();break;
@@ -4425,7 +4425,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
 #chat input{pointer-events:auto;font:inherit;color:#efe6da;background:rgba(10,9,12,.9);border:1px solid #c9a45c;border-radius:5px;padding:.45rem .6rem;outline:none;min-width:0}
 body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 #chat .cr{display:flex;gap:6px;min-width:0}#chat .cr input{flex:1 1 auto}#chat .cb{display:none;pointer-events:auto;flex:0 0 auto;font:600 .72rem var(--ui,system-ui,sans-serif);color:#efe6da;background:rgba(10,9,12,.9);border:1px solid #c9a45c;border-radius:5px;padding:0 .7rem;min-height:40px;min-width:44px;touch-action:manipulation}body.touch #chat.open .cb{display:block}body.touch #chat.open{z-index:7}`;document.head.appendChild(c)}
- const chatEl=document.createElement('div');chatEl.id='chat';chatEl.hidden=true;chatEl.innerHTML='<ol aria-live="polite"></ol><form class="cr" action="#" novalidate><input id="chatIn" maxlength="120" autocomplete="off" enterkeyhint="send" placeholder="Say something (Enter to send, Esc to close)" hidden><button type="button" class="cb" data-c="send">Send</button><button type="button" class="cb" data-c="close" aria-label="Close chat">Close</button></form>';document.body.appendChild(chatEl);
+ const chatEl=document.createElement('div');chatEl.id='chat';chatEl.hidden=true;chatEl.innerHTML='<ol aria-live="polite"></ol><form class="cr" action="#" novalidate><input id="chatIn" type="text" maxlength="120" spellcheck="true" autocorrect="on" autocapitalize="sentences" autocomplete="on" name="hushchat" enterkeyhint="send" placeholder="Say something (Enter to send, Esc to close)" hidden><button type="button" class="cb" data-c="send">Send</button><button type="button" class="cb" data-c="close" aria-label="Close chat">Close</button></form>';document.body.appendChild(chatEl);
  const chatOl=chatEl.querySelector('ol'),chatIn=chatEl.querySelector('input'),LOG=[];const CMAX=120;
  const CRX=new RegExp('['+String.fromCharCode(0)+'-'+String.fromCharCode(31)+String.fromCharCode(127)+'-'+String.fromCharCode(159)+String.fromCharCode(0x200b)+'-'+String.fromCharCode(0x200f)+String.fromCharCode(0x2028)+'-'+String.fromCharCode(0x202e)+String.fromCharCode(0x2066)+'-'+String.fromCharCode(0x2069)+']','g');
  const clean=x=>String(x==null?'':x).replace(CRX,' ').replace(/\s+/g,' ').trim().slice(0,CMAX);
@@ -4438,7 +4438,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
   const msg={t:'chat',id:pid,n:p.name,s:p.slot,g:g?1:0,x};
   if(dm&&mu){const h=Object.assign({},msg,{x:hissOf(x)});roster.forEach(q=>sendTo(q.id,q.id===pid?msg:h))}else{bcast(msg);clientHandle(msg)}}
  function chatOpen(v){if(v===!chatIn.hidden)return;window.__typing=v;chatIn.hidden=!v;chatEl.classList.toggle('open',v);chatEl.hidden=!MP.active;if(v){for(const k in keys)keys[k]=false;chatIn.value='';setTimeout(()=>chatIn.focus(),0)}else chatIn.blur()}
- chatIn.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();const x=clean(chatIn.value);if(x)send({t:'chat',x});chatOpen(false)}else if(e.key==='Escape')chatOpen(false)});
+ chatIn.addEventListener('keydown',e=>{e.stopPropagation();if(e.isComposing||e.keyCode===229)return;if(e.key==='Enter'){e.preventDefault();const x=clean(chatIn.value);if(x)send({t:'chat',x});chatOpen(false)}else if(e.key==='Escape')chatOpen(false)});
  ['keyup','keypress'].forEach(k=>chatIn.addEventListener(k,e=>e.stopPropagation()));chatIn.addEventListener('blur',()=>{if(!chatIn.hidden)setTimeout(()=>{if(document.activeElement!==chatIn)chatOpen(false)},0)});
  addEventListener('keydown',e=>{if(e.key!=='Enter'||e.repeat||window.__typing||!MP.active||!MP.started||paused||window.__cut||MP.ended)return;e.preventDefault();chatOpen(true)});
  // chatfix (Petra 2026-10-11): touch players get a Chat button next to the other touch buttons; it opens chat and focuses the box inside the tap so the on-screen keyboard comes up.
@@ -4453,6 +4453,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
     ['pointerdown','mousedown','touchstart'].forEach(k=>ctb.addEventListener(k,e=>e.stopPropagation(),{passive:true}));
     ctb.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();if(!canChat())return;chatOpen(true);try{chatIn.focus()}catch(x){}})}}
    if(ctb){const tc=document.getElementById('tc');ctb.hidden=!(window.__touchMode&&canChat()&&chatIn.hidden&&tc&&!tc.hidden)}}catch(e){}},300);
+ /* spell (Petra 2026-10-12) */['contextmenu','mousedown','mouseup','pointerdown','pointerup','touchstart','touchend','click','dblclick'].forEach(k=>addEventListener(k,e=>{if(e.target===chatIn&&!chatIn.hidden)e.stopPropagation()},true));
  MP.chat={CST,open:chatOpen,send:chatSend,show:chatShow,clean,get log(){return LOG.map(l=>l.textContent)}};
  MP.dbg={drop:id=>dropPlayer(id),roster:()=>roster,P,AV,V,get FL(){return FL},readAll,hostGame,joinGame,hostStart,teardown,held,get sEV(){return sEV},get vote(){return vote},myReport};
 })();
@@ -6203,7 +6204,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  {const orj=MP.onRejoin;MP.onRejoin=(old,nw,aw)=>{if(MP.hz&&MP.host){const sw=a=>a.map(x=>x===old?nw:x);Z.ids=sw(Z.ids);Z.out=sw(Z.out);Z.asked=sw(Z.asked);if(Z.seeker===old){Z.seeker=nw;MP.hz.seeker=nw}}if(orj)return orj(old,nw,aw)}}
  const send=m=>{if(MP.host)MP.onH(MP.id,m);else MP.send(m)};
  // Petra 00:57Z: top of the scoreboard after 5 rounds (score = finds as seeker + rounds survived as a hider; ties all win) unlocks a reward, kept in localStorage
- // like the other Customize unlocks (hushCustU.hideseek; Customize lock key 'hideseek'). PLACEHOLDER item until Petra names the reward: 'Seeker crown' (look field hsCrown).
+ // like the other Customize unlocks (hushCustU.hideseek; Customize lock key 'hideseek'). Rewards (hsreward/apply.py): champion crown hsCrown, cardboard box hsBox, jade bracelet hsCamo.
  function unlockReward(){let o={};try{o=JSON.parse(localStorage.getItem('hushCustU')||'{}')||{}}catch(e){}const was=!!o.hideseek;o.hideseek=1;try{localStorage.setItem('hushCustU',JSON.stringify(o))}catch(e){}
   subtitle(was?'You topped the scoreboard again!':'You topped the scoreboard after 5 rounds! Rewards unlocked in Customize (Hide & Seek): champion crown, cardboard box and jade bracelet.',6000)}
  MP.hzUnlockReward=unlockReward;
@@ -7303,11 +7304,11 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,hideseek:!!o.hideseek,seen:!!a.seenall||SIA_DBG}}
  const lockKey=(k,v)=>{const L=LOCK[k];if(!L)return null;if(typeof L==='string')return v?L:null;return L[v]||null};
  const isOpen=(k,v,u)=>{const q=lockKey(k,v);return !q||!!(u||U())[q]};
- const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hbr:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,hsCrown:0,notie:0,nochk:0,hsBox:0,hsCamo:0};
+ const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hbr:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,hsCrown:0,notie:0,nochk:0,notag:0,hsBox:0,hsCamo:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','hbr','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','hsCrown','notie','nochk','hsBox','hsCamo'].forEach(k=>o[k]=lk[k]?1:0);o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','hbr','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','hsCrown','notie','nochk','notag','hsBox','hsCamo'].forEach(k=>o[k]=lk[k]?1:0);/* necktag: the name tag can only be off while invisible */if(!o.invis)o.notag=0;o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -7400,9 +7401,9 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  function hatSize(){if(!LOOK.that)return;const r0=sec.querySelector('[data-k="thp"]');if(!r0)return;const h2=document.createElement('h3');h2.textContent='Top hat size';const w=document.createElement('div');w.className='row';const rg=document.createElement('input');rg.type='range';rg.id='czThs';rg.min='40';rg.max='100';rg.step='5';rg.value=String(LOOK.ths==null?100:LOOK.ths);rg.setAttribute('aria-label','Top hat size');rg.style.cssText='flex:1 1 220px;min-width:0;accent-color:#c8202e;touch-action:none';const out=document.createElement('span');out.className='e';out.style.cssText='font-size:12px;color:#a49aa8;min-width:3em';out.textContent=rg.value+'%';
   rg.addEventListener('input',()=>{LOOK.ths=+rg.value;out.textContent=rg.value+'%';redoll()});rg.addEventListener('change',()=>{LOOK.ths=+rg.value;save()});w.append(rg,out);r0.parentNode.after(h2,w)}
  function pick(k,v,lockedHint){if(lockedHint){msg.textContent='Locked. '+lockedHint;return}msg.textContent='';const o=LOOK;
-  if(k==='tog'){if(v==='ears')o.ears=o.ears==null?0xf2ece4:null;else if(v==='chk')o.nochk=o.nochk?0:1;else if(v==='tie'&&o.outfit==='miku')o.notie=o.notie?0:1;else o[v]=o[v]?0:1;if(v==='duck'&&o.duck)squeak()}else if(k==='earc')o.ears=v;else o[k]=v;
+  if(k==='tog'){if(v==='ears')o.ears=o.ears==null?0xf2ece4:null;else if(v==='chk')o.nochk=o.nochk?0:1;else if(v==='tie'&&o.outfit==='miku')o.notie=o.notie?0:1;else o[v]=o[v]?0:1;if(v==='invis'&&!o.invis)o.notag=0;if(v==='duck'&&o.duck)squeak()}else if(k==='earc')o.ears=v;else o[k]=v;
   save();rows();redoll();const f=sec.querySelector('[data-k="'+k+'"][data-v="'+String(v)+'"]');if(f)f.focus()}
- function setInv(on){LOOK.invis=on?1:0;save();if(!pnl.hidden){rows();redoll()}}
+ function setInv(on){LOOK.invis=on?1:0;if(!on)LOOK.notag=0;save();if(!pnl.hidden){rows();redoll()}}
  let cvSq=0;function siaActs(u){if(!u.seen)return;const h=document.createElement('h3');h.textContent='Seen It All: actions';const r=document.createElement('div');r.className='row';sec.appendChild(h);sec.appendChild(r);
   const mk=(t,k,f)=>{const b=document.createElement('button');b.type='button';b.className='ch';b.textContent=t;b.dataset.sia=k;b.addEventListener('click',f);r.appendChild(b)};
   mk('Turn to dust','dust',()=>{if(doll&&dust(doll,{done:()=>{msg.textContent='...and back again.'}}))msg.textContent='You crumble into dust...'});
@@ -7576,7 +7577,10 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
    ld.addEventListener('click',()=>{if(!S[i].lk)return;const want=clean(S[i].lk);LOOK=want;LOOK=mine();const lost=JSON.stringify(LOOK)!==JSON.stringify(want);save();rows();redoll();msg.textContent='Loaded "'+nm()+'".'+(lost?' Some items are still locked, so they were left off.':'')});
    r.append(inp,e,sv,ld);box.appendChild(r)})},'slots');
  // ---------- end SLOTS v90 ----------
- window.__cust={genyaPose,genyaFire,genyaBang,genyaGun,build,key,clean,mine,open,close,U,dress,eff,LOCK,HINT,dust,squeak,seeThrough,setInv,INV_OP,invOp,bumpDust(){DZ++;safe(()=>{const mp=window.__mp;if(mp&&mp.setLook)mp.setLook(mine())},'mp')},get doll(){return doll},get look(){return LOOK}};
+ window.__cust={genyaPose,genyaFire,genyaBang,genyaGun,build,key,clean,mine,open,close,U,dress,eff,LOCK,HINT,dust,squeak,seeThrough,setInv,setNoTag(on){if(on&&!LOOK.invis)return;LOOK.notag=on?1:0;save();if(!pnl.hidden){rows();redoll()}},INV_OP,invOp,bumpDust(){DZ++;safe(()=>{const mp=window.__mp;if(mp&&mp.setLook)mp.setLook(mine())},'mp')},get doll(){return doll},get look(){return LOOK}};
+ /* necktag (Petra 2026-10-12, silver necklace that 'None' would not take off): an invite link, the auto-rejoin and Back to the lobby can connect before
+    this block has run, so the hello carried lk:null and the host kept the player's OLD look (or none). Push the real look as soon as it exists. */
+ safe(()=>{const mp=window.__mp;if(mp&&mp.active&&mp.setLook)mp.setLook(mine())},'mp');
 })();
 // ===== v102 (Petra): Genya's double-barrel pistol, the in-game hook. Cosmetic only (Petra): with the pistol equipped in Customize, R (or the touch
 // Fire button, or a click while it is raised) raises it, bangs and flashes (genyaBang). No hit test, no effect on the demon or anything else.
@@ -7618,7 +7622,11 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  // ---- invisibility: [I] toggles it (only once unlocked), a small HUD line while it is on ----
  XT.invOn=()=>{try{return !!C.mine().invis}catch(e){return false}};
  const hud=document.createElement('div');hud.id='siaInv';hud.style.cssText='position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);font:600 11px system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#bfe6ff;opacity:.75;pointer-events:none;z-index:3;text-shadow:0 0 6px #4aa8ff';hud.textContent='Invisible [I]';hud.hidden=true;document.body.appendChild(hud);
- setInterval(()=>safe(()=>{hud.hidden=!(XT.live&&XT.live()&&XT.invOn())},'hud'),300);
+ setInterval(()=>safe(()=>{hud.hidden=!(XT.live&&XT.live()&&XT.invOn());const t='Invisible [I] \u00b7 Tag '+(XT.tagOff()?'off':'on')+' [N]';if(hud.textContent!==t)hud.textContent=t},'hud'),300);
+ // necktag (Petra 2026-10-12): while invisible, [N] (or the touch Tag button) switches your name tag off for the other players; it comes back when you turn visible
+ XT.tagOff=()=>{try{const o=C.mine();return !!(o.invis&&o.notag)}catch(e){return false}};
+ addEventListener('keydown',e=>{if(e.code!=='KeyN'||e.repeat||window.__typing)return;const p=document.getElementById('czP');if(p&&!p.hidden)return;if(!C.U().seen||!XT.invOn())return;
+  const off=!XT.tagOff();C.setNoTag(off);safe(()=>subtitle(off?'Your name tag fades out too. Nobody can see it now. [N]':'Your name tag is back. [N]',2000))});
  addEventListener('keydown',e=>{if(e.code!=='KeyI'||e.repeat||window.__typing)return;const p=document.getElementById('czP');if(p&&!p.hidden)return;if(!C.U().seen)return;
   const on=!XT.invOn();C.setInv(on);safe(()=>subtitle(on?'You fade out until you can barely see your own hands. [I]':'You are solid again. [I]',2000))});
  // the rubber duck squeaks when you jump
@@ -7648,9 +7656,9 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  addEventListener('keydown',e=>{if(e.code!=='KeyK'||e.repeat||window.__typing)return;if(XT.bladeFight&&XT.bladeFight.S)return;safe(()=>{if(dustMe())subtitle('You crumble into dust... [K]',2000)},'K')});
  // ---- touch: two extra buttons (Invisible, Dust), only on touch devices, only once unlocked, only while playing ----
  safe(()=>{const st=document.createElement('style');st.textContent='#siaT{position:fixed;right:calc(env(safe-area-inset-right,0px) + 14px);top:calc(env(safe-area-inset-top,0px) + 38%);display:flex;flex-direction:column;gap:8px;z-index:6}#siaT button{width:66px;height:44px;border-radius:22px;font:600 .6rem system-ui,sans-serif;color:#f0e6d6;background:rgba(20,18,24,.55);border:1px solid rgba(224,184,112,.5);touch-action:manipulation}#siaT button.on{background:rgba(74,168,255,.45);border-color:#bfe6ff}';document.head.appendChild(st);
-  const T=document.createElement('div');T.id='siaT';T.hidden=true;T.innerHTML='<button type="button" data-k="KeyI" aria-label="Toggle invisibility">Invisible</button><button type="button" data-k="KeyK" aria-label="Turn to dust">Dust</button>';document.body.appendChild(T);
+  const T=document.createElement('div');T.id='siaT';T.hidden=true;T.innerHTML='<button type="button" data-k="KeyI" aria-label="Toggle invisibility">Invisible</button><button type="button" data-k="KeyK" aria-label="Turn to dust">Dust</button><button type="button" data-k="KeyN" aria-label="Toggle name tag" hidden>Tag</button>';document.body.appendChild(T);
   T.querySelectorAll('button').forEach(b=>{['pointerdown','touchstart','mousedown','click'].forEach(t=>b.addEventListener(t,e=>{e.stopPropagation();if(t==='click'){e.preventDefault();document.dispatchEvent(new KeyboardEvent('keydown',{code:b.dataset.k,key:b.dataset.k,bubbles:true}));document.dispatchEvent(new KeyboardEvent('keyup',{code:b.dataset.k,key:b.dataset.k,bubbles:true}))}},{passive:false}))});
-  setInterval(()=>safe(()=>{const tc=document.getElementById('tc');T.hidden=!(window.__touchMode&&C.U().seen&&XT.live&&XT.live()&&tc&&!tc.hidden);T.firstChild.classList.toggle('on',XT.invOn())},'vis'),300)},'touch');
+  setInterval(()=>safe(()=>{const tc=document.getElementById('tc');T.hidden=!(window.__touchMode&&C.U().seen&&XT.live&&XT.live()&&tc&&!tc.hidden);T.firstChild.classList.toggle('on',XT.invOn());const tb=T.querySelector('[data-k="KeyN"]');tb.hidden=!XT.invOn();const off=XT.tagOff();tb.classList.toggle('on',off);tb.textContent=off?'Tag off':'Tag';tb.setAttribute('aria-pressed',off?'true':'false')},'vis'),300)},'touch');
  // ---- the hunt while invisible: it comes, but it cannot see you. It wanders; if it gets close (about 2 m) it notices you and locks on.
  // Hide in a closet while it is locked on and the normal closet search takes over; stay away from it for 20 s and it gives up. ----
  let S=null;const D=DEMON.dbg,g=D.g;
