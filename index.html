@@ -808,7 +808,7 @@ const BSM=(function(){const sat=v=>Math.max(0,Math.min(1,v));const G=new THREE.G
   [98,123.5,146.8,196].forEach((f,i)=>{const o=AC.createOscillator();o.type='sawtooth';o.frequency.value=f*(1+(Math.random()-.5)*.01);[520,900,2400].forEach((ff,k)=>{const b=AC.createBiquadFilter();b.type='bandpass';b.frequency.value=ff+i*20;b.Q.value=7;const gg=AC.createGain();gg.gain.value=[.8,.5,.15][k];o.connect(b).connect(gg).connect(am)});o.start()});
   const lo=AC.createOscillator();lo.frequency.value=49;const lgn=AC.createGain();lgn.gain.value=.5;lo.connect(lgn).connect(out);lo.start();return out}
  const altarLbl=()=>R.st===2||R.st===3?(window.__xt&&__xt.altarLbl?__xt.altarLbl(R.st):'The altar'):R.st===1&&clk<R.cT?'Begin the ritual (E again)':'Altar';let clk=0;
- hitB(.8,1.2,.6,-3.0,BF+1.1,-10.5,altarLbl,()=>{if(R.st>=2){try{window.__xt&&__xt.altar&&__xt.altar(R.st)}catch(err){console.error(err)}return}if(R.st===1&&clk<R.cT){R.st=2;R.t=0;R.chant=chant();subtitle('You speak the words written in the ledger.',3500);return}R.st=1;R.cT=clk+5;subtitle('Begin the ritual? (E again)',5000)});
+ hitB(.8,1.2,.6,-3.0,BF+1.1,-10.5,altarLbl,()=>{if(window.__mp&&__mp.hz&&__mp.active){subtitle('Not tonight. The portal stays shut during Hide & Seek.',2500);return}if(R.st>=2){try{window.__xt&&__xt.altar&&__xt.altar(R.st)}catch(err){console.error(err)}return}if(R.st===1&&clk<R.cT){R.st=2;R.t=0;R.chant=chant();subtitle('You speak the words written in the ledger.',3500);return}R.st=1;R.cT=clk+5;subtitle('Begin the ritual? (E again)',5000)});
  const tbc=document.getElementById('tbc');
  function fadeOut(){R.st=4;tbc.hidden=false;requestAnimationFrame(()=>tbc.classList.add('on'));if(R.chant&&AC)R.chant.gain.linearRampToValueAtTime(0,AC.currentTime+2.5);setTimeout(()=>{window.__tbc=true;if(document.pointerLockElement)document.exitPointerLock();if(AC)setTimeout(()=>AC&&AC.suspend(),800)},2600)}
  // --- hints around the house (subtle) ---
@@ -6157,12 +6157,12 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
 // ===== Hide & Seek (Petra 2026-10-12): a multiplayer-only mode. One player is the seeker (random, or picked by the host in the lobby); the rest hide.
 // 30 s to hide (the seeker is frozen and blind), then 5 minutes to find everyone. A found hider is out and becomes a ghost (living players cannot see ghosts).
 // Found: the seeker presses E (touch: Use) facing a hider within 1.5 m, or opens the hiding spot a hider is in (E on the closet / bed / tub: "Search ...").
-// Hints: at Lilith's crib the seeker presses H (touch: Ask Lilith), picks one of the remaining hiders, and Lilith gives up to 3 hints per hider per round, each narrower (floor, room, spot). At 2:00 left hiders freeze in place.
+// Hints: at Lilith's crib the seeker presses H (touch: Ask Lilith), picks one of the remaining hiders, and Lilith gives up to 3 hints per hider per round, each narrower (floor, room, spot). At 1:00 left hiders freeze in place. 30 s between hints. No ritual/portal to the demon realm in this mode.
 // Hiders win if anyone is still hidden when time runs out; the seeker wins by finding everyone. Name tags are hidden. Voice and text chat work as usual.
 // The demon, night events, phone calls, endings, achievements and the endings gallery counter are all off. Host authoritative: the round state is one field ('hz', in buildFields).
 (function(){'use strict';const XT=window.__xt,MP=window.__mp;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush hz] '+(t||''),e)}};
  if(!XT||!MP)return;
- const HIDE_S=30,SEEK_S=300,WAIT_S=25,BREAK_S=12,SESSION=5,TAG_R=1.5,TAG_R_HOST=2.3,SEARCH_R=2.6,HINT_R=2.4,HINTS=3,FREEZE_T=120;
+ const HIDE_S=30,SEEK_S=300,WAIT_S=25,BREAK_S=12,SESSION=5,TAG_R=1.5,TAG_R_HOST=2.3,SEARCH_R=2.6,HINT_R=2.4,HINTS=3,FREEZE_T=60,HINT_CD=30;
  const on=()=>!!(MP.hz&&MP.active&&MP.started);
  const C=()=>CARE.dbg;
  // round state (the host's is the truth; clients copy it from the field)
@@ -6210,7 +6210,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  function newRound(){const ids=MP.roster().map(p=>p.id);let pool=ids.filter(id=>id!==Z.seeker);if(!pool.length)pool=ids;const sk=pool[Math.floor(Math.random()*pool.length)];
   Z={ph:'hide',t:HIDE_S,seeker:sk,ids:ids.filter(id=>id!==sk),out:[],asked:[],win:'',why:'',rn:(Z.rn|0)+1,sc:(Z.rn%SESSION===0)?{}:Z.sc,surv:[]};MP.hz.seeker=sk;dl=now()+HIDE_S*1000;newRoundLocal();MP.subAll('(New round! '+name(sk)+' is the seeker. Hide!)',4000)}
  // every player: back to life, back to the front hall
- function newRoundLocal(){rnSeen=Z.rn;MP.hz.seeker=Z.seeker;MP.seeker=Z.seeker===MP.id;endShown=false;en.hidden=true;closePick();
+ function newRoundLocal(){rnSeen=Z.rn;hintAt=-1e9;MP.hz.seeker=Z.seeker;MP.seeker=Z.seeker===MP.id;endShown=false;en.hidden=true;closePick();
   safe(()=>{if(XT.hide&&XT.hide.hid)XT.hide.leave()},'leave');
   if(MP.ghost){MP.ghost=false;const g=document.getElementById('mpGhost');if(g)g.hidden=true}
   safe(()=>{seated=null;const sl=(MP.roster().find(p=>p.id===MP.id)||{slot:0}).slot;fy=F;vy=0;cam.position.set(mX(4.8)+(sl-1.5)*.6,F+1.6,mZ(7.6));yaw=0;pitch=0;if(typeof STR!=='undefined'&&blocked(cam.position.x,cam.position.z))STR.unstick()},'spawn');
@@ -6227,8 +6227,9 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  function floorOf(r){if(!r)return 'somewhere';if(r.ar==='r')return 'somewhere very strange';const hs=r.hid?XT.hide.SPOTS.find(s=>s.id===r.hs):null;if(hs&&hs.out)return 'outside';const y=hs?hs.fl:r.y;
   if(y<-4.3)return 'in the basement';if(y>-1.45)return 'upstairs';
   if(r.z>9.8)return 'outside';if(r.x<-4&&r.z>-3.5&&r.z<3.5)return 'in the garage';return 'on the ground floor'}
+ let hHT={rn:0,t:0};// host only: when Lilith last gave a hint (30 s cooldown, Petra 20:33Z)
  function hostHint(pid,m){if(Z.ph!=='seek'||pid!==Z.seeker)return;const sr=MP.repOf(pid);if(!sr||!nearCrib(mX(sr.x),mZ(sr.z),sr.y))return;
-  const id=m.id;if(!left().includes(id)||Z.asked.filter(x=>x===id).length>=HINTS)return;Z.asked.push(id);
+  if(hHT.rn===Z.rn&&now()-hHT.t<HINT_CD*1000-500)return;const id=m.id;if(!left().includes(id)||Z.asked.filter(x=>x===id).length>=HINTS)return;Z.asked.push(id);hHT={rn:Z.rn,t:now()};
   const k=Z.asked.filter(x=>x===id).length;MP.sendTo(pid,{t:'zhr',id,n:name(id),k,f:hintText(MP.repOf(id),k,camoOf(id))})}
  // Petra 20:22Z: a hider wearing the jade bracelet gets sharper hints: 1 room + floor ('in the bathroom upstairs'), 2 the nearest hiding spot, 3 exact (in it / in the open)
  const camoOf=id=>{try{if(id===MP.id)return !!(window.__cust&&__cust.mine().hsCamo);const a=MP.dbg.AV.get(id);return !!(a&&a.cam)}catch(e){return false}};
@@ -6255,7 +6256,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    case 'zgo':subtitle(isSeeker()?'Ready or not, here you come! Find them all in 5 minutes.':'(Ready or not... '+name(Z.seeker)+' is looking for you.)',4000);return;
    case 'zfound':if(m.id===MP.id)safe(beFound,'found');else subtitle('('+name(m.id)+' was found!)',3000);return;
    case 'zno':subtitle('Nobody in there.',1500);return;
-   case 'zhr':if(!MP.host&&Z.asked.filter(x=>x===m.id).length<(m.k||1))Z.asked.push(m.id);safe(()=>{XT.voice&&XT.voice('ba ba da','child',1.1,.3)},'coo');subtitle('Lilith babbles and points ('+(m.k||1)+'/'+HINTS+'). '+m.n+' is '+m.f+'.',6000);return;
+   case 'zhr':hintAt=now();if(!MP.host&&Z.asked.filter(x=>x===m.id).length<(m.k||1))Z.asked.push(m.id);safe(()=>{XT.voice&&XT.voice('ba ba da','child',1.1,.3)},'coo');subtitle('Lilith babbles and points ('+(m.k||1)+'/'+HINTS+'). '+m.n+' is '+m.f+'.',6000);return;
    case 'zend':return;
    case 'zrw':if((m.ids||[]).includes(MP.id))safe(unlockReward,'reward');else subtitle('('+m.ids.map(name).join(' and ')+' topped the 5 rounds.)',4000);return}
   if(oc)return oc(m)}}
@@ -6284,7 +6285,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // ---------- seeker: the hint (H at the crib) ----------
  const pk=document.createElement('div');pk.id='zPick';pk.hidden=true;document.body.appendChild(pk);
  function canHint(){return on()&&Z.ph==='seek'&&isSeeker()&&!MP.ghost&&nearCrib(cam.position.x,cam.position.z,fy)}
- function openPick(){if(!canHint())return;const L=left().filter(id=>Z.asked.filter(x=>x===id).length<HINTS);
+ let hintAt=-1e9;const cdLeft=()=>Math.max(0,Math.ceil(HINT_CD-(now()-hintAt)/1000));
+ function openPick(){if(!canHint())return;if(cdLeft()>0){subtitle('Lilith needs a moment. Next hint in '+cdLeft()+' s.',2000);return}const L=left().filter(id=>Z.asked.filter(x=>x===id).length<HINTS);
   if(!L.length){subtitle('Lilith yawns. She has told you all she knows this round.',2500);return}
   pk.innerHTML='<div class="pp" role="dialog" aria-label="Ask Lilith"><h2>Ask Lilith</h2><p>Who should she tell you about? Three hints per person each round, each one closer.</p>'+L.map(id=>'<button type="button" data-id="'+String(id).replace(/"/g,'')+'">'+MP.chat.clean(name(id)).replace(/[<>&]/g,'')+' ('+(Z.asked.filter(x=>x===id).length+1)+'/'+HINTS+')</button>').join('')+'<button type="button" class="x" data-id="">Never mind</button></div>';
   pk.hidden=false;if(document.pointerLockElement)document.exitPointerLock();window.__typing=true}
@@ -6343,8 +6345,8 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   // the seeker is frozen until the count ends
   if(isSeeker()&&(Z.ph==='wait'||Z.ph==='hide')){if(!pin)pin={x:cam.position.x,z:cam.position.z,y:fy};cam.position.x=pin.x;cam.position.z=pin.z;
    ['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight'].forEach(k=>keys[k]=false);if(window.__joy){__joy.x=0;__joy.y=0}}else pin=null;
-  // Petra 2026-10-13: at 2:00 left in the seek, every hider still in play is frozen in place for the rest of the round (look around and chat still work). Z.t comes from the host field
-  if(frozen()){if(!fpin){fpin={x:cam.position.x,z:cam.position.z};subtitle("Two minutes left: you're frozen in place!",4000)}if(!(XT.hide&&XT.hide.hid)&&!seated){cam.position.x=fpin.x;cam.position.z=fpin.z}
+  // Petra 2026-10-13: (was 2:00; Petra 20:33Z: now 1:00) at 1:00 left in the seek, every hider still in play is frozen in place for the rest of the round (look around and chat still work). Z.t comes from the host field
+  if(frozen()){if(!fpin){fpin={x:cam.position.x,z:cam.position.z};subtitle("One minute left: you're frozen in place!",4000)}if(!(XT.hide&&XT.hide.hid)&&!seated){cam.position.x=fpin.x;cam.position.z=fpin.z}
    ['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight'].forEach(k=>keys[k]=false);if(window.__joy){__joy.x=0;__joy.y=0}}else fpin=null});
  addEventListener('keydown',e=>{if(e.code==='KeyE'&&!e.repeat&&!window.__typing&&frozen()){e.stopImmediatePropagation();subtitle("You're frozen in place.",1200)}},true);
  window.__hzFrz=()=>frozen();
