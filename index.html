@@ -4632,9 +4632,10 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 #achP button{margin-top:.7rem;font:600 .82rem var(--ui);color:#f4ecdc;background:#3a1e1a;border:1px solid #5a2e28;border-radius:5px;padding:.5rem 1rem;cursor:pointer}`;document.head.appendChild(css);
  const toast=document.createElement('div');toast.id='achT';toast.setAttribute('role','status');document.body.appendChild(toast);
  const Q=[];let busy=false;
- function showNext(){if(busy||!Q.length)return;busy=true;const a=Q.shift();toast.innerHTML='<small>Achievement</small>'+a.n;toast.classList.add('on');
+ function showNext(){if(busy||!Q.length)return;busy=true;const a=Q.shift();toast.innerHTML='<small>'+(a.lbl||'Achievement')+'</small>'+a.n;toast.classList.add('on');
   setTimeout(()=>{toast.classList.remove('on');setTimeout(()=>{busy=false;showNext()},500)},3600)}
  XT.achUnlock=id=>unlock(id);
+ XT.achToast=(n,lbl)=>{Q.push({n,lbl});showNext()};// hs5: toast only (Hide & Seek unlocks; the achievement list is off in that mode)
  function unlock(id){if(got[id])return;const a=A.find(x=>x.id===id);if(!a)return;got[id]=Date.now();ls.set(got);Q.push(a);showNext();draw()}
  // the list, on the title screen
  const btn=document.createElement('button');btn.id='achB';btn.type='button';safe(()=>document.getElementById('title').appendChild(btn),'btn');
@@ -6200,15 +6201,19 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   if(Z.ph==='end'){if(T>=dl){newRound();return}Z.t=Math.max(0,Math.ceil((dl-T)/1000));return}
   if(!present(Z.seeker)){finish('hide','The seeker left.');return}
   if(Z.ph==='wait'){const P=MP.dbg.P;let ready=!window.__cut;MP.roster().forEach(p=>{if(p.id===MP.id)return;const q=P.get(p.id);if(!q||!q.rep||q.rep.ct)ready=false});
-   if(ready||T>=dl){Z.ph='hide';dl=T+HIDE_S*1000;MP.subAll('(Hide! '+name(Z.seeker)+' is counting to thirty.)',3500)}}
+   if(ready||T>=dl){Z.ph='hide';Z.np=1+Z.ids.filter(present).length;dl=T+HIDE_S*1000;MP.subAll('(Hide! '+name(Z.seeker)+' is counting to thirty.)',3500)}}
   else if(Z.ph==='hide'){if(T>=dl){Z.ph='seek';dl=T+SEEK_S*1000;MP.toAll({t:'zgo'})}}
-  else if(Z.ph==='seek'){if(!left().length){finish('seek','Everyone was found.');return}if(T>=dl){finish('hide',left().length===1?name(left()[0])+' was never found.':left().length+' hiders were never found.');return}}
+  else if(Z.ph==='seek'){if(!left().length){finish('seek','Everyone was found.');return}if(T>=dl){finish('hide',left().length===1?name(left()[0])+' was never found.':left().length+' hiders were never found.');lastStand();return}}
   Z.t=Math.max(0,Math.ceil((dl-T)/1000))}
+ // hs5 (Petra 2026-10-13): 'Last one standing': a hider still unfound when the seek timer runs out, in a round that started with 3+ players
+ // (seeker included). Only a full round counts (not 'the seeker left'). Host decides and sends 'zls'; each winner stores hushCustU.laststand
+ // (Customize lock key 'laststand', no item yet).
+ function lastStand(){if((Z.np|0)<3||!Z.surv.length)return;MP.toAll({t:'zls',ids:Z.surv.slice()})}
  function finish(w,why){Z.ph='end';Z.win=w;Z.why=why;Z.surv=left();Z.surv.forEach(id=>{const q=Z.sc[id]||(Z.sc[id]=[0,0]);q[1]++});Z.champ=[];if(Z.rn%SESSION===0){const pts=id=>{const q=Z.sc[id]||[0,0];return q[0]+q[1]},ids=MP.roster().map(p=>p.id),top=Math.max(0,...ids.map(pts));if(top>0)Z.champ=ids.filter(id=>pts(id)===top);if(Z.champ.length)MP.toAll({t:'zrw',ids:Z.champ})}
   dl=now()+BREAK_S*1000;Z.t=BREAK_S;MP.toAll({t:'zend',w,why})}
  // Petra 00:54Z: no lobby between rounds. After the scoreboard a new round starts with a new random seeker (not the last one, when there is a choice)
  function newRound(){const ids=MP.roster().map(p=>p.id);let pool=ids.filter(id=>id!==Z.seeker);if(!pool.length)pool=ids;const sk=pool[Math.floor(Math.random()*pool.length)];
-  Z={ph:'hide',t:HIDE_S,seeker:sk,ids:ids.filter(id=>id!==sk),out:[],asked:[],win:'',why:'',rn:(Z.rn|0)+1,sc:(Z.rn%SESSION===0)?{}:Z.sc,surv:[]};MP.hz.seeker=sk;dl=now()+HIDE_S*1000;newRoundLocal();MP.subAll('(New round! '+name(sk)+' is the seeker. Hide!)',4000)}
+  Z={ph:'hide',t:HIDE_S,seeker:sk,ids:ids.filter(id=>id!==sk),out:[],asked:[],win:'',why:'',rn:(Z.rn|0)+1,sc:(Z.rn%SESSION===0)?{}:Z.sc,surv:[],np:ids.length};MP.hz.seeker=sk;dl=now()+HIDE_S*1000;newRoundLocal();MP.subAll('(New round! '+name(sk)+' is the seeker. Hide!)',4000)}
  // every player: back to life, back to the front hall
  function newRoundLocal(){rnSeen=Z.rn;hintAt=-1e9;MP.hz.seeker=Z.seeker;MP.seeker=Z.seeker===MP.id;endShown=false;en.hidden=true;closePick();
   safe(()=>{if(XT.hide&&XT.hide.hid)XT.hide.leave()},'leave');
@@ -6239,7 +6244,13 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const inPh=id=>/^(under|behind|between)/.test(NOUN[id])?NOUN[id]:id==='tree'?'up in the tree':'in '+NOUN[id];
  const nearPh=id=>/^(under|behind|between)/.test(NOUN[id])?'by the spot '+NOUN[id]:'near '+NOUN[id];
  function nearSpotOf(r,maxD){let b=null,bd=maxD;XT.hide.SPOTS.forEach(s=>{if(!ROOM[s.id]||Math.abs(r.y-s.fl)>1.3)return;const d=Math.hypot(r.x-s.ex[0],r.z-s.ex[1]);if(d<bd){bd=d;b=s}});return b}
- function hintText(r,k,camo){if(!r)return 'somewhere';if(r.ar==='r')return floorOf(r);
+ // hs5 (Petra 2026-10-13): the basement is split into named areas for hint 2 (and the bracelet's hint 1). Model coords: ritual room west of the
+ // passage (x<.4, altar at -3.2,-10.7); furnace / water heater / laundry / utility cupboard on the east wall (x>=7.9); storage shelves + crates along
+ // the south wall (z<-11.6); the stairs come down at x 6.15-7.15 onto z -7.6; workbench on the north wall (x 1.2-3.2); sheeted baby furniture in the middle
+ function bArea(x,z){if(x<.4)return 'by the altar';if(x>=7.9)return 'on the furnace side';if(z<-11.6)return 'by the storage shelves';if(x>=5.4&&z>-9.6)return 'by the stairs';if(z>-8.9&&x<4)return 'by the workbench';return 'among the furniture under the sheets'}
+ function bAreaOf(r){const sp=r.hid?XT.hide.SPOTS.find(s=>s.id===r.hs):null;return sp?bArea(sp.ex[0],sp.ex[1]):bArea(r.x,r.z)}
+ function hintText(r,k,camo){const t=hintText0(r,k,camo);return t==='in the basement'&&k===2&&r&&!camo?'in the basement, '+bAreaOf(r):t}
+ function hintText0(r,k,camo){if(!r)return 'somewhere';if(r.ar==='r')return floorOf(r);
   if(camo){const room=hintText(r,2);if(k<=1){const fl=floorOf(r);return room+(/yard|garage|basement/.test(room)?'':fl==='upstairs'?' upstairs':fl==='on the ground floor'?' downstairs':'')}
    if(k===2){const sp=r.hid&&ROOM[r.hs]?XT.hide.SPOTS.find(s=>s.id===r.hs):nearSpotOf(r,99);return sp?nearPh(sp.id):room}return hintText(r,3)}
   if(k<=1)return floorOf(r);
@@ -6258,6 +6269,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    case 'zno':subtitle('Nobody in there.',1500);return;
    case 'zhr':hintAt=now();if(!MP.host&&Z.asked.filter(x=>x===m.id).length<(m.k||1))Z.asked.push(m.id);safe(()=>{XT.voice&&XT.voice('ba ba da','child',1.1,.3)},'coo');subtitle('Lilith babbles and points ('+(m.k||1)+'/'+HINTS+'). '+m.n+' is '+m.f+'.',6000);return;
    case 'zend':return;
+   case 'zls':if((m.ids||[]).includes(MP.id))safe(unlockLastStand,'laststand');return;
    case 'zrw':if((m.ids||[]).includes(MP.id))safe(unlockReward,'reward');else subtitle('('+m.ids.map(name).join(' and ')+' topped the 5 rounds.)',4000);return}
   if(oc)return oc(m)}}
  {const orj=MP.onRejoin;MP.onRejoin=(old,nw,aw)=>{if(MP.hz&&MP.host){const sw=a=>a.map(x=>x===old?nw:x);Z.ids=sw(Z.ids);Z.out=sw(Z.out);Z.asked=sw(Z.asked);if(Z.seeker===old){Z.seeker=nw;MP.hz.seeker=nw}}if(orj)return orj(old,nw,aw)}}
@@ -6267,6 +6279,9 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  function unlockReward(){let o={};try{o=JSON.parse(localStorage.getItem('hushCustU')||'{}')||{}}catch(e){}const was=!!o.hideseek;o.hideseek=1;try{localStorage.setItem('hushCustU',JSON.stringify(o))}catch(e){}
   subtitle(was?'You topped the scoreboard again!':'You topped the scoreboard after 5 rounds! Rewards unlocked in Customize (Hide & Seek): champion crown, cardboard box and jade bracelet.',6000)}
  MP.hzUnlockReward=unlockReward;
+ function unlockLastStand(){let o={};try{o=JSON.parse(localStorage.getItem('hushCustU')||'{}')||{}}catch(e){}const was=!!o.laststand;o.laststand=1;try{localStorage.setItem('hushCustU',JSON.stringify(o))}catch(e){}
+  if(!was){safe(()=>XT.achToast&&XT.achToast('Last one standing','Unlocked'),'toast');subtitle('Last one standing: you were never found in a round of 3 or more players!',5000)}}
+ MP.hzUnlockLastStand=unlockLastStand;
  function beFound(){if(MP.ghost)return;MP.die('Found.','');setTimeout(()=>subtitle(name(Z.seeker)+' found you. You are a ghost now: watch, haunt and chat.',5000),50)}
 
  // ---------- seeker: tag (E) ----------
@@ -7339,6 +7354,44 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   anim(r,t=>{g.position.y=.36+.015*Math.sin(t*2.2);g.rotation.y=t*.6})}
  // Hide & Seek cardboard box disguise: a plain box over the player, legs out of the bottom
  function hsBox(body){const m=P(0xb08048);bx(.74,1.32,.66,m,0,1.21,0,body)}
+ // ---------- Last one standing rewards (Petra 2026-10-13 22:14Z; lock key 'laststand') ----------
+ // Shadow aura (Petra 22:29Z, replaces the cloak; the look key stays 'hsCloak' so saved looks and sync keep working): no garment, just dark wisps
+ // hugging the whole silhouette, tendrils rising and drifting, a faint dark shadow on the ground. Every sprite animates its own userData.op0 and keeps
+ // the factor the ghost / invisible pass applied; below half strength (ghost .28, invisible ~.03) the aura is switched off completely.
+ const smokeTex=()=>patTexN('ls-smoke',64,q=>{const g=q.createRadialGradient(32,32,2,32,32,30);g.addColorStop(0,'rgba(27,12,42,1)');g.addColorStop(.45,'rgba(35,18,55,.6)');g.addColorStop(1,'rgba(40,21,62,0)');q.fillStyle=g;q.fillRect(0,0,64,64)});
+ const wispTex=()=>patTexN('ls-wisp',64,q=>{q.clearRect(0,0,64,64);for(let i=0;i<5;i++){const g=q.createRadialGradient(32,60-i*12,1,32,60-i*12,14-i*1.6);g.addColorStop(0,'rgba(29,12,47,'+(.8-i*.13)+')');g.addColorStop(1,'rgba(29,12,47,0)');q.fillStyle=g;q.fillRect(0,0,64,64)}});
+ const groundTex=()=>patTexN('ls-ground',64,q=>{const g=q.createRadialGradient(32,32,0,32,32,32);g.addColorStop(0,'rgba(14,5,24,.85)');g.addColorStop(.6,'rgba(16,6,27,.35)');g.addColorStop(1,'rgba(16,6,27,0)');q.fillStyle=g;q.fillRect(0,0,64,64)});
+ function hsCloak(body,h){const tx=smokeTex(),wt=wispTex(),pf=[];
+  const mk=(map,par,b)=>{const mt=new THREE.SpriteMaterial({map,color:0xffffff,transparent:true,opacity:0,depthWrite:false,fog:false});mt.userData.op0=0;const sp=new THREE.Sprite(mt);sp.renderOrder=2;sp.userData.noTrack=1;par.add(sp);pf.push(Object.assign({sp},b));return sp};
+  // the silhouette: [y, half width, half depth] bands from the feet to the top of the head
+  const B=[[.08,.16,.12],[.4,.17,.12],[.75,.2,.13],[1.05,.27,.15],[1.35,.3,.15],[1.62,.17,.16],[1.82,.13,.13]];
+  B.forEach(([y,w,d],j)=>{const n=j>=5?9:13;for(let i=0;i<n;i++){const a=i/n*Math.PI*2+j*.5;mk(tx,body,{x:Math.sin(a)*(w+.07),y,z:Math.cos(a)*(d+.07),o:(i*.37+j*.21)%1,sp0:.32+.1*((i+j)%3),rise:.2,sz:.5+.06*(j%2),out:.5,op:.5})}});
+  // rising tendrils
+  for(let i=0;i<8;i++){const a=i/8*Math.PI*2+.3;mk(wt,body,{x:Math.sin(a)*.3,y:.9+(i%3)*.35,z:Math.cos(a)*.22,o:i*.137%1,sp0:.22,rise:.9,sz:.42,out:.9,op:.7,tall:1,sw:i})}
+  // ground shadow
+  const gm=new THREE.MeshBasicMaterial({map:groundTex(),transparent:true,opacity:.6,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});gm.userData.op0=.6;
+  const gr=new THREE.Mesh(new THREE.PlaneGeometry(1.1,1.1),gm);gr.rotation.x=-Math.PI/2;gr.position.y=.01;gr.userData.noTrack=1;body.add(gr);
+  anim(gr,t=>{const f0=gm.userData.op0>0?gm.opacity/gm.userData.op0:1,on=f0>.5;gm.userData.op0=.6;gm.opacity=on?.6:0;
+   pf.forEach(q=>{const k=(t*q.sp0+q.o)%1,mt=q.sp.material,v=Math.sin(Math.PI*k)*q.op;mt.userData.op0=v;mt.opacity=on?v:0;
+    const s=q.sz*(.7+.8*k),dr=Math.sin(t*1.3+q.o*9)*.05;q.sp.scale.set(q.tall?s*.6:s,q.tall?s*1.6:s,1);q.sp.position.set(q.x*(1+q.out*k)+dr,q.y+q.rise*k,q.z*(1+q.out*k)+(q.tall?Math.cos(t+q.sw)*.05:0))})})}
+ // Footstep trail: faint shoe prints in a dim glowing light blue that fade after a few seconds (world-space, see LSTRAIL below). Petra 22:29Z: they must read
+ // as prints: a sole with a wide ball, a narrow arch and a round heel, tread lines, left and right mirrored. The texture is a LEFT print, toe at the top.
+ let FTX=null;const footTex=()=>{if(FTX)return FTX;const c=document.createElement('canvas');c.width=64;c.height=128;const q=c.getContext('2d');
+  q.fillStyle='#fff';q.shadowColor='#fff';q.shadowBlur=4;
+  // forefoot: wide ball, big-toe side (right, x>32) fuller and longer
+  q.beginPath();q.moveTo(36,4);q.bezierCurveTo(54,6,58,30,54,50);q.bezierCurveTo(52,64,44,70,32,70);q.bezierCurveTo(18,70,12,62,11,50);q.bezierCurveTo(9,30,18,8,36,4);q.fill();
+  // arch: a thin faint strip along the OUTER edge only (left side), like a real print
+  q.globalAlpha=.35;q.beginPath();q.moveTo(12,62);q.bezierCurveTo(14,76,16,84,18,92);q.lineTo(30,92);q.bezierCurveTo(26,84,24,76,26,68);q.closePath();q.fill();q.globalAlpha=1;
+  // heel: rounded, a bit narrower
+  q.beginPath();q.ellipse(29,106,15,18,-.05,0,7);q.fill();q.shadowBlur=0;
+  // a few tread grooves
+  q.globalCompositeOperation='destination-out';q.fillStyle='rgba(0,0,0,.55)';[22,34,46,58].forEach(y=>{q.beginPath();q.ellipse(33,y,22,1.4,0,0,7);q.fill()});[100,112].forEach(y=>{q.beginPath();q.ellipse(29,y,11,1.3,0,0,7);q.fill()});
+  FTX=new THREE.CanvasTexture(c);return FTX};
+ const footMat=()=>new THREE.MeshBasicMaterial({map:footTex(),color:0x8fd8ff,transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,fog:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4});
+ const footGeo=new THREE.PlaneGeometry(.12,.26);footGeo.rotateX(-Math.PI/2);
+ const FOOT_OP=.42,FOOT_LIFE=6;
+ function trailPreview(doll){const ps=[];for(let i=0;i<8;i++){const m=new THREE.Mesh(footGeo,footMat());m.userData.noFade=1;m.position.set(-1.15+i*.15,.012,-.35+(i%2?-.06:.06));m.rotation.y=-Math.PI/2;m.scale.x=i%2?1:-1;doll.add(m);ps.push(m)}
+  anim(ps[0],t=>ps.forEach((m,i)=>{const age=((t*1.6-(7-i))%8+8)%8;m.material.opacity=FOOT_OP*Math.max(0,1-age/6)}))}
  function disco(h){const mt=patTexN('sia-disco',64,q=>{for(let i=0;i<8;i++)for(let j=0;j<8;j++){const v=120+Math.random()*135|0;q.fillStyle='rgb('+v+','+v+','+(v+10>255?255:v+10)+')';q.fillRect(i*8,j*8,8,8);q.fillStyle='#202028';q.fillRect(i*8,j*8,8,1);q.fillRect(i*8,j*8,1,8)}},1);
   const g=new THREE.Group();g.position.set(0,.5,0);h.add(g);const b=new THREE.Mesh(new THREE.SphereGeometry(.075,14,10),new THREE.MeshPhongMaterial({map:mt,color:0xffffff,emissive:0x3a3a48,shininess:200,specular:0xffffff,flatShading:true}));g.add(b);
   bx(.02,.012,.02,P(0xb8bcc4,{shininess:100,specular:0xffffff}),0,.08,0,g);
@@ -7490,23 +7543,23 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  // what unlocks what (keys of U())
  const LOCK={hair:{maomao:'pin',nezuko:'blade',miku:'miku',teto:'tetoh',shinobu:'shinobu',mitsuri:'mitsuri',muichiro:'muichiro',genya:'genya',genyad:'genya'},hc:{jade:'pin',grad:'blade',teal:'miku',teto:'teto',shinobu:'shinobu',mitsuri:'mitsuri',inosuke:'inosuke',zenitsu:'zenitsu',muichiro:'muichiro'},bfly:'shinobu',omask:'obanai',boar:'inosuke',cape:'rengoku',ghaori:'genya',gscar:'genya',gun:'genya',mouth:{snake:'snake',shark:'stare'},eyes:{mesm:'stare',ydots:'abst',headlight:'seen',genya:'genya',genyad:'genya'},skin:{purple:'abst'},cap:'bat',bat:'bat',hb:'stare',
   outfit:{maomao:'pin',nezuko:'blade',robes:'cult',yoveralls:'abst',scales:'snake',miku:'miku',teto:'teto',yara:'bat',mesm:'stare',muichiro:'muichiro',genya:'genya',suit:'closet',suitskirt:'closet',evening:'closet',cardigan:'closet'},
-  haori:{tanjiro:'blade',nezuko:'blade',genya:'genya'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen',hsCrown:'hideseek',hsBox:'hideseek',hsCamo:'hideseek'};
+  haori:{tanjiro:'blade',nezuko:'blade',genya:'genya'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen',hsCrown:'hideseek',hsBox:'hideseek',hsCamo:'hideseek',hsCloak:'laststand',ftrail:'laststand'};
  const HINT={pin:'A gift someone lost, somewhere outside.',blade:'Prove yourself with a blade.',cult:'Some families never let you leave.',snake:'Something scaly hides down below.',abst:'Follow something that is not really there.',
-  miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',genya:'???',seen:'Find every ending.',hideseek:'Top the scoreboard after 5 rounds of Hide & Seek.'};
+  miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',genya:'???',seen:'Find every ending.',hideseek:'Top the scoreboard after 5 rounds of Hide & Seek.',laststand:'Stay hidden for a whole round of Hide & Seek with 3 or more players.'};
  // DS v89: Demon Slayer unlocks. ONE place to change the triggers: each key is unlocked when hushCustU[key] is set (by the secret pickups/events below).
  const DS_KEYS=['shinobu','mitsuri','obanai','inosuke','zenitsu','rengoku','muichiro','genya'];const dsU=(k,a,o)=>!!o[k];
  const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
  const own=()=>{try{return JSON.parse(LS.get('hushCustU')||'{}')||{}}catch(e){return{}}};
  const SIA_DBG=(()=>{try{return new URLSearchParams(location.search).get('seenall')==='1'}catch(e){return false}})();
  function U(){let a={};try{a=JSON.parse(LS.get('hushAch')||'{}')||{}}catch(e){}const o=own();
-  return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,hideseek:!!o.hideseek,seen:!!a.seenall||SIA_DBG}}
+  return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,hideseek:!!o.hideseek,laststand:!!o.laststand,seen:!!a.seenall||SIA_DBG}}
  const lockKey=(k,v)=>{const L=LOCK[k];if(!L)return null;if(typeof L==='string')return v?L:null;return L[v]||null};
  const isOpen=(k,v,u)=>{const q=lockKey(k,v);return !q||!!(u||U())[q]};
- const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hbr:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,hsCrown:0,notie:0,nochk:0,notag:0,hsBox:0,hsCamo:0};
+ const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hbr:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,hsCrown:0,notie:0,nochk:0,notag:0,hsBox:0,hsCamo:0,hsCloak:0,ftrail:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','hbr','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','hsCrown','notie','nochk','notag','hsBox','hsCamo'].forEach(k=>o[k]=lk[k]?1:0);/* necktag: the name tag can only be off while invisible */if(!o.invis)o.notag=0;o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','hbr','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','hsCrown','notie','nochk','notag','hsBox','hsCamo','hsCloak','ftrail'].forEach(k=>o[k]=lk[k]?1:0);/* necktag: the name tag can only be off while invisible */if(!o.invis)o.notag=0;o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -7525,7 +7578,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   FITB=body;const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],gr=GRAD[hc],hm=P(gr?0:hc);HAIR[o.hair](hg,hm);FITB=null;
   if(gr)gradHair(hg,hm,gr);
   if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.that)topHat(h,o);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.cape)cape(body);if(o.gscar)genyaScar(h);if(o.gun)genyaGun(arms[1]);
-  if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.hsCrown)hsCrown(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.hsCamo)hsBracelet(arms[o.hbr?1:0]);if(o.hsBox)hsBox(body);if(o.invis)seeThrough(body,INV_OP,1);
+  if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.hsCrown)hsCrown(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.hsCamo)hsBracelet(arms[o.hbr?1:0]);if(o.hsBox)hsBox(body);if(o.hsCloak)hsCloak(body,h);if(o.invis)seeThrough(body,INV_OP,1);
   return{legs,arms,head:h}}
  // Nezuko's gradient, fitted to each hairstyle's own height (like her real hair): black at the crown/roots, starting to fade about 30% of the way down
  // (around ear/shoulder height), clearly orange over the lower ~55%, brightest at the tips. Only meshes using the hair material are recoloured,
@@ -7588,6 +7641,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   grp('Jewelry','neck',Object.keys(NECK).map(v=>({v,n:NECK[v]})).concat([{v:'pin',n:'Silver hairpin',c:0xd4d8e0,tog:1}],o.outfit==='yara'?[{v:'chk',n:"Teto's choker",c:0x141216,tog:1}]:[]));
   grp('Seen It All','tog',[['invis','See-through skin (invisible) [I]',0xbfe6ff],['roof','Roof',0xb8502e],['phone','Phone',0x5ab0ff],['disco','Disco ball',0xd8dce4],['tire','Tire tracks',0x222024],['duck','Rubber duck',0xf6d232],['lighter','Lighter',0xc8202e],['keys','Car keys',0xc8ccd4],['demon','Snake demon',0xf3e58a],['fpud','Fire puddles',0xff7a1a],['snek','Baby snake buddy',0xf3e58a]].map(([v,n,c])=>({v,n,c})));
   grp('Hide & Seek','tog',[['hsCrown','Hide & Seek champion crown',0xe8bf3a],['hsBox','Cardboard box disguise',0xb08048],['hsCamo','Jade bracelet (almost invisible while invisible)',0x2e9a6a]].map(([v,n,c])=>({v,n,c})));
+  grp('Last one standing','tog',[['hsCloak','Shadow aura',0x17141d],['ftrail','Glowing footstep trail (others see it too, even in Hide & Seek)',0x8fd8ff]].map(([v,n,c])=>({v,n,c})));
   sec.innerHTML='';G.forEach(g=>{const h=document.createElement('h3');h.textContent=g.t;sec.appendChild(h);const r=document.createElement('div');r.className='row';sec.appendChild(r);
    g.items.forEach(it=>{const b=document.createElement('button');b.type='button';b.className='ch';
     const lkK=g.k==='tog'||it.tog?it.v:g.k==='earc'?null:g.k,lv=g.k==='tog'||it.tog?1:it.v,locked=lkK&&!isOpen(lkK,lv,u);
@@ -7614,7 +7668,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  pnl.querySelector('.rs').addEventListener('click',()=>{LOOK=clean(null);save();rows();redoll();msg.textContent='Back to the default look.'});
  // preview: its own small renderer, only running while the screen is open
  let R=null,sc=null,camP=null,doll=null,raf=0,off=0,ph=0,drag=null,last=0;
- function redoll(){if(!sc)return;if(doll){sc.remove(doll);doll.traverse(m=>{if(m.geometry)m.geometry.dispose()})}doll=new THREE.Group();const o=mine();o.slot=0;if(!o.hc)o.hc=SLOTH[0];dress(doll,o);sc.add(doll)}
+ function redoll(){if(!sc)return;if(doll){sc.remove(doll);doll.traverse(m=>{if(m.geometry)m.geometry.dispose()})}doll=new THREE.Group();const o=mine();o.slot=0;if(!o.hc)o.hc=SLOTH[0];dress(doll,o);if(o.ftrail)trailPreview(doll);sc.add(doll)}
  function initR(){if(R)return;R=new THREE.WebGLRenderer({canvas:cv,antialias:true});R.setClearColor(0x15121a);sc=new THREE.Scene();sc.add(new THREE.HemisphereLight(0xfff2dd,0x2a2030,.8));const d=new THREE.DirectionalLight(0xffe6c0,.7);d.position.set(-1,2,-2);sc.add(d);const d2=new THREE.DirectionalLight(0x8899ff,.25);d2.position.set(1,1,2);sc.add(d2);
   const fl=new THREE.Mesh(new THREE.CylinderGeometry(.5,.5,.02,10),P(0x3a2e2a));fl.position.y=-.01;sc.add(fl);camP=new THREE.PerspectiveCamera(30,1,.1,20);camP.position.set(0,1.1,-3.6);camP.lookAt(0,.95,0);
   cv.addEventListener('pointerdown',e=>{drag=e.clientX;cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing'});cv.addEventListener('pointermove',e=>{if(drag==null)return;off+=(e.clientX-drag)*.012;drag=e.clientX});
@@ -7776,6 +7830,23 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
    r.append(inp,e,sv,ld);box.appendChild(r)})},'slots');
  // ---------- end SLOTS v90 ----------
  window.__cust={genyaPose,genyaFire,genyaBang,genyaGun,build,key,clean,mine,open,close,U,dress,eff,LOCK,HINT,dust,squeak,seeThrough,setInv,setNoTag(on){if(on&&!LOOK.invis)return;LOOK.notag=on?1:0;save();if(!pnl.hidden){rows();redoll()}},INV_OP,invOp,bumpDust(){DZ++;safe(()=>{const mp=window.__mp;if(mp&&mp.setLook)mp.setLook(mine())},'mp')},get doll(){return doll},get look(){return LOOK}};
+ // ---------- LSTRAIL (Petra 2026-10-13): the 'ftrail' footstep trail in the world, for me and for every other player wearing it. A pool of flat
+ // prints on the floor (dim glowing light blue, additive) that fade over FOOT_LIFE s. No prints while invisible, hidden in a spot, a ghost,
+ // seated, in the demon realm, or when the avatar isn't drawn. Shown in Hide & Seek too (the player can turn it off in Customize).
+ safe(()=>{const XT=window.__xt;if(!XT||!XT.onUpdate)return;const POOL=[],MAXP=180;let pi=0,made=0;
+  const add=(x,y,z,yaw,side)=>{let m=POOL[pi];if(!m){m=new THREE.Mesh(footGeo,footMat());m.userData.noMap=1;m.renderOrder=1;scene.add(m);POOL[pi]=m}pi=(pi+1)%MAXP;made++;
+   const ox=Math.cos(yaw)*.085*side,oz=-Math.sin(yaw)*.085*side;m.position.set(x+ox,y+.012,z+oz);m.rotation.y=yaw;m.scale.x=side>0?-1:1;m.userData.t0=performance.now()/1000;m.visible=true;m.material.opacity=FOOT_OP};
+  const tr=new Map(),lkC=new Map();const wears=k=>{if(!lkC.has(k)){let v=0;try{v=JSON.parse(k).ftrail?1:0}catch(e){}lkC.set(k,v)}return lkC.get(k)};
+  const step=(id,x,y,z,on)=>{let q=tr.get(id);if(!on){if(q)tr.delete(id);return}if(!q||Math.abs(q.y-y)>.5||Math.hypot(x-q.x,z-q.z)>2.5){tr.set(id,{x,y,z,s:1});return}
+   const d=Math.hypot(x-q.x,z-q.z);if(d<.5)return;const yaw=Math.atan2(-(x-q.x),-(z-q.z));q.s=-q.s;add(x,y,z,yaw,q.s);q.x=x;q.y=y;q.z=z};
+  XT.onUpdate(()=>safe(()=>{const T=performance.now()/1000,RL=!!(window.__rlm&&__rlm.on),MP=window.__mp;
+   for(const m of POOL){if(!m||!m.visible)continue;const a=(T-m.userData.t0)/FOOT_LIFE;if(a>=1||RL){m.visible=false;continue}m.material.opacity=FOOT_OP*(1-a)*(a<.7?1:1-(a-.7)/.3*.4)}
+   // me
+   const o=mine(),meOn=o.ftrail&&!o.invis&&XT.live&&XT.live()&&!RL&&!(MP&&MP.active&&(MP.ghost||MP.demon))&&!(XT.hide&&XT.hide.hid)&&!(typeof seated!=='undefined'&&seated)&&!window.__dead;
+   step('me',cam.position.x,fy,cam.position.z,meOn);
+   // everyone else (their avatar is drawn in the main scene, not invisible, not a ghost)
+   if(MP&&MP.active&&MP.dbg&&MP.dbg.AV)MP.dbg.AV.forEach((a,id)=>{const r=a.cur;step(id,a.g.position.x,a.g.position.y,a.g.position.z,!!(r&&a.g.visible&&a.g.parent===scene&&!a.inv&&!r.gh&&!RL&&wears(a.lkK||'')))})},'trail'));
+  window.__lsTrail={POOL:()=>POOL.filter(m=>m&&m.visible).length,made:()=>made}},'lstrail');
  /* necktag (Petra 2026-10-12, silver necklace that 'None' would not take off): an invite link, the auto-rejoin and Back to the lobby can connect before
     this block has run, so the hello carried lk:null and the host kept the player's OLD look (or none). Push the real look as soon as it exists. */
  safe(()=>{const mp=window.__mp;if(mp&&mp.active&&mp.setLook)mp.setLook(mine())},'mp');
