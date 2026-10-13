@@ -2405,9 +2405,9 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   if(S&&!S.found&&S.ph!=='leave'&&!forced&&!(window.__mp&&__mp.active&&__mp.ghost)){found('It was waiting right outside.')}}
  // E enters / leaves; movement keys and jumping don't pull you out by accident
  addEventListener('keydown',e=>{if(window.__typing||!hid||paused)return;
-  if(e.code==='KeyE'){e.stopImmediatePropagation();if(!e.repeat)safe(()=>leave(false),'leave');return}
+  if(e.code==='KeyE'){e.stopImmediatePropagation();if(window.__hzFrz&&window.__hzFrz()){if(!e.repeat)subtitle("You're frozen in place.",1200);return}if(!e.repeat)safe(()=>leave(false),'leave');return}
   if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyC','ControlLeft','ControlRight'].includes(e.code)){e.stopImmediatePropagation();if(e.code==='Space')e.preventDefault()}},true);
- renderer.domElement.addEventListener('mousedown',e=>{if(hid&&document.pointerLockElement){e.stopImmediatePropagation();safe(()=>leave(false),'leave')}},true);
+ renderer.domElement.addEventListener('mousedown',e=>{if(hid&&document.pointerLockElement){e.stopImmediatePropagation();if(window.__hzFrz&&window.__hzFrz())return;safe(()=>leave(false),'leave')}},true);
  // interact boxes
  SPOTS.forEach(s=>{const [x,y,z,w,h,d]=s.hit,hb=new THREE.Mesh(BG(w,h,d),hitM);if(s.bsm){hb.position.set(x,y,z);BSM.G.add(hb)}else XT.place(hb,x,y,z);s.hb=hb;
   hb.userData.i={get label(){return s.ward&&!wDoors.some(d=>d.open)?'Wardrobe':s.lbl},act(){
@@ -6157,12 +6157,12 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
 // ===== Hide & Seek (Petra 2026-10-12): a multiplayer-only mode. One player is the seeker (random, or picked by the host in the lobby); the rest hide.
 // 30 s to hide (the seeker is frozen and blind), then 5 minutes to find everyone. A found hider is out and becomes a ghost (living players cannot see ghosts).
 // Found: the seeker presses E (touch: Use) facing a hider within 1.5 m, or opens the hiding spot a hider is in (E on the closet / bed / tub: "Search ...").
-// Hints: at Lilith's crib the seeker presses H (touch: Ask Lilith), picks one of the remaining hiders, and Lilith tells which floor they are on. One hint per hider per round.
+// Hints: at Lilith's crib the seeker presses H (touch: Ask Lilith), picks one of the remaining hiders, and Lilith gives up to 3 hints per hider per round, each narrower (floor, room, spot). At 2:00 left hiders freeze in place.
 // Hiders win if anyone is still hidden when time runs out; the seeker wins by finding everyone. Name tags are hidden. Voice and text chat work as usual.
 // The demon, night events, phone calls, endings, achievements and the endings gallery counter are all off. Host authoritative: the round state is one field ('hz', in buildFields).
 (function(){'use strict';const XT=window.__xt,MP=window.__mp;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush hz] '+(t||''),e)}};
  if(!XT||!MP)return;
- const HIDE_S=30,SEEK_S=300,WAIT_S=25,BREAK_S=12,SESSION=5,TAG_R=1.5,TAG_R_HOST=2.3,SEARCH_R=2.6,HINT_R=2.4;
+ const HIDE_S=30,SEEK_S=300,WAIT_S=25,BREAK_S=12,SESSION=5,TAG_R=1.5,TAG_R_HOST=2.3,SEARCH_R=2.6,HINT_R=2.4,HINTS=3,FREEZE_T=120;
  const on=()=>!!(MP.hz&&MP.active&&MP.started);
  const C=()=>CARE.dbg;
  // round state (the host's is the truth; clients copy it from the field)
@@ -6224,12 +6224,29 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   if(!hit.length){if(m.spot)MP.sendTo(pid,{t:'zno',spot:m.spot});return}
   hit.forEach(id=>{Z.out.push(id);const q=Z.sc[pid]||(Z.sc[pid]=[0,0]);q[0]++;MP.toAll({t:'zfound',id,by:pid})})}
  // floor names for the hint
- function floorOf(r){if(!r)return 'somewhere';if(r.ar==='r')return 'somewhere very strange';if(r.hid&&XT.hide.SPOTS.some(s=>s.out&&s.id===r.hs))return 'outside';const y=r.y;
+ function floorOf(r){if(!r)return 'somewhere';if(r.ar==='r')return 'somewhere very strange';const hs=r.hid?XT.hide.SPOTS.find(s=>s.id===r.hs):null;if(hs&&hs.out)return 'outside';const y=hs?hs.fl:r.y;
   if(y<-4.3)return 'in the basement';if(y>-1.45)return 'upstairs';
   if(r.z>9.8)return 'outside';if(r.x<-4&&r.z>-3.5&&r.z<3.5)return 'in the garage';return 'on the ground floor'}
  function hostHint(pid,m){if(Z.ph!=='seek'||pid!==Z.seeker)return;const sr=MP.repOf(pid);if(!sr||!nearCrib(mX(sr.x),mZ(sr.z),sr.y))return;
-  const id=m.id;if(!left().includes(id)||Z.asked.includes(id))return;Z.asked.push(id);
-  MP.sendTo(pid,{t:'zhr',id,n:name(id),f:floorOf(MP.repOf(id))})}
+  const id=m.id;if(!left().includes(id)||Z.asked.filter(x=>x===id).length>=HINTS)return;Z.asked.push(id);
+  const k=Z.asked.filter(x=>x===id).length;MP.sendTo(pid,{t:'zhr',id,n:name(id),k,f:hintText(MP.repOf(id),k,camoOf(id))})}
+ // Petra 20:22Z: a hider wearing the jade bracelet gets sharper hints: 1 room + floor ('in the bathroom upstairs'), 2 the nearest hiding spot, 3 exact (in it / in the open)
+ const camoOf=id=>{try{if(id===MP.id)return !!(window.__cust&&__cust.mine().hsCamo);const a=MP.dbg.AV.get(id);return !!(a&&a.cam)}catch(e){return false}};
+ // Petra 2026-10-13: 3 hints per hider per round, each narrower: 1 floor / outside, 2 room / yard area, 3 the hiding spot (or in the open)
+ const ROOM={closet:'the nursery',wardrobe:"the parents' bedroom",pbed:"the parents' bedroom",gbed:'the guest bedroom',tub:'the bathroom',hallc:'the upstairs hall',pantry:'the kitchen',couch:'the living room',dtable:'the dining room',coat:'the front hall',util:'the basement',crates:'the basement',shed:'the back yard',tree:'the back yard',hedgeW:'the front yard',hedgeE:'the front yard',hedgeS:'the west side yard',hedgeN:'the east side yard'};
+ const NOUN={closet:'the nursery closet',wardrobe:'the wardrobe',pbed:"under the parents' bed",gbed:'under the guest bed',tub:'the bathtub',hallc:'the hall closet',pantry:'the pantry',couch:'behind the couch',dtable:'under the dining table',coat:'the coat closet',util:'the utility cupboard',crates:'between the crates',shed:'the shed',tree:'the tree',hedgeW:'the front hedge (west)',hedgeE:'the front hedge (east)',hedgeS:'the west hedge',hedgeN:'the east hedge'};
+ const inPh=id=>/^(under|behind|between)/.test(NOUN[id])?NOUN[id]:id==='tree'?'up in the tree':'in '+NOUN[id];
+ const nearPh=id=>/^(under|behind|between)/.test(NOUN[id])?'by the spot '+NOUN[id]:'near '+NOUN[id];
+ function nearSpotOf(r,maxD){let b=null,bd=maxD;XT.hide.SPOTS.forEach(s=>{if(!ROOM[s.id]||Math.abs(r.y-s.fl)>1.3)return;const d=Math.hypot(r.x-s.ex[0],r.z-s.ex[1]);if(d<bd){bd=d;b=s}});return b}
+ function hintText(r,k,camo){if(!r)return 'somewhere';if(r.ar==='r')return floorOf(r);
+  if(camo){const room=hintText(r,2);if(k<=1){const fl=floorOf(r);return room+(/yard|garage|basement/.test(room)?'':fl==='upstairs'?' upstairs':fl==='on the ground floor'?' downstairs':'')}
+   if(k===2){const sp=r.hid&&ROOM[r.hs]?XT.hide.SPOTS.find(s=>s.id===r.hs):nearSpotOf(r,99);return sp?nearPh(sp.id):room}return hintText(r,3)}
+  if(k<=1)return floorOf(r);
+  const sp=r.hid&&ROOM[r.hs]?r.hs:null,fl=floorOf(r);
+  if(k===2){if(sp)return 'in '+ROOM[sp];if(fl==='in the garage')return fl;
+   if(fl==='outside'||(r.y<=-1.45&&r.y>=-4.3&&(r.z<-4||r.z>9.8||r.x<-5||r.x>11))){if(r.z>9.8)return 'in the front yard';if(r.z<-4)return 'in the back yard';return r.x<0?'in the west side yard':'in the east side yard'}
+   const n=nearSpotOf(r,99);return n?'in '+ROOM[n.id]:fl}
+  if(sp)return 'hiding '+inPh(sp);const n=nearSpotOf(r,3);return n?'out in the open, '+nearPh(n.id):'out in the open, not in any hiding spot'}
  const nearCrib=(x,z,y)=>y>-1.45&&Math.hypot(x-mX(crib.x),z-mZ(crib.z))<=HINT_R;
 
  // ---------- messages ----------
@@ -6238,7 +6255,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    case 'zgo':subtitle(isSeeker()?'Ready or not, here you come! Find them all in 5 minutes.':'(Ready or not... '+name(Z.seeker)+' is looking for you.)',4000);return;
    case 'zfound':if(m.id===MP.id)safe(beFound,'found');else subtitle('('+name(m.id)+' was found!)',3000);return;
    case 'zno':subtitle('Nobody in there.',1500);return;
-   case 'zhr':if(!Z.asked.includes(m.id))Z.asked.push(m.id);safe(()=>{XT.voice&&XT.voice('ba ba da','child',1.1,.3)},'coo');subtitle('Lilith babbles and points. '+m.n+' is '+m.f+'.',5000);return;
+   case 'zhr':if(!MP.host&&Z.asked.filter(x=>x===m.id).length<(m.k||1))Z.asked.push(m.id);safe(()=>{XT.voice&&XT.voice('ba ba da','child',1.1,.3)},'coo');subtitle('Lilith babbles and points ('+(m.k||1)+'/'+HINTS+'). '+m.n+' is '+m.f+'.',6000);return;
    case 'zend':return;
    case 'zrw':if((m.ids||[]).includes(MP.id))safe(unlockReward,'reward');else subtitle('('+m.ids.map(name).join(' and ')+' topped the 5 rounds.)',4000);return}
   if(oc)return oc(m)}}
@@ -6267,9 +6284,9 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  // ---------- seeker: the hint (H at the crib) ----------
  const pk=document.createElement('div');pk.id='zPick';pk.hidden=true;document.body.appendChild(pk);
  function canHint(){return on()&&Z.ph==='seek'&&isSeeker()&&!MP.ghost&&nearCrib(cam.position.x,cam.position.z,fy)}
- function openPick(){if(!canHint())return;const L=left().filter(id=>!Z.asked.includes(id));
+ function openPick(){if(!canHint())return;const L=left().filter(id=>Z.asked.filter(x=>x===id).length<HINTS);
   if(!L.length){subtitle('Lilith yawns. She has told you all she knows this round.',2500);return}
-  pk.innerHTML='<div class="pp" role="dialog" aria-label="Ask Lilith"><h2>Ask Lilith</h2><p>Who should she tell you about? One hint per person each round.</p>'+L.map(id=>'<button type="button" data-id="'+String(id).replace(/"/g,'')+'">'+MP.chat.clean(name(id)).replace(/[<>&]/g,'')+'</button>').join('')+'<button type="button" class="x" data-id="">Never mind</button></div>';
+  pk.innerHTML='<div class="pp" role="dialog" aria-label="Ask Lilith"><h2>Ask Lilith</h2><p>Who should she tell you about? Three hints per person each round, each one closer.</p>'+L.map(id=>'<button type="button" data-id="'+String(id).replace(/"/g,'')+'">'+MP.chat.clean(name(id)).replace(/[<>&]/g,'')+' ('+(Z.asked.filter(x=>x===id).length+1)+'/'+HINTS+')</button>').join('')+'<button type="button" class="x" data-id="">Never mind</button></div>';
   pk.hidden=false;if(document.pointerLockElement)document.exitPointerLock();window.__typing=true}
  function closePick(){pk.hidden=true;window.__typing=false}
  pk.addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('button');if(!b)return;const id=b.dataset.id;closePick();if(id)send({t:'zh',id})});
@@ -6315,7 +6332,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  XT.onUpdate(()=>safe(()=>{const r=on()&&!isSeeker()&&(Z.ph==='hide'||Z.ph==='seek')?seekRep():null;if(!r||r.ar==='r'){mk.visible=false;return}
   mk.position.set(mX(r.x),r.cy+.55,mZ(r.z));mk.visible=true},'marker'));
  // ---------- every frame ----------
- let pin=null,carryMsg=0;
+ let pin=null,fpin=null,carryMsg=0;const frozen=()=>on()&&Z.ph==='seek'&&Z.t<=FREEZE_T&&!isSeeker()&&!MP.ghost&&!Z.out.includes(MP.id);
  XT.onUpdate(()=>{if(!on())return;
   if(MP.host)safe(hostUpdate,'host');
   // a quiet night: the clock stays at half past six (no events, calls or scares), Lilith sleeps and stays in her crib
@@ -6325,8 +6342,13 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   MP.dbg.AV.forEach(a=>{if(a.tag)a.tag.visible=false});
   // the seeker is frozen until the count ends
   if(isSeeker()&&(Z.ph==='wait'||Z.ph==='hide')){if(!pin)pin={x:cam.position.x,z:cam.position.z,y:fy};cam.position.x=pin.x;cam.position.z=pin.z;
-   ['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight'].forEach(k=>keys[k]=false);if(window.__joy){__joy.x=0;__joy.y=0}}else pin=null});
- MP.hzDbg={get Z(){return Z},endIn(sec){dl=now()+sec*1000},tagTarget,openPick,canHint,floorOf,left};
+   ['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight'].forEach(k=>keys[k]=false);if(window.__joy){__joy.x=0;__joy.y=0}}else pin=null;
+  // Petra 2026-10-13: at 2:00 left in the seek, every hider still in play is frozen in place for the rest of the round (look around and chat still work). Z.t comes from the host field
+  if(frozen()){if(!fpin){fpin={x:cam.position.x,z:cam.position.z};subtitle("Two minutes left: you're frozen in place!",4000)}if(!(XT.hide&&XT.hide.hid)&&!seated){cam.position.x=fpin.x;cam.position.z=fpin.z}
+   ['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight'].forEach(k=>keys[k]=false);if(window.__joy){__joy.x=0;__joy.y=0}}else fpin=null});
+ addEventListener('keydown',e=>{if(e.code==='KeyE'&&!e.repeat&&!window.__typing&&frozen()){e.stopImmediatePropagation();subtitle("You're frozen in place.",1200)}},true);
+ window.__hzFrz=()=>frozen();
+ MP.hzDbg={get Z(){return Z},hintText,camoOf,frozen:()=>frozen(),endIn(sec){dl=now()+sec*1000},tagTarget,openPick,canHint,floorOf,left};
 })();
 </script>
 <script type="text/x-hush">
@@ -7490,7 +7512,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  const key=p=>JSON.stringify(eff(p));
 
  // ---------- build a body into a group. Returns the rig mkAvatar animates ----------
- function dress(body,o){body.userData.camo=o.hsCamo&&!o.demon?1:0;if(o.demon){const r=demonLook(body);if(r){if(o.invis)seeThrough(body,INV_OP,1);return r}}const of=OUTFIT[o.outfit]||OUTFIT.classic,skc=SKIN[o.skin][1],shirtC=of.shirt==null?SLOT[o.slot||0]:of.shirt;
+ function dress(body,o){/* Petra 2026-10-13: the jade bracelet camo also applies over the demon look (it used to be switched off for it) */body.userData.camo=o.hsCamo?1:0;if(o.demon){const r=demonLook(body);if(r){if(o.invis)seeThrough(body,INV_OP,1);return r}}const of=OUTFIT[o.outfit]||OUTFIT.classic,skc=SKIN[o.skin][1],shirtC=of.shirt==null?SLOT[o.slot||0]:of.shirt;
   const s=of.mat?of.mat():P(of.skinTop?skc:shirtC),sk=P(skc),dk=P(of.skinLegs?skc:of.legs),sh=P(of.shoe||0x2a2630);
   const legs=[-1,1].map(k=>{const q=new THREE.Group();q.position.set(k*.09,.82,0);body.add(q);if(!of.robe&&!of.noLegs)bx(.12,.8,.13,dk,0,-.4,0,q);bx(.13,.07,.2,sh,0,-.8,-.03,q);return q});
   if(!of.robe)torso(body,s);
