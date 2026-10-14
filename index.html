@@ -80,7 +80,7 @@ body:has(#title:not([hidden])) #cross{display:none}
 
 <div id="overlay" hidden><div class="box"><h1>Hush</h1><p>Click to start - WASD to move, Shift to sprint, Space to jump, mouse to look, C or Ctrl to crouch, E to open doors, use things, sit and pick her up or hide (closets, under beds, the pantry; hold Shift to hold your breath), L flashlight, M to mute</p><p id="flashOpt">F: reduce flashing (off)</p><button id="ovSet" type="button">Settings</button> <button id="ovBug" type="button">Report a bug</button><p id="bugMsg" hidden>Copied! Paste it to Claude.</p></div></div>
 <div id="title"><div class="keys">WASD move - Shift sprint - Space jump - C crouch - E use / hide - L flashlight - T skip an hour - M mute - F reduce flashing</div>
-</div><div id="tfade" hidden></div><div id="tset" hidden><h2>Settings</h2><label>Master volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Voice chat <input id="sVoice" type="range" min="0" max="1.5" step="0.05"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><label>Invert Y <input id="sInvY" type="checkbox"></label><label>Graphics <select id="sQ"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Ending music <input id="sEndM" type="checkbox" checked></label><label>Hints <input id="sHints" type="checkbox" checked></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><button id="tsetClose" type="button">Done</button></div>
+</div><div id="tfade" hidden></div><div id="tset" hidden><h2>Settings</h2><label>Master volume <input id="sVol" type="range" min="0" max="1" step="0.05"></label><label>Music <input id="sVolM" type="range" min="0" max="1" step="0.05"></label><label>Effects <input id="sVolS" type="range" min="0" max="1" step="0.05"></label><label>Voice chat <input id="sVoice" type="range" min="0" max="1.5" step="0.05"></label><label>Brightness <input id="sBright" type="range" min="0.6" max="1.8" step="0.05"></label><label>Mouse sensitivity <input id="sSens" type="range" min="0.3" max="2.5" step="0.05"></label><label>Invert Y <input id="sInvY" type="checkbox"></label><label>Graphics <select id="sQ"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label><label>Ending music <input id="sEndM" type="checkbox" checked></label><label>Hints <input id="sHints" type="checkbox" checked></label><label>Reduce flashing <input id="sCalm" type="checkbox"></label><button id="tsetClose" type="button">Done</button></div>
 <button id="skipB" type="button" hidden>Skip hour [T]</button><div id="blurE"></div><div id="cross"></div><div id="hint" hidden>[E] Door</div><div id="msg">It's locked.</div><div id="sub" hidden></div><div id="hud" hidden></div><div id="need" hidden><svg viewBox="0 0 24 24" aria-hidden="true"></svg><span></span></div><div id="mon" hidden><div class="hd">BABY MONITOR<b id="monL"></b></div><div class="bars"></div><div id="monT">quiet</div></div><div id="prog" hidden><div><b></b></div><span></span></div><div id="dead" hidden><div class="box"><p class="brand">HUSH</p><h1>You shouldn't have checked.</h1><p>It was waiting for you.</p><button id="restart" type="button">Restart</button></div></div><div id="fade" hidden></div><div id="tbc" hidden><p class="brand">HUSH</p><h1>To be continued...</h1><button id="tbcR" type="button">Restart</button></div><div id="end" hidden><div class="box"><p class="brand">HUSH</p><h1>The parents are home.</h1><p>End of the prototype. Reload the page to play again.</p></div></div>
 <div id="note" hidden><div class="paper"><p class="hd">Thank you for coming on such short notice!</p>
 <ul><li>Feed Lilith around 7 PM, 10 PM, 1 AM and 4 AM, or whenever she gets hungry. Bottles are in the fridge. Warm one in the bottle warmer on the counter, never the microwave.</li>
@@ -1437,7 +1437,7 @@ const DEMON=(function(){const C=CARE.dbg,pics=C.pics,g=new THREE.Group();g.visib
  function localSight(sc){if(window.__mp&&__mp.ghost)return false;let ok=false;if(sc)ok=start('scare');const order=['window','painting','hallway','doorway','mirror','monitor'].sort(()=>Math.random()-.5);for(const k of order){if(ok)break;ok=start(k)}return ok}
  function update(dt){if(!entered||ended)return;clk+=dt;if(A){A.t+=dt;A.tick&&A.tick(A);if(A.done||A.t>=A.dur)stop();return}if(window.__mp&&__mp.client)return;
   const n=C.noise,L=late();next-=dt*(.35+1.6*n)*(L?1.7:1);if(next>0||n<(L?.12:.25))return;
-  const sc=hour()>=24&&n>.7&&clk-lastScare>170&&Math.random()<.35;const ok=(window.__mp&&__mp.active)?__mp.demonSight(sc):localSight(sc);
+  const NI=(window.__xt&&__xt.night)||1,JK=window.__xt&&__xt.jsK?__xt.jsK():1;/* b118: night 1 from midnight, 2 from 11, 3 from 10, 4 from 9; cooldown and chance follow difficulty x night */const sc=hour()>=(NI>=4?21:NI>=3?22:NI>=2?23:24)&&n>(NI>=3?.55:NI>=2?.62:.7)&&clk-lastScare>170/JK&&Math.random()<Math.min(.9,.35*JK);const ok=(window.__mp&&__mp.active)?__mp.demonSight(sc):localSight(sc);
   next=ok?(L?40+Math.random()*50:110+Math.random()*90):3}
  const so=new THREE.Vector3();let sr=0;
  return{update,pre(){if(shake>0){so.set((Math.random()-.5)*.14,(Math.random()-.5)*.1,(Math.random()-.5)*.14).multiplyScalar(shake);cam.position.add(so);sr=(Math.random()-.5)*.06*shake;cam.rotation.z+=sr;cam.updateMatrixWorld()}},
@@ -1470,7 +1470,7 @@ DM.stop();
   const D=doorW(),dd=Math.hypot(cam.position.x-D.x,cam.position.z-D.z);
   if(dd<.9&&S.t>1.2){S.out=1;g.visible=false;if(S.ex.d)S.ex.d.open=true;if(S.ex.bas)setBasement(true);subtitle('The door gives. You stumble out, gasping.',3500);if(AC)burst(AC.currentTime,200,1,.4,.3,'lowpass');return}
   // it walks you down: it keeps G metres behind you, closing at its own pace while your legs open the gap
-  S.G+=legs-(.45+.1*S.t)*dt*MPK('trap');const wx=D.x-cam.position.x,wz=D.z-cam.position.z,wl=Math.hypot(wx,wz)||1;
+  S.G+=legs-(.45+.1*S.t)*dt*MPK('trap')*(window.__n4Spd||1);const wx=D.x-cam.position.x,wz=D.z-cam.position.z,wl=Math.hypot(wx,wz)||1;
   g.visible=true;g.scale.setScalar(1);g.rotation.set(0,0,0);{let gv=Math.max(.4,S.G);while(gv>.4&&!losClear(cam.position.x,cam.position.z,cam.position.x-wx/wl*gv,cam.position.z-wz/wl*gv,fy))gv-=.2;g.position.set(cam.position.x-wx/wl*gv+wz/wl*.25,fy,cam.position.z-wz/wl*gv-wx/wl*.25)}g.lookAt(cam.position.x,fy,cam.position.z);
   if(S.G<.7||S.t>20)return die();
   const dl=S.G;
@@ -1971,9 +1971,9 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 })();
 // ---------- 2. difficulty ----------
 (function(){const XT=window.__xt;
- const DIFF={easy:{n:'Easy',imp:.65,nz:.7,agg:.6},normal:{n:'Normal',imp:1,nz:1,agg:1},nightmare:{n:'Nightmare',imp:1.45,nz:1.35,agg:1.6}},ORDER=['easy','normal','nightmare'];
+ const DIFF={easy:{n:'Easy',imp:.65,nz:.7,agg:.6,js:.5,ev:.65},normal:{n:'Normal',imp:1,nz:1,agg:1,js:1,ev:1},nightmare:{n:'Nightmare',imp:1.45,nz:1.35,agg:1.6,js:1.6,ev:1.4}},ORDER=['easy','normal','nightmare'];
  let cur=XT.ls.get('hushDiff');if(!DIFF[cur])cur='normal';
- XT.diff=()=>DIFF[cur];XT.diffKey=()=>cur;XT.diffName=()=>DIFF[cur].n;
+ XT.diff=()=>DIFF[cur];XT.jsK=()=>DIFF[cur].js*({1:1,2:1.4,3:1.9,4:2.6}[XT.night||1]||1);XT.diffKey=()=>cur;XT.diffName=()=>DIFF[cur].n;
  XT.cycleDiff=()=>{cur=ORDER[(ORDER.indexOf(cur)+1)%3];XT.ls.set('hushDiff',cur)};
  XT.parts.diff={save:()=>cur,load:v=>{if(DIFF[v])cur=v}};
  const base={};let prevN=null;
@@ -1982,6 +1982,8 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   // noise growth: scale only the rising part of this frame's change
   const n=C.noise;if(prevN!==null&&n>prevN&&d.nz!==1)C.noise=Math.min(1,prevN+(n-prevN)*d.nz);prevN=C.noise;
   // demon aggression: sightings come sooner / later, the hunt closes faster / slower
+  /* b118: supernatural events come sooner (Nightmare) or later (Easy): the house's event timer runs faster or slower */
+  if(d.ev!==1&&entered&&!ended&&C.EV&&!C.EV.cur&&XT.hour&&XT.hour()>=18.6&&!(window.__rlm&&__rlm.on)&&!(window.__mp&&__mp.client))C.EV.next-=dt*(.5+(window.__atmos?__atmos.creep:0))*(d.ev-1);
   if(d.agg!==1&&entered&&!ended){const D=DEMON.dbg;if(!D.active&&D.next>0)D.next=D.next-dt*(d.agg-1)*(.35+1.6*C.noise);if(HUNT.t>0)HUNT.t=Math.max(0,HUNT.t+dt*(d.agg-1))}});
 })();
 // ---------- shared helpers for things this script places in the house ----------
@@ -2701,9 +2703,9 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 })();
 // ---------- 12. nights 2 and 3: harder nights, new events, calls, notes and rules; night select; the finale ----------
 (function(){const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush ext] nights '+(t||''),e)}};
- const NK={1:{need:1,ev:1,k:1},2:{need:1.2,ev:1.4,k:1.35},3:{need:1.4,ev:1.8,k:1.75}};
+ const NK={1:{need:1,ev:1,k:1},2:{need:1.2,ev:1.4,k:1.35},3:{need:1.4,ev:1.8,k:1.75},4:{need:1.55,ev:2.2,k:2.2}};/* b118: night 4, Blood Moon */
  let unlocked=cl3(parseInt(XT.ls.get('hushNights'))||1),sel=Math.min(unlocked,cl3(parseInt(XT.ls.get('hushNightSel'))||1));
- function cl3(v){return Math.max(1,Math.min(3,v|0))}
+ function cl3(v){return Math.max(1,Math.min(4,v|0))}
  XT.night=sel;XT.nightsUnlocked=()=>unlocked;XT.nightK=()=>NK[XT.night].k;XT.nightNeed=()=>NK[XT.night].need;
  XT.cycleNight=()=>{XT.night=XT.night%unlocked+1;XT.ls.set('hushNightSel',XT.night);apply()};
  XT.unlockNight=n=>{n=cl3(n);if(n>unlocked){unlocked=n;XT.ls.set('hushNights',n)}};
@@ -2762,10 +2764,43 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
     return s>4},
    emerge(){if(window.__wallChase&&safe(()=>__wallChase.start(),'chase'))return;safe(()=>{DEMON.dbg.show('scare');CARE.dbg.noise=Math.min(1,CARE.dbg.noise+.2);setTimeout(()=>subtitle('(It tears out of the wall beside you, right into your face, and is gone again.)',3200),700)},'emerge')},
    end(){this.mx=undefined;this.lt=0}}];
- const PS={2:['If the television turns itself on, don\'t look at it.','If someone outside calls your name, stay away from the windows.'],3:['If you hear humming in the nursery, stay out until it stops.','If something follows you inside the walls, don\'t stop moving.']};
+ const PS={2:['If the television turns itself on, don\'t look at it.','If someone outside calls your name, stay away from the windows.'],3:['If you hear humming in the nursery, stay out until it stops.','If something follows you inside the walls, don\'t stop moving.'],4:['Under the blood moon: if the clocks start chiming, stand completely still until they stop.','If every light in the house turns red, keep your flashlight off.']};
+ // ---- b118 (Petra 2026-10-14): Night 4, Blood Moon. Unlocked by a good ending on night 3. Faster needs, more events, a faster and hungrier demon,
+ // its own calls and two new rules on the note (stand still while the clocks chime; flashlight off while the lights are red). Same endings as night 3. ----
+ const N4=[
+  {h:19.0,who:'mom',lines:[['mom',"You came back. Even after last night.",2.6],['mom',"Look out of the window. The moon is red tonight. That only happens once.",3.6],['mom',"Read the note again. There are two new rules.",2.8]]},
+  {h:20.6,who:'stranger',lines:[['stranger',"It's Ruth. I didn't think you'd go back.",2.6],['stranger',"Under a blood moon it's faster. It doesn't wait at the windows any more.",3.6],['stranger',"When the clocks chime, don't move. Not even a little.",3]]},
+  {h:22.3,who:'child',lines:[['child',"(Samuel, whispering.) The door on my side is shaking.",2.8],['child',"I'm still holding it. Keep her close.",2.6]]},
+  {h:24.1,who:'chorus',lines:[['chorus',"(Voices under red light.) The moon is open... the moon is open...",3.6],['chorus',"See us by your light... see us by your light...",3.2]]},
+  {h:26.2,who:'dad',lines:[['dad',"Turn the flashlight off when the lights go red.",2.8],['dad',"It hunts by your light tonight. Ours too.",2.6]]},
+  {h:28.4,who:'you',lines:[['you',"(Your own voice, very calm.) Almost morning. Don't stop now.",3],['you',"I didn't make it this far.",2]]}];
+ // the two new rules, as house events (the event loop picks them like any other; breaking one starts the usual rule-break trap)
+ const chimeS=(g)=>{if(!AC||muted)return;const t0=AC.currentTime,o=AC.createGain();o.gain.value=.16*g;o.connect(master);[523.3,659.3,784,659.3].forEach((f,i)=>{const s=AC.createOscillator(),e=AC.createGain();s.type='sine';s.frequency.value=f*.5;e.gain.setValueAtTime(0,t0+i*.42);e.gain.linearRampToValueAtTime(.8,t0+i*.42+.01);e.gain.exponentialRampToValueAtTime(.001,t0+i*.42+1.6);s.connect(e).connect(o);s.start(t0+i*.42);s.stop(t0+i*.42+1.7)})};
+ EVX.push(
+  {id:'chime',night:4,cap:'(Every clock in the house begins to chime at once. Stand still.)',endCap:'(The chiming stops. The house holds its breath.)',pos:null,dur:[12,18],gap:[1.8,2.2],
+   play(e,g){chimeS(.6+.6*g)},
+   broke(){const now=performance.now(),p=RP;if(this.x0===undefined){this.x0=p.x;this.z0=p.z;this.t0=now}
+    if(now-this.t0<1500){this.x0=p.x;this.z0=p.z;return false}/* a moment to stop first */
+    return Math.hypot(p.x-this.x0,p.z-this.z0)>.35},
+   end(){this.x0=undefined}},
+  {id:'redlight',night:4,cap:'(Every light in the house turns a deep, wet red. Your flashlight feels very bright.)',endCap:'(The lights go back to normal.)',pos:null,dur:[16,24],gap:[3,5],
+   red(){if(!this.on){this.on=1;allL.forEach(l=>{if(l.userData.c0&&!l.userData.c0n4){l.userData.c0n4=l.userData.c0.clone();l.userData.c0.setRGB(.9,.08,.05)}})}},
+   play(e,g){this.red();if(AC&&!muted)burst(AC.currentTime,90,1,.05*g,.8,'lowpass')},
+   broke(){this.red();const now=performance.now();if(!this.t0)this.t0=now;if(now-this.t0<2500)return false;return !!(XT.torch&&XT.torch.on)},
+   end(){this.t0=0;this.on=0;allL.forEach(l=>{if(l.userData.c0n4){l.userData.c0.copy(l.userData.c0n4);l.userData.c0n4=null}})}});
+ // the blood moon itself, low in the sky
+ let moon=null,moonOn=false;
+ function bloodMoon(on){if(on===moonOn)return;moonOn=on;
+  if(!moon){moon=new THREE.Group();const m=new THREE.Mesh(new THREE.SphereGeometry(3,20,14),new THREE.MeshBasicMaterial({color:0xb01810,fog:false}));moon.add(m);
+   const hc=document.createElement('canvas');hc.width=hc.height=64;const q=hc.getContext('2d'),gr=q.createRadialGradient(32,32,8,32,32,32);gr.addColorStop(0,'rgba(255,60,30,.6)');gr.addColorStop(1,'rgba(120,0,0,0)');q.fillStyle=gr;q.fillRect(0,0,64,64);
+   const h=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(hc),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,fog:false}));h.scale.set(15,15,1);moon.add(h);
+   moon.userData.noMap=1;moon.visible=false;scene.add(moon);/* it rides along with you 36 m out (the camera only draws 45 m), so it always sits in the same patch of sky */const MD=new THREE.Vector3(-12,52,62).normalize().multiplyScalar(36);XT.onUpdate(()=>{if(moon.visible)moon.position.copy(cam.position).add(MD)})}
+  moon.visible=on;
+}
+
  const noteP=document.querySelector('#note .paper');
- function apply(){const n=XT.night;
-  safe(()=>{const C=XT.phone.CALLS;const src=n===3?N3:n===2?N2:N1;C.length=0;src.forEach(c=>C.push(Object.assign({},c)))},'calls');
+ function apply(){const n=XT.night;window.__n4Spd=n>=4?1.12:1;safe(()=>bloodMoon(n>=4),'moon');
+  safe(()=>{const C=XT.phone.CALLS;const src=n>=4?N4:n===3?N3:n===2?N2:N1;C.length=0;src.forEach(c=>C.push(Object.assign({},c)))},'calls');
   safe(()=>XT.notes&&XT.notes.apply(),'notes');
   safe(()=>{const E=CARE.dbg.EVENTS;EVX.forEach(e=>{const i=E.indexOf(e);if(e.night<=n&&i<0)E.push(e);if(e.night>n&&i>=0)E.splice(i,1)})},'events');
   safe(()=>{if(!noteP)return;let d=noteP.querySelector('#nightPS');const rules=[];for(let k=2;k<=n;k++)rules.push(...PS[k]);
@@ -2778,7 +2813,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  XT.onUpdate(dt=>{const k=NK[XT.night],C=CARE.dbg;if(!k)return;
   if(k.need!==1&&C.RATE)for(const q in C.RATE)C.RATE[q]*=k.need;// difficulty resets RATE from its base each frame just before this
   if(!XT.live())return;
-  if(!banner){banner=true;if(XT.night>1&&!XT.restored)setTimeout(()=>subtitle(XT.night===2?'Night 2. They asked you back.':'Night 3. The last night.',4000),3800)}
+  if(!banner){banner=true;if(XT.night>1&&!XT.restored)setTimeout(()=>subtitle(XT.night===2?'Night 2. They asked you back.':XT.night>=4?'Night 4. The moon is the colour of blood.':'Night 3. The last night.',4000),3800)}
   const cr=window.__atmos?__atmos.creep:0;
   if(k.ev!==1&&!C.EV.cur&&XT.hour()>=18.6&&!(window.__rlm&&__rlm.on))C.EV.next-=dt*(.5+cr)*(k.ev-1);
   const D=DEMON.dbg;if(k.ev!==1&&!D.active&&D.next>0)D.next-=dt*(k.ev-1)*(.35+1.6*C.noise);
@@ -2794,19 +2829,20 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  // ---- endings: unlock the next night, offer it on the card; night 3 gets a finale first ----
  const oe=XT.ending;let fin=false;
  XT.ending=function(id,extra){if(id==='parents'||id==='dawn')safe(()=>XT.unlockNight(XT.night+1),'unlock');
-  if(XT.night===3&&(id==='parents'||id==='dawn')&&!fin&&!(XT.endings&&XT.endings.done)){fin=true;ended=true;let ok=false;safe(()=>{finale(id,()=>oe.call(XT,id,extra));ok=true},'finale');if(ok)return true}
+  if(XT.night>=3&&(id==='parents'||id==='dawn')&&!fin&&!(XT.endings&&XT.endings.done)){fin=true;ended=true;let ok=false;safe(()=>{finale(id,()=>oe.call(XT,id,extra));ok=true},'finale');if(ok)return true}
   return oe.call(XT,id,extra)};
  const card=document.getElementById('xend');
  if(card)new MutationObserver(()=>{if(card.hidden||card.dataset.night)return;card.dataset.night=1;safe(()=>{const id=XT.endings&&XT.endings.done,n=XT.night,tag=card.querySelector('.tag');if(tag)tag.innerHTML='Night '+n+' &middot; '+tag.innerHTML;
    const good=id==='parents'||id==='dawn',back=card.querySelector('#xBack');
    if(good&&n===3){const p=document.createElement('p');p.className='txt';p.textContent='You made it through all three nights.';back.parentNode.insertBefore(p,back)}
-   if(good&&n<3)goBack(card,back,n)})}).observe(card,{attributes:true,attributeFilter:['hidden']});
+   if(good&&n>=4){const p=document.createElement('p');p.className='txt';p.textContent='You survived the Blood Moon.';back.parentNode.insertBefore(p,back)}
+   if(good&&n<4)goBack(card,back,n)})}).observe(card,{attributes:true,attributeFilter:['hidden']});
  // v76: Petra: three nights in all; after night 1 and 2 the game asks whether you go back. In multiplayer the host chooses; the others return to the lobby.
  const HANDF="'Caveat','Segoe Print','Bradley Hand',cursive";
- function goBack(card,back,n){const MP=window.__mp,mp=!!(MP&&MP.active),host=mp&&MP.host;const N=Math.min(3,n+1);
+ function goBack(card,back,n){const MP=window.__mp,mp=!!(MP&&MP.active),host=mp&&MP.host;const N=Math.min(4,n+1);
   const st=document.createElement('style');st.textContent='#xend{overflow-y:auto;-webkit-overflow-scrolling:touch}@media (max-height:560px){#xGo p{font-size:1.25rem!important}#xGo{margin:.5rem auto!important;padding:.6rem 1rem!important}}#xGo{margin:1rem auto;max-width:min(24rem,calc(100vw - 32px));box-sizing:border-box;background:#efe6cf;color:#2a1c14;border-radius:3px;padding:1rem 1.2rem;transform:rotate(-1deg);box-shadow:0 6px 24px rgba(0,0,0,.6);font-family:'+HANDF+';text-align:center}#xGo p{font-size:1.6rem;line-height:1.25;margin:0 0 .8rem}#xGo .r{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}#xGo button{font:700 1.35rem '+HANDF+';color:#2a1c14;background:none;border:0;border-bottom:2px solid #8a2020;padding:.35rem .6rem;min-height:44px;cursor:pointer;touch-action:manipulation}#xGo button:focus-visible{outline:2px solid #8a2020}';document.head.appendChild(st);
   const w=document.createElement('div');w.id='xGo';w.setAttribute('role','group');w.setAttribute('aria-label','Go back tomorrow night?');
-  const p=document.createElement('p');p.textContent='They want you back tomorrow night. Will you go back?';w.appendChild(p);const r=document.createElement('div');r.className='r';w.appendChild(r);
+  const p=document.createElement('p');p.textContent=N>=4?'Night 4 unlocked: Blood Moon. One more night, harder than the rest. Will you go back?':'They want you back tomorrow night. Will you go back?';w.appendChild(p);const r=document.createElement('div');r.className='r';w.appendChild(r);
   if(mp&&!host){const s=document.createElement('p');s.style.fontSize='1.1rem';s.textContent='The host chooses. You can wait in the lobby.';w.appendChild(s)}
   else{const go=document.createElement('button');go.type='button';go.textContent='Go back (Night '+N+')';const no=document.createElement('button');no.type='button';no.textContent='Not tonight';r.appendChild(go);r.appendChild(no);
    go.onclick=e=>{e.stopPropagation();XT.unlockNight(N);XT.ls.set('hushNightSel',N);try{clearSave()}catch(_){}if(mp){MP.backToLobby();return}try{sessionStorage.setItem('hushAutoStart','1')}catch(_){}location.reload()};
@@ -4410,7 +4446,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  lobbyEl.innerHTML='<div class="pp" role="dialog" aria-label="Play together"><h2>Play together</h2>'+
   '<label>Your name<input id="mpName" maxlength="16" autocomplete="nickname" placeholder="Player 1"></label>'+
   '<div id="mpPre"><div class="row"><button type="button" id="mpHost">Host a game</button></div><div class="or">or join with a code</div><div class="row"><input id="mpCode" maxlength="8" placeholder="CODE" aria-label="Game code" autocapitalize="characters"><button type="button" id="mpJoin">Join</button></div></div>'+
-  '<div id="mpIn" hidden><div class="code" id="mpCodeShow"></div><div class="mode" id="mpMode" role="radiogroup" aria-label="Mode"><button type="button" data-m="coop" role="radio">Co-op</button><button type="button" data-m="hunt" role="radio">Hunt</button><button type="button" data-m="hide" role="radio">Hide &amp; Seek</button></div><div class="sm" id="mpModeD"></div><div class="mode" id="mpNight" role="radiogroup" aria-label="Night"><button type="button" data-n="1" role="radio">Night 1</button><button type="button" data-n="2" role="radio">Night 2</button><button type="button" data-n="3" role="radio">Night 3</button></div><div class="mode" id="mpDiff" role="radiogroup" aria-label="Difficulty"><button type="button" data-d="easy" role="radio">Easy</button><button type="button" data-d="normal" role="radio">Normal</button><button type="button" data-d="nightmare" role="radio">Nightmare</button></div><div class="row"><button type="button" id="mpCopy">Copy invite link</button></div><ul id="mpRoster"></ul><details id="mpVd"><summary>Voice check</summary><pre id="mpVdT"></pre></details></div>'+
+  '<div id="mpIn" hidden><div class="code" id="mpCodeShow"></div><div class="mode" id="mpMode" role="radiogroup" aria-label="Mode"><button type="button" data-m="coop" role="radio">Co-op</button><button type="button" data-m="hunt" role="radio">Hunt</button><button type="button" data-m="hide" role="radio">Hide &amp; Seek</button></div><div class="sm" id="mpModeD"></div><div class="mode" id="mpNight" role="radiogroup" aria-label="Night"><button type="button" data-n="1" role="radio">Night 1</button><button type="button" data-n="2" role="radio">Night 2</button><button type="button" data-n="3" role="radio">Night 3</button><button type="button" data-n="4" role="radio">Night 4</button></div><div class="mode" id="mpDiff" role="radiogroup" aria-label="Difficulty"><button type="button" data-d="easy" role="radio">Easy</button><button type="button" data-d="normal" role="radio">Normal</button><button type="button" data-d="nightmare" role="radio">Nightmare</button></div><div class="row"><button type="button" id="mpCopy">Copy invite link</button></div><ul id="mpRoster"></ul><details id="mpVd"><summary>Voice check</summary><pre id="mpVdT"></pre></details></div>'+
   '<div class="st" id="mpSt" role="status" aria-live="polite"></div><div class="row"><button type="button" class="ghost" id="mpBack" hidden>Back</button></div><p class="sm">Up to 4 players. One baby, one house. The host\'s difficulty and night are used. Voice chat is on: press M to mute.</p>'+
   '<div class="row"><button type="button" id="mpStart" hidden>Start the night</button><button type="button" class="ghost" id="mpClose">Close</button></div></div>';
  document.body.appendChild(lobbyEl);
@@ -4595,9 +4631,10 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
  safe(()=>{const sq=$('sQ');sq.value=q;sq.onchange=()=>{SET.choose(sq.value);subtitle('Graphics: '+sq.options[sq.selectedIndex].text,1200)};
   const vv=$('sVoice');vv.value=window.__voiceVol;vv.oninput=()=>{window.__voiceVol=+vv.value;ls.set('hushVoice',vv.value)};
   const iy=$('sInvY');iy.checked=window.__invY;iy.onchange=()=>{window.__invY=iy.checked;ls.set('hushInvY',iy.checked?'1':'0')};
+  const br=$('sBright'),bset=v=>{v=Math.max(.6,Math.min(1.8,+v||1));window.__bright=v;renderer.domElement.style.filter=Math.abs(v-1)<.001?'':'brightness('+v+')'};bset(parseFloat(ls.get('hushBright'))||1);br.value=window.__bright;br.oninput=()=>{bset(br.value);ls.set('hushBright',String(window.__bright))};
   ['keydown','keyup'].forEach(k=>panel.addEventListener(k,e=>e.stopPropagation()));
   panel.addEventListener('click',e=>e.stopPropagation());
-  const sync=()=>{$('sCalm').checked=__getCalm();$('sVol').value=VOL;$('sVolM').value=VOLM;$('sVolS').value=VOLS;$('sSens').value=SENS;sq.value=q;vv.value=window.__voiceVol;iy.checked=window.__invY};
+  const sync=()=>{$('sCalm').checked=__getCalm();$('sVol').value=VOL;$('sVolM').value=VOLM;$('sVolS').value=VOLS;$('sSens').value=SENS;sq.value=q;vv.value=window.__voiceVol;iy.checked=window.__invY;br.value=window.__bright};
   $('ovSet').addEventListener('click',e=>{e.stopPropagation();sync();panel.hidden=false});
   new MutationObserver(()=>{if(!panel.hidden)sync()}).observe(panel,{attributes:true,attributeFilter:['hidden']});
   addEventListener('keydown',e=>{if(e.code==='Escape'&&!panel.hidden)panel.hidden=true},true)},'panel');
@@ -6653,6 +6690,132 @@ body.hz #need,body.hz #mon{display:none!important}
 })();
 </script>
 <script type="text/x-hush">
+// ===== b118 (Petra 2026-10-14): five more jumpscares, picked by Petra. They come more often each night (1<2<3<4) and with difficulty (XT.jsK()).
+// 1 flicker: the lights stutter and every flash shows her a step closer down the hall, the last one right in your face.
+// 2 closet: a closet you are near and looking at creaks open by itself and her face lunges out (hall closet, pantry, coat closet, parents' wardrobe; never the nursery).
+// 3 bed: walking past a bed, a hand shoots out from under it and grabs your ankle (a jolt, a scream, you are held for a moment).
+// 4 ceiling: look up in a hallway and she is clinging to the ceiling, then drops at you.
+// 5 mirror: in the upstairs bathroom mirror your reflection lags behind you, then she is standing behind it.
+// When the timer runs out a scare is "armed" for up to 45 s and fires the first moment one of them fits where you are and what you are looking at.
+// Multiplayer: the host keeps the timer and arms one living player (message 'js2'); each scare plays only for that player. Not in Hunt or Hide & Seek.
+// Reduce flashing: no light stutter (a soft dim instead), gentler shake, softer stings. =====
+(function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush b118 js] '+(t||''),e)}};
+ const DM=DEMON.dbg,g=DM.g,calm=()=>!!(window.__getCalm&&__getCalm()),rnd=(a,b)=>a+Math.random()*(b-a);
+ const fw=new THREE.Vector3(),tv=new THREE.Vector3();const view=()=>{cam.getWorldDirection(fw);return fw};
+ const angTo=(x,y,z)=>{tv.set(x,y,z).sub(cam.position);const L=tv.length();return [Math.acos(Math.max(-1,Math.min(1,tv.dot(view())/L))),L]};
+ const mp=()=>window.__mp&&__mp.active;
+ let next=rnd(160,260),armT=0,act=null,shakeK=0;const stats={};XT.js2={stats,get act(){return act&&act.k},get armed(){return armT},get next(){return next},set next(v){next=v}};
+ // ---- sounds ----
+ function sting(soft,lo){if(!AC||muted)return;const t0=AC.currentTime,o=AC.createGain(),pk=soft?.3:.75;o.gain.setValueAtTime(.0001,t0);o.gain.exponentialRampToValueAtTime(pk,t0+.015);o.gain.exponentialRampToValueAtTime(.0001,t0+1.7);o.connect(master);
+  (lo?[55,82,123,185,277]:[87,123,174,247,349,523]).forEach((f,i)=>{const s=AC.createOscillator();s.type=i%2?'square':'sawtooth';s.frequency.setValueAtTime(f*1.05,t0);s.frequency.exponentialRampToValueAtTime(f*.9,t0+1.5);s.connect(o);s.start(t0);s.stop(t0+1.8)});burst(t0,1200,.6,soft?.25:.6,.5,'bandpass')}
+ function scream(soft){if(!AC||muted)return;const t0=AC.currentTime,o=AC.createGain();o.gain.setValueAtTime(.0001,t0);o.gain.exponentialRampToValueAtTime(soft?.18:.42,t0+.03);o.gain.exponentialRampToValueAtTime(.0001,t0+1.3);o.connect(master);
+  [0,1,2].forEach(i=>{const s=AC.createOscillator(),f=AC.createBiquadFilter();s.type='sawtooth';s.frequency.setValueAtTime(900+i*170,t0);s.frequency.linearRampToValueAtTime(1500+i*230,t0+.25);s.frequency.exponentialRampToValueAtTime(520+i*90,t0+1.2);f.type='bandpass';f.frequency.value=1800;f.Q.value=2;s.connect(f).connect(o);s.start(t0);s.stop(t0+1.3)});burst(t0,3000,1,soft?.15:.35,.5,'highpass')}
+ function zap(){if(!AC||muted)return;const t0=AC.currentTime;burst(t0,120,2,.25,.08,'lowpass');burst(t0,4200,3,.08,.05,'bandpass')}
+ // ---- screen shake (applied around the render like the demon's own) ----
+ function shake(k){shakeK=Math.max(shakeK,calm()?k*.3:k)}
+ {const R=renderer.domElement;XT.onUpdate(dt=>{if(shakeK>0){shakeK=Math.max(0,shakeK-dt*1.6);const a=shakeK*12,j=()=>((Math.random()-.5)*2*a).toFixed(1);R.style.transform=shakeK>0?'translate('+j()+'px,'+j()+'px)':''}})}
+ // ---- the demon model: take it, place it, give it back ----
+ function own(){DM.stop();DM.next=Math.max(DM.next,25);g.visible=false}
+ function face(on){DM.parts.forEach(o=>{o.material.depthTest=!on;o.renderOrder=on?9:0});g.renderOrder=on?9:0}
+ function put(x,y,z,s){g.position.set(x,y,z);g.scale.setScalar(s||1);g.rotation.set(0,0,0);g.lookAt(cam.position.x,y,cam.position.z);g.visible=true;DM.glow.intensity=.6}
+ function release(){face(false);g.visible=false;g.rotation.set(0,0,0);g.rotation.order='XYZ';g.scale.setScalar(1);DM.glow.intensity=0}
+ // a free straight run of floor in the view direction (like the hallway sighting)
+ function hallRun(max){const d=view(),l=Math.hypot(d.x,d.z);if(l<.3)return null;const ux=d.x/l,uz=d.z/l;let x=cam.position.x,z=cam.position.z,L=0;
+  while(L<max){const nx=x+ux*.25,nz=z+uz*.25;if(blocked(nx,nz)||!losClear(cam.position.x,cam.position.z,nx,nz,fy))break;x=nx;z=nz;L+=.25}return {ux,uz,L}}
+ const indoors=()=>{if(window.__rlm&&__rlm.on)return false;if(fy>-1)return true;if(fy<-2&&fy>-3.5){const z=iZ(cam.position.z);return z>-7.4&&z<9.8}return false};
+ const inNurs=()=>fy>-1&&Math.abs(RP.x)<4.6&&RP.z>-4.1&&RP.z<4.1;
+ // ---------- 1. lights flicker ----------
+ function flicker(){if(!indoors()||inNurs())return null;const H=hallRun(9);if(!H||H.L<5.5)return null;const D=Math.min(H.L-.5,7.5),st=[D,D*.62,D*.34];
+  let pw0=window.__pwr;const set=v=>{window.__pwr=v};
+  return{k:'flicker',T:0,i:-1,step(dt){this.T+=dt;const c=calm(),t=this.T,beat=c?.9:.6,gap=c?.3:.13;
+    const n=Math.floor(t/beat),ph=t-n*beat;
+    if(n<=3){const off=ph<gap;set(off?(c?.45:0):pw0);
+     if(!off&&this.i<n){this.i=n;zap();if(n<3){const d=st[n];own();put(cam.position.x+H.ux*d,fy,cam.position.z+H.uz*d,1)}
+      else{own();face(true);put(cam.position.x+H.ux*.6,cam.position.y-2.25,cam.position.z+H.uz*.42,1);sting(c);shake(1);stats.flickerHit=1;subtitle('(Every time the lights came back, it was closer.)',3000)}}
+     else if(off&&n<3)g.visible=false;return false}
+    set(pw0);return t>3*beat+.55},
+   end(){window.__pwr=pw0;release()}}}
+ // ---------- 2. closet ----------
+ const CL=[{x:5.64,f:0,z:7.6,W:.8,D:.6,fx:1},{x:8.1,f:F,z:5.37,W:.8,D:.6,fx:1},{x:3.07,f:F,z:8.98,W:.8,D:.5,fx:1,rot:1}];
+ let cabs=null;function findCabs(){if(cabs)return cabs;cabs=[];CL.forEach(c=>{let gr=null;scene.traverse(o=>{if(!gr&&o.isGroup&&o.userData.noMap&&Math.abs(o.position.y-c.f)<.05&&Math.abs(iX(o.position.x)-c.x)<.06&&Math.abs(iZ(o.position.z)-c.z)<.06&&o.children.length>20)gr=o});if(gr)cabs.push(Object.assign({g:gr},c))});return cabs}
+ const wdoors=()=>doors.filter(d=>d.solid&&d.solid.x0===undefined&&Math.abs(d.pv.position.y)<.01&&Math.abs(iX(d.pv.position.x)-8.4)<1&&Math.abs(iZ(d.pv.position.z)-1.16)<.3);
+ function closet(){const C=[];
+  safe(()=>findCabs().forEach(c=>{if(Math.abs(fy-c.f)>.5)return;c.g.updateMatrixWorld(true);const front=new THREE.Vector3(-c.D/2-.05,1.1,0).applyMatrix4(c.g.matrixWorld);const [a,L]=angTo(front.x,front.y,front.z);if(L<4&&L>1.1&&a<.45)C.push({c,front,L})}),'cabs');
+  safe(()=>{const W=wdoors();if(W.length&&!W.some(d=>d.open)&&fy>-1){const p=W[0].pv.getWorldPosition(new THREE.Vector3());const q=new THREE.Vector3((mX(8.4)),1.1,mZ(1.0));const [a,L]=angTo(q.x,q.y,q.z);if(L<4&&L>1.1&&a<.45)C.push({w:W,front:q,L})}},'ward');
+  if(!C.length)return null;const P=C[(Math.random()*C.length)|0];let piv=null;
+  if(P.c){/* hinge the two louvred doors out of the group: every front part on one side swings round that side's outer edge */const c=P.c,gr=c.g;piv=[];
+   [-1,1].forEach(k=>{const pv=new THREE.Group();pv.position.set(c.fx?-c.D/2:k*c.W/2,0,c.fx?k*c.W/2:-c.D/2);gr.add(pv);pv.updateMatrixWorld(true);
+    gr.children.slice().forEach(o=>{if(o===pv||!o.isMesh)return;const fr=c.fx?o.position.x:o.position.z,lat=c.fx?o.position.z:o.position.x;if(fr<-c.D/2+.03&&Math.sign(lat)===k&&Math.abs(lat)>.005)pv.attach(o)});piv.push({pv,k})})}
+  else P.w.forEach(d=>{d.sp=.3;d.open=true;d.spO=true});
+  safe(()=>XT.hinge&&XT.hinge(P.front.x,P.front.z,1.5,true),'creak');subtitle('(Beside you, a closet door creaks open. All by itself.)',2600);
+  return{k:'closet',T:0,lunged:0,step(dt){this.T+=dt;const t=this.T;
+    if(piv){const a=t<2.8?Math.min(1,t/1.4):Math.max(0,1-(t-2.8)/1.2);/* open, hold, then swing quietly shut */piv.forEach(({pv,k})=>{const ang=k*(1.25*a*a)*(P.c.fx?-1:1);pv.rotation.y=ang})}
+    if(t>1.7&&!this.lunged){this.lunged=1;own();const ok=DM.show('scare');if(!ok){face(true);put(P.front.x,cam.position.y-2.25,P.front.z,1);sting(calm())}shake(.8);stats.closetHit=1}
+    if(t>2.6&&g.visible&&!DM.active)release();
+    return t>4.2},
+   end(){if(piv){const gr=P.c.g;piv.forEach(({pv})=>{pv.rotation.y=0;pv.updateMatrixWorld(true);pv.children.slice().forEach(o=>gr.attach(o));gr.remove(pv)})}else P.w.forEach(d=>{d.open=false});if(!DM.active)release()}}}
+ // ---------- 3. under the bed ----------
+ const BEDS=[[8.5,3.0,.8,1.5,0],[1.85,7.58,1.7,.66,0]];// rest x, z, width, depth, floor (the parents' and the guest bed, upstairs)
+ const hand=new THREE.Group();{const m=new THREE.MeshBasicMaterial({color:0x8a9a80}),n=new THREE.MeshBasicMaterial({color:0x1a1410});/* unlit, so it reads in a dark bedroom */const arm=new THREE.Mesh(new THREE.BoxGeometry(.07,.05,.7),m);arm.position.z=-.35;hand.add(arm);
+  const pl=new THREE.Mesh(new THREE.BoxGeometry(.11,.04,.1),m);pl.position.z=.04;hand.add(pl);for(let i=0;i<4;i++){const f=new THREE.Mesh(new THREE.BoxGeometry(.016,.016,.15),m);f.position.set(-.042+i*.028,.0,.16);f.rotation.x=.5;hand.add(f);const c=new THREE.Mesh(new THREE.ConeGeometry(.008,.04,4),n);c.rotation.x=Math.PI/2+.6;c.position.set(-.042+i*.028,-.04,.24);hand.add(c)}
+  hand.visible=false;hand.userData.noMap=1;scene.add(hand);XT.js2hand=hand}
+ let lastP=null,mv=0;XT.onUpdate(dt=>{const p={x:RP.x,z:RP.z};if(lastP)mv=Math.hypot(p.x-lastP.x,p.z-lastP.z)/Math.max(dt,1e-3);lastP=p});
+ function bed(){if(fy<-1||mv<.6||(XT.hide&&XT.hide.hid))return null;let B=null;
+  for(const b of BEDS){const dx=Math.max(0,Math.abs(RP.x-b[0])-b[2]/2),dz=Math.max(0,Math.abs(RP.z-b[1])-b[3]/2),d=Math.hypot(dx,dz);if(d>.12&&d<.75){B={b,dx:RP.x-b[0],dz:RP.z-b[1]};break}}if(!B)return null;
+  const b=B.b,ex=Math.max(b[0]-b[2]/2,Math.min(b[0]+b[2]/2,RP.x)),ez=Math.max(b[1]-b[3]/2,Math.min(b[1]+b[3]/2,RP.z));// the bed edge nearest you
+  const sx=mX(ex),sz=mZ(ez),fx=cam.position.x,fz=cam.position.z,yw=Math.atan2(fx-sx,fz-sz);
+  hand.position.set(sx,fy+.07,sz);hand.rotation.set(0,yw,0);hand.scale.setScalar(1.6);hand.visible=true;window.__noMove=1;
+  scream(calm());sting(calm(),1);shake(1.1);subtitle('(A cold hand shoots out from under the bed and grabs your ankle!)',3000);stats.bedHit=1;
+  const p0=pitch,y0=yaw;let yt=Math.atan2(-(sx-fx),-(sz-fz)),dy=Math.atan2(Math.sin(yt-y0),Math.cos(yt-y0));return{k:'bed',T:0,step(dt){this.T+=dt;const t=this.T,d=Math.hypot(fx-sx,fz-sz);
+    const reach=t<.18?t/.18:t<1.1?1:Math.max(0,1-(t-1.1)/.3),L=Math.max(0,d-.38)*reach;/* from the bed edge out to your feet, then back */hand.position.set(sx+(fx-sx)/d*L,fy+.07,sz+(fz-sz)/d*L);
+    if(t<.35){const e=Math.min(1,t/.2);pitch=p0+(-Math.atan2(1.45,Math.max(.3,Math.min(d,.38)))-p0)*e;yaw=y0+dy*e}/* the jolt: your view snaps down to it */
+    if(t>1.1)window.__noMove=0;return t>1.45},
+   end(){hand.visible=false;window.__noMove=0;subtitle('(It lets go and slides back into the dark under the bed.)',2400)}}}
+ // ---------- 4. ceiling crawler ----------
+ function ceiling(){if(!indoors()||inNurs()||fy<-4||pitch<.5)return null;const d=view(),l=Math.hypot(d.x,d.z);if(l<.15)return null;const ux=d.x/l,uz=d.z/l;
+  let L=0;while(L<3.2&&!blocked(cam.position.x+ux*(L+.25),cam.position.z+uz*(L+.25)))L+=.25;if(L<2.2)return null;
+  const cy=(fy>-1?2.8:F+2.8)-.22,D0=Math.min(L-.3,2.9);own();g.rotation.order='YXZ';
+  const pose=(dd,y)=>{g.position.set(cam.position.x+ux*dd,y,cam.position.z+uz*dd);g.rotation.set(Math.PI/2,Math.atan2(-ux,-uz),0)};
+  pose(D0,cy);g.scale.setScalar(.8);g.visible=true;DM.glow.intensity=.6;
+  if(AC&&!muted){const t0=AC.currentTime;for(let i=0;i<5;i++)burst(t0+i*.09,2600,4,.08,.06,'bandpass')}
+  return{k:'ceiling',T:0,dropped:0,step(dt){this.T+=dt;const t=this.T;
+    if(t<1.0){pose(D0,cy+Math.sin(t*30)*.004);return false}
+    if(!this.dropped){this.dropped=1;release();const ok=DM.show('scare');if(!ok){sting(calm())}shake(1);stats.ceilingHit=1;subtitle('(It lets go of the ceiling and drops straight at you.)',2600)}
+    return t>1.9},end(){if(!DM.active)release()}}}
+ // ---------- 5. mirror ----------
+ let mirM=null,cv=null,cq=null,hist=[];
+ function mirror(){if(fy<-1||(typeof MAP!=='undefined'&&MAP.k>1.05)||Math.hypot(RP.x-7.4,RP.z-.43)>2.6||view().z<.6)return null;
+  const mir=scene.children.find(o=>o.isMesh&&o.geometry&&o.geometry.parameters&&o.geometry.parameters.width===.74&&o.geometry.parameters.height===.84);if(!mir)return null;
+  if(!mirM){cv=document.createElement('canvas');cv.width=96;cv.height=112;cq=cv.getContext('2d');const t=new THREE.CanvasTexture(cv);const mm=new THREE.MeshBasicMaterial({map:t,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-6});mirM=new THREE.Mesh(new THREE.PlaneGeometry(.74,.84),mm);mirM.userData.noMap=1;scene.add(mirM)}
+  const sync=()=>{mirM.position.copy(mir.position);mirM.rotation.copy(mir.rotation);mirM.translateZ(.012)};sync();mirM.visible=true;hist=[];
+  return{k:'mirror',T:0,hit:0,step(dt){this.T+=dt;const t=this.T;sync();
+    hist.push(RP.x);const lag=Math.max(0,hist.length-1-Math.round(.7/Math.max(dt,.016)));const rx=hist[Math.min(lag,hist.length-1)];
+    const q=cq,W=96,Hh=112,b=q.createLinearGradient(0,0,W,Hh);b.addColorStop(0,'#7c8a96');b.addColorStop(1,'#4c5864');q.fillStyle=b;q.fillRect(0,0,W,Hh);
+    const x=W/2-(rx-7.4)*40;/* your reflection: head and shoulders, where you were 0.7 s ago */
+    if(t>1.6){const k=Math.min(1,(t-1.6)/.8),dx=x+14;/* she fades in, standing just behind your shoulder */q.globalAlpha=k;q.fillStyle='#0c0a0c';q.fillRect(dx-11,18,22,94);q.fillRect(dx-8,6,16,16);q.fillStyle='#d6cec0';q.fillRect(dx-6,8,12,14);q.fillStyle='#000';q.fillRect(dx-4,12,3,3);q.fillRect(dx+1,12,3,3);q.fillStyle='#e8dcc0';q.fillRect(dx-5,18,10,2);q.globalAlpha=1}
+    q.fillStyle='#1e2228';q.fillRect(x-14,46,28,66);q.beginPath();q.ellipse(x,36,10,12,0,0,7);q.fill();
+    if(t>2.6&&!this.hit){this.hit=1;sting(calm());shake(.9);stats.mirrorHit=1;subtitle('(Your reflection was late. And something was standing right behind it.)',3200)}
+    if(this.hit){const k=Math.min(1,(t-2.6)/.25);q.fillStyle='rgba(0,0,0,'+(.5*k)+')';q.fillRect(0,0,W,Hh);const sz=40+60*k;q.fillStyle='#d8d0c4';q.fillRect(W/2-sz*.3,Hh*.45-sz*.4,sz*.6,sz*.8);q.fillStyle='#000';q.fillRect(W/2-sz*.2,Hh*.45-sz*.2,sz*.13,sz*.08);q.fillRect(W/2+sz*.07,Hh*.45-sz*.2,sz*.13,sz*.08);q.fillStyle='#1a0204';q.fillRect(W/2-sz*.25,Hh*.45+sz*.12,sz*.5,sz*.06)}
+    mirM.material.map.needsUpdate=true;return t>3.4},end(){if(mirM)mirM.visible=false}}}
+ const TYPES={flicker,closet,bed,ceiling,mirror};XT.js2.types=Object.keys(TYPES);
+ function free(){return XT.live()&&!paused&&!act&&!TRAP.on&&!DM.active&&!(window.__rlm&&__rlm.on)&&!(window.__wallChase&&__wallChase.on)&&!(XT.hide&&(XT.hide.hid||XT.hide.S))&&!(XT.scares&&XT.scares.act)&&!(window.__mp&&(__mp.ghost||__mp.demon||__mp.hm||__mp.hz))&&!noteOpen&&!(typeof seated!=='undefined'&&seated)}
+ function tryRun(k){const f=TYPES[k];if(!f)return false;const a=safe(()=>f(),k);if(!a)return false;act=a;stats[k]=(stats[k]||0)+1;armT=0;return true}
+ XT.js2.run=k=>{if(!free())return false;return k?tryRun(k):Object.keys(TYPES).sort(()=>Math.random()-.5).some(tryRun)};
+ XT.js2.arm=s=>{armT=s||45};
+ XT.onUpdate(dt=>{
+  if(act){let done=true;safe(()=>{done=act.step(dt)},'step');if(done||!XT.live()){const a=act;act=null;safe(()=>a.end(),'end')}return}
+  if(armT>0){armT-=dt;if(free())XT.js2.run()}
+  if(window.__mp&&__mp.client)return;if(!free()||XT.hour()<19.5)return;
+  next-=dt*(XT.jsK?XT.jsK():1)*(.6+.8*CARE.dbg.noise);if(next>0)return;next=rnd(170,280);
+  if(mp()&&__mp.fighters){const L=__mp.fighters();const id=L.length?L[(Math.random()*L.length)|0]:null;if(id&&id!==__mp.id){__mp.sendTo(id,{t:'js2'});return}}
+  XT.js2.arm(45)});
+ // clients: the host arms you
+ if(window.__mp){const oc=__mp.onC;__mp.onC=m=>{if(m&&m.t==='js2'){safe(()=>XT.js2.arm(45),'arm');return}if(oc)return oc(m)}}
+ XT.parts.js2={save:()=>+next.toFixed(1),load:v=>{if(v>0)next=+v}};
+})();
+
+</script>
+<script type="text/x-hush">
 // ===== v113 (Petra 2026-10-12): the wall crawler chases you; the tapping at the window plays out; the demon player sees through her own eyes =====
 (function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush v113] '+(t||''),e)}};
  const DM=DEMON.dbg,g=DM.g;
@@ -6710,7 +6873,7 @@ body.hz #need,body.hz #mon{display:none!important}
   CH.lost=see?0:CH.lost+dt;if(CH.lost>=4){giveUp();pose();return}
   if(CH.t>=20.5){giveUp('(It falls back, all at once, and sinks into the wall. The crawling fades away.)');pose();return}
   CH.repT-=dt;if(CH.repT<=0||!CH.path||CH.pi>=CH.path.length){CH.repT=see?.35:.8;if(see&&d<2.2)CH.path=[{x:px,z:pz,h:fy}],CH.pi=0;else goTo()}
-  walk(dt,see?3.0:2.6);if(CH.ph!=='chase')return;pose();
+  walk(dt,(see?3.0:2.6)*(window.__n4Spd||1));if(CH.ph!=='chase')return;pose();
   CH.stepT-=dt;if(CH.stepT<=0&&AC&&!muted){CH.stepT=.22;safe(()=>XT.demonSfx&&XT.demonSfx.skitter(CH.x,CH.z,1.2),'sk')}});
  window.__wallChase={start,startTV,get on(){return CH.on},CH,giveUp};
 
@@ -7131,11 +7294,11 @@ body.hz #need,body.hz #mon{display:none!important}
   b.updateMatrixWorld(true);const skip=new Set();rig.arms.forEach(a=>a.traverse(c=>skip.add(c)));b.traverse(c=>{if(c.userData.noFit)c.traverse(d=>skip.add(d))});const ms=[];b.traverse(c=>{if(c.isMesh&&!skip.has(c))ms.push(c)});
   const mats=[];ms.forEach(m=>(Array.isArray(m.material)?m.material:[m.material]).forEach(x=>{if(!mats.includes(x))mats.push(x)}));const sides=mats.map(x=>{const s=x.side;x.side=THREE.DoubleSide;return s});
   const rc=new THREE.Raycaster(),bq=b.matrixWorld,cast=(o,d)=>{rc.set(o.applyMatrix4(bq),d.transformDirection(bq));rc.far=1;const h=rc.intersectObjects(ms,false);return h.length?1-h[0].distance:null};
-  const prof=(fn,lo,hi,def)=>{let prev=def;const r=ys.map((y,j)=>{let m=null;fn(y).forEach(v=>{if(v!=null&&(m==null||v>m))m=v});if(m==null)m=j?prev:def;m=Math.min(hi,Math.max(lo,m));if(j)m=Math.max(m,prev);return prev=m});/* drape: no sudden steps; a flare over a skirt or obi starts a little higher, sloping out at most .5 per unit of height */for(let j=N-1;j>=0;j--)r[j]=Math.max(r[j],r[j+1]-.5*(ys[j]-ys[j+1]));return r};
+  const prof=(fn,lo,hi,def,nar)=>{let prev=def;const r=ys.map((y,j)=>{let m=null;fn(y).forEach(v=>{if(v!=null&&(m==null||v>m))m=v});if(m==null)m=j?prev:def;m=Math.min(hi,Math.max(lo,m));if(j)m=nar?Math.max(m,prev-(ys[j-1]-ys[j])):Math.max(m,prev);return prev=m});/* b118: nar = the side panels may narrow again below the waist (at most 1 per unit of height), so they follow the hips instead of standing off them *//* drape: no sudden steps; a flare over a skirt or obi starts a little higher, sloping out at most .5 per unit of height */for(let j=N-1;j>=0;j--)r[j]=Math.max(r[j],r[j+1]-.5*(ys[j]-ys[j+1]));return r};
   const xs=[.11,.14,.17,.2,.22],zs=[-.1,-.05,0,.05,.1];
   const F=prof(y=>[].concat(...[-1,1].map(k=>xs.map(x=>cast(new THREE.Vector3(k*x,y,-1),new THREE.Vector3(0,0,1))))),.1,.24,.11),
    Bk=prof(y=>[].concat(...[-1,1].map(k=>xs.map(x=>cast(new THREE.Vector3(k*x,y,1),new THREE.Vector3(0,0,-1))))),.1,.24,.11),
-   Sd=prof(y=>y>1.32?[]/* the round shoulder caps bulge out above here; the haori's own shoulder pieces cover them */:[].concat(...[-1,1].map(k=>zs.map(z=>cast(new THREE.Vector3(k,y,z),new THREE.Vector3(-k,0,0))))),.18,.34,.19);
+   Sd=prof(y=>y>1.32?[]/* the round shoulder caps bulge out above here; the haori's own shoulder pieces cover them */:[].concat(...[-1,1].map(k=>zs.map(z=>cast(new THREE.Vector3(k,y,z),new THREE.Vector3(-k,0,0))))),.14,.34,.19,1);
   mats.forEach((x,i)=>x.side=sides[i]);
   const at=(a,y)=>{if(y>=ys[0])return a[0];for(let j=1;j<=N;j++)if(y>=ys[j]){const t=(ys[j-1]-y)/(ys[j-1]-ys[j]);return a[j-1]+(a[j]-a[j-1])*t}return a[N]},e=.004,t=.02;
   // bend a panel: rebuild its box with N rows and move each vertex with map(local x,local y,local z, body y)
@@ -7143,7 +7306,7 @@ body.hz #need,body.hz #mon{display:none!important}
    for(let i=0;i<p.count;i++){const v=map(p.getX(i)/g.width+.5,p.getY(i)+o.position.y,p.getZ(i)/g.depth+.5);p.setXYZ(i,v[0]-o.position.x,v[1]-o.position.y,v[2]-o.position.z)}
    ng.computeVertexNormals();o.geometry.dispose();o.geometry=ng;return o};
   const y=top-len/2;
-  bend(mk(.47,len,.02,0,y,.142,b),(u,yy,w)=>[(u-.5)*.47,yy,at(Bk,yy)+e+w*t]);
+  bend(mk(.47,len,.02,0,y,.142,b),(u,yy,w)=>[(u-.5)*2*(at(Sd,yy)+e+t),yy,at(Bk,yy)+e+w*t]);/* b118: as wide as the side panels at every height (it used to be a fixed .47 and stuck out past the narrowed sides) */
   [-1,1].forEach(k=>{bend(mk(.02,len,.264,k*.226,y,0,b),(u,yy,w)=>{const xo=at(Sd,yy)+e;return[k*(xo+(k>0?u:1-u)*t),yy,w<.5?-(at(F,yy)+e+t):at(Bk,yy)+e+t]});
    bend(mk(.12,len,.02,k*.166,y,-.142,b),(u,yy,w)=>{const xo=at(Sd,yy)+e+t,ui=k>0?u:1-u;return[k*(.106+ui*(xo-.106)),yy,-(at(F,yy)+e+(1-w)*t)]})});
   return{F:yy=>at(F,yy)+e+t}}
@@ -7578,13 +7741,13 @@ body.hz #need,body.hz #mon{display:none!important}
    tCv+=(c-tCv)*e;tWv+=(w-tWv)*e;tSv+=(sc-tSv)*e;
    if(TL.length){TL[0].scale.setScalar(tSv);TL[0].rotation.y=tSg*tWv;for(let i=0;i<TL.length;i++){tAp[i]=tOff(i,tCv,tCs);TL[i].rotation.z+=tAp[i]}body.userData.tailFit={c:+tCv.toFixed(2),w:+tWv.toFixed(2),s:+tSv.toFixed(2),n:tNear.length}}};
   let hy=1.05,tc=0,ck=0;const OFF=[['armL',-.75],['armR',-.75],['foreL',.55],['foreR',.55],['handL',-.6],['handR',-.6]],EX={L:0,R:0},hv=new THREE.Vector3(),bv=new THREE.Vector3(),off=k=>OFF.forEach(([n,a])=>{if(J[n])J[n].rotation.x+=a*k});
-  if(R){for(let i=0;i<12;i++)X.pose(R,'stand',t0,.2);const any=g.getObjectByProperty('isMesh',true);if(any)anim(any,t=>{const dt=last?Math.min(.1,t-last):.016;last=t;
+  if(R){for(let i=0;i<12;i++)X.pose(R,'stand',t0,.2);const any=g.getObjectByProperty('isMesh',true);if(any)any.renderOrder=-1;if(any)anim(any,t=>{const dt=last?Math.min(.1,t-last):.016;last=t;
     off(-ck);for(let i=0;i<TL.length;i++){TL[i].rotation.z-=tAp[i];tAp[i]=0}['L','R'].forEach(k=>{if(J['arm'+k])J['arm'+k].rotation.x-=EX[k];EX[k]=0});const cr=!!body.userData.crouch,mv=!!body.userData.dmMove;ck=body.userData.snap?(cr?1:0):ck+((cr?1:0)-ck)*Math.min(1,dt*5);tc+=dt*(mv?1:.12);if(body.userData.snap){for(let i=0;i<15;i++)X.pose(R,cr?'crawl':'stand',t0+tc,.2)}
     X.pose(R,cr?'crawl':mv?'stalk':'stand',cr?t0+tc:t+t0,dt);const ty=J.hip?J.hip.position.y:hy;hy=body.userData.snap?ty:hy+(ty-hy)*Math.min(1,dt*5);if(J.hip)J.hip.position.y=hy;
     off(ck);g.scale.set(.82,.82/(body.scale.y||1),.82);
     // clamp: the hands never sink below the floor (the body's own origin is the floor): lift that arm forward until the hand sits on the surface
     if(ck>.01){body.getWorldPosition(bv);['L','R'].forEach(k=>{const a=J['arm'+k],hd=J['hand'+k];if(!a||!hd)return;for(let i=0;i<16;i++){g.updateMatrixWorld(true);hd.getWorldPosition(hv);if(hv.y>=bv.y+.13)break;a.rotation.x-=.06;EX[k]-=.06}})}
-    if(!window.__tailOld)tailFit(dt,!!body.userData.snap)})}
+    if(!window.__tailOld)tailFit(dt,!!body.userData.snap);g.updateMatrixWorld(true)})}
   const dum=()=>{const q=new THREE.Group();body.add(q);return q};
   return{legs:[dum(),dum()],arms:[dum(),dum()],head:dum(),demon:g}}
  // see-through: everything at very low opacity (hair, clothes, accessories; glows keep their own scale)
