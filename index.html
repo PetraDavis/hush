@@ -1336,7 +1336,7 @@ let ft=0;function flicker(dt){ft+=dt;const a=window.__mp&&__mp.demon?0:sat((nois
  if(calm){l.intensity*=1-.4*a*(.5+.5*Math.sin(ft*1.3+i*1.7));return}
  u.ft=(u.ft||0)-dt;if(u.ft<=0){const r=Math.random();u.fs=r<.35*a*Math.min(1,a*2)?.04:r<.35*a+.3*a?1+.9*a:1;u.ft=.2+Math.random()*.35*(1.3-a)}l.intensity*=u.fs===undefined?1:u.fs})}
 function post(dt){flicker(dt||1/60);const dk=fx.dark;if(fx.early>.005)fxEl.style.setProperty('--vig',Math.min(.97,parseFloat(fxEl.style.getPropertyValue('--vig')||.45)+.18*fx.early).toFixed(3));if(dk<.005)return;allL.forEach(l=>l.intensity*=1-.72*dk);hemi.intensity*=1-.85*dk;fxEl.style.setProperty('--vig',Math.min(.97,parseFloat(fxEl.style.getPropertyValue('--vig')||.45)+.5*dk).toFixed(3));fxEl.style.setProperty('--vc',(55-38*dk).toFixed(1)+'%')}
-return{update,render,post,warp,busy,free,jump(){if(window.__mp&&__mp.demon)return;if((window.__mp&&__mp.active)&&!__mp.host){try{__mp.send({t:'jump'})}catch(e){}return}noise=Math.min(1,noise+.015);const bp=babyPos();if(asleep&&Math.hypot(cam.position.x-bp.x,cam.position.z-bp.z)<3.5&&Math.random()<.3)wake('Your footsteps woke her.')},lullaby(v){lull=v},
+return{update,render,post,warp,busy,free,cryS:()=>cryS(),jump(){if(window.__mp&&__mp.demon)return;if((window.__mp&&__mp.active)&&!__mp.host){try{__mp.send({t:'jump'})}catch(e){}return}noise=Math.min(1,noise+.015);const bp=babyPos();if(asleep&&Math.hypot(cam.position.x-bp.x,cam.position.z-bp.z)<3.5&&Math.random()<.3)wake('Your footsteps woke her.')},lullaby(v){lull=v},
  skip(sec){const st=20;let cried=0;for(let k=0;k<sec;k+=st){N.hunger+=st*RATE.hunger*(asleep?.35:1);N.diaper+=st*RATE.diaper*(asleep?.4:1);if(asleep){napT-=st;if(napT<=0){asleep=false;N.sleepy=0}}else{N.sleepy+=st*RATE.sleepy;N.bored+=st*RATE.bored*(carrying?.5:1);if(top()[1]>CRY_AT-.1)cried+=st}if(N.burp>0)N.burp+=st/90;for(const q in N)N[q]=Math.min(1,N[q])}
   eyes2.forEach(e=>e.scale.y=asleep?.15:1);const v=top()[1];if(cried>0||(!asleep&&v>.75)){noise=Math.min(.9,noise+.25+.5*Math.min(1,cried/sec));return cried>sec*.4?'She cried for most of that hour. The house heard every minute of it.':'She fussed while you waited.'}return asleep?'She slept through it.':'The hour passes quietly.'},
  dbg:{RATE,bb,eyes2,mouth,set eyeO(v){eyeO=v},get babyP(){return babyPos()},get calm(){return calm},get sK(){return MAP.k},get fov(){return cam.fov},carry(){carrying=true;inArms()},N,stats,fx,EV,EVENTS,get noise(){return noise},set noise(v){noise=v},get carrying(){return carrying},get inSeat(){return inSeat},SEAT,get asleep(){return asleep},set asleep(v){asleep=v},get bottle(){return bottleS},set bottle(v){bottleS=v},anim:{feed:()=>feedAnim(()=>{}),burp:()=>burpAnim(()=>{}),play:()=>playAnim(()=>{stats.plays++}),diaper:()=>diaperAnim(()=>{})},get busy(){return !!act},forceIdle(){act=null;progEl.hidden=true;resetAnim();if(carrying)inArms();else if(inSeat)toSeat();else inCrib()},rockStart(){if(!asleep){N.sleepy=Math.max(N.sleepy,.35);subtitle(lull?'You rock her gently while the music box plays.':'You rock her gently. (The music box helps.)',3000)}},get warm(){return warmS},mp:{get carrying(){return carrying},set carrying(v){carrying=v},get inSeat(){return inSeat},set inSeat(v){inSeat=v},get seatAt(){return seatAt},set seatAt(v){if(SEATS[v]){seatAt=v;SEAT.x=SEATS[v].x;SEAT.z=SEATS[v].z}},inCrib,inArms,toSeat,bb,endEvent,get napT(){return napT},set napT(v){napT=v},get warmT(){return warmT},set warmT(v){warmT=v},get warmS(){return warmS},set warmS(v){if(v===warmS)return;warmS=v;warmLed.material.color.setHex(v===1?0xff3018:v===2?0x30ff60:0x301010)},get lull(){return lull},get act(){return act},scream,inGlider,inNursery,get dread(){return dread},set dread(v){dread=v},EV,EVENTS},startEvent,drips,pics,seep,skipWarm(){warmT=0}}}})();
@@ -2155,7 +2155,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
    cam.position.set(mX(sx),F+1.6+Math.sin(t*1.7)*.004,mZ(sz));cam.rotation.set(pitch,yaw,0);
    return t>15.2},
    end(){mom.visible=dad.visible=car.visible=false;fdoor.open=false;fdoor.pv.rotation.y=0;fdoor.solid.off=false;gate.rotation.y=0;engine(false);beam.intensity=0;yaw=0;pitch=0;cam.position.set(mX(sx),F+1.6,mZ(sz));fy=F;vy=0;
-    subtitle("Headlights shrink down the road. The house is very quiet.",3500);XT.cutEnd();if(XT.help)XT.help.open()}})};
+    subtitle("Headlights shrink down the road. The house is very quiet.",3500);XT.cutEnd();if(!(XT.quickCard&&XT.quickCard())&&XT.help)XT.help.open()}})};
 })();
 // ---------- 7. endings, exit cutscenes, credits ----------
 (function(){const XT=window.__xt;
@@ -2927,7 +2927,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   if(play&&!shown&&J.id===null)idle();shown=play;
   const hid=XT.hide&&XT.hide.hid;if(hid){window.__joy={x:0,y:0};if(keys.ShiftLeft&&!window.__holdBreath)keys.ShiftLeft=false}
   bH.textContent=hid?'Hold breath':'Hide';bE.textContent=hid?'Leave':'Use';
-  {const nw=performance.now();if(nw-lblT>120){lblT=nw;let t=null;if(play&&!fm&&!hid&&!seated&&!(window.__mp&&(__mp.ghost||__mp.demon)))t=safe(()=>target()||(CARE.free&&CARE.free()),'lbl');let lb='';try{lb=t?t.label:''}catch(e){}
+  {const nw=performance.now();if(nw-lblT>120){lblT=nw;let t=null;if(play&&!fm&&!hid&&!seated&&!(window.__mp&&(__mp.ghost||__mp.demon)))t=safe(()=>(window.__hzTagLbl&&__hzTagLbl())||target()||(CARE.free&&CARE.free()),'lbl');let lb='';try{lb=t?t.label:''}catch(e){}
    if(lbl.textContent!==(lb||''))lbl.textContent=lb||'';lbl.hidden=!lb;bE.classList.toggle('tg',!!lb);document.body.classList.toggle('tLbl',!!lb)}}
   bC.classList.toggle('on',!!keys.KeyC);bS.classList.toggle('on',!!keys.ShiftLeft);bLt.classList.toggle('on',!!(XT.torch&&XT.torch.on));
   rot.hidden=rotOff||!(innerHeight>innerWidth)||!(started||TITLE.on)}
@@ -3183,7 +3183,9 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   function pick(){const ks=['sweep','lunge','swipe'];let k;do{k=ks[Math.floor(Math.random()*3)]}while(S.last.length>=2&&S.last[0]===k&&S.last[1]===k);S.last=[k,S.last[0]];
    if(S.MP){const F=safe(()=>__mp.fighters(),'fighters')||[];S.tg=F.length?F[Math.floor(Math.random()*F.length)]:S.me}return k}
   // ---- her movement (the host's copy decides) ----
-  const free=(x,z)=>!blocked(x,z)&&!blocked(x+.3,z)&&!blocked(x-.3,z)&&!blocked(x,z+.3)&&!blocked(x,z-.3);
+  // v117: walls are tested at the arena floor, not at the local player's own height (the host may have been on another floor when the fight began, which froze a guest demon in place)
+  const bAt=(x,z)=>{const s0=fy,c0=crouch;fy=FLR;crouch=false;try{return blocked(x,z)}finally{fy=s0;crouch=c0}};
+  const free=(x,z)=>!bAt(x,z)&&!bAt(x+.3,z)&&!bAt(x-.3,z)&&!bAt(x,z+.3)&&!bAt(x,z-.3);
   const moveB=(dx,dz)=>{let m=false;if(free(S.bx+dx,S.bz)){S.bx+=dx;m=true}if(free(S.bx,S.bz+dz)){S.bz+=dz;m=true}return m};
   const turn=(a,rate,dt)=>{let d=a-S.br;d=Math.atan2(Math.sin(d),Math.cos(d));S.br+=Math.max(-rate*dt,Math.min(rate*dt,d))};
   // idle: she circles you or slithers somewhere else, then closes to the range of the blow she has picked
@@ -3221,7 +3223,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    // you: walk, run, roll, jump, with the room's walls and furniture in the way
    if(!S.spec&&!S.dead){const mv=moveVec();let vx,vz;
     if(S.dodgeT>0){S.dodgeT-=dt;vx=S.rd.x*6.2;vz=S.rd.z*6.2}else{S.dodgeT-=dt;const j=window.__joy,run=IN.run||(tch()&&j&&Math.hypot(j.x,j.y)>.95),v=(run?4.6:2.9)*(IN.blk?.55:1);vx=mv.x*v;vz=mv.z*v}
-    const nx=S.p.x+vx*dt,nz=S.p.z+vz*dt;if(!blocked(nx,S.p.z))S.p.x=nx;if(!blocked(S.p.x,nz))S.p.z=nz;
+    const nx=S.p.x+vx*dt,nz=S.p.z+vz*dt;if(!bAt(nx,S.p.z))S.p.x=nx;if(!bAt(S.p.x,nz))S.p.z=nz;
     if(S.py>0||S.vy>0){S.vy-=12*dt;S.py+=S.vy*dt;if(S.py<=0){S.py=0;S.vy=0}}}
    const sp=spd();
    // a new attack is announced (to everyone in reach of it; the others see who it is aimed at)
@@ -3388,6 +3390,30 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  H.addEventListener('click',e=>{e.stopPropagation();if(e.target===H)close()});
  addEventListener('keydown',e=>{if(!H.hidden&&(e.code==='Escape'||e.code==='Enter')){e.preventDefault();e.stopImmediatePropagation();close()}},true);
  XT.help={open(){safe(()=>{if(document.pointerLockElement)document.exitPointerLock()},'unlock');safe(()=>{if(started&&!ended)setPaused(true)},'pause');H.hidden=false;const pn=H.querySelector('.pn');pn.scrollTop=0;setTimeout(()=>safe(()=>{H.querySelector('#helpClose').focus({preventScroll:true});pn.scrollTop=0}),50)},close,get open_(){return !H.hidden}};
+
+ // v117 (Petra): a short "How to play" card for brand-new players at the start of night 1 (single player), shown once (hushQuick). The full help is one tap away.
+ {const qs=document.createElement('style');qs.textContent=`#qCard{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(4,4,7,.72)}
+#qCard .pn{width:min(26rem,100%);max-height:calc(100dvh - 32px);overflow:auto;background:#121014;border:1px solid #2c2a30;border-radius:8px;padding:1.2rem 1.3rem 1rem;color:var(--fg);font-family:var(--ui);font-size:.84rem;line-height:1.5;box-shadow:0 10px 40px rgba(0,0,0,.7)}
+#qCard h2{font-family:var(--display);font-weight:400;font-size:1.5rem;margin:0 0 .5rem}#qCard ul{margin:0;padding-left:1.1rem}#qCard li{margin:.3rem 0}#qCard kbd{font-family:var(--ui);font-size:.72rem;border:1px solid #3a363e;border-bottom-width:2px;border-radius:4px;padding:.05rem .35rem;background:#1c1a20}
+#qCard .bar{display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap;margin-top:1rem}#qCard button{font-family:var(--ui);font-size:.85rem;color:#f0e6e0;background:#3a0e10;border:1px solid #6a2024;border-radius:6px;padding:.55rem 1.2rem;min-height:44px;cursor:pointer;touch-action:manipulation}#qCard button.alt{background:#1a1716;border-color:#3a332c}
+#qCard .t{display:none}body.touch #qCard .t{display:inline}body.touch #qCard .k{display:none}
+@media (max-height:440px){#qCard .pn{font-size:.74rem;line-height:1.35;padding:.8rem 1rem .7rem}#qCard h2{font-size:1.2rem;margin:0 0 .2rem}#qCard li{margin:.12rem 0}#qCard .bar{margin-top:.5rem}}`;document.head.appendChild(qs)}
+ const QC=document.createElement('div');QC.id='qCard';QC.hidden=true;
+ QC.innerHTML=`<div class="pn" role="dialog" aria-modal="true" aria-labelledby="qT"><h2 id="qT">How to play</h2><ul>
+<li><b>Your job:</b> look after baby Lilith until 6 AM, when her parents come home.</li>
+<li><b>Move</b> <span class="k">with ${K('W')}${K('A')}${K('S')}${K('D')} and look with the mouse</span><span class="t">with the left stick, drag on the right to look</span>. <b>Use</b> things and pick her up with <span class="k">${K('E')}</span><span class="t">the Use button</span>.</li>
+<li>The icon on screen shows what she needs: a bottle, a burp, a diaper, play or sleep.</li>
+<li>Keep her quiet. The baby monitor shows how loud she is.</li>
+<li>Read the note on the dining table and follow the house rules.</li>
+<li>Your flashlight is <span class="k">${K('L')}</span><span class="t">the Light button</span>. If you need to, hide in a closet or under a bed.</li></ul>
+<div class="bar"><button type="button" class="alt" id="qMore">All controls</button><button type="button" id="qGo">Got it</button></div></div>`;document.body.appendChild(QC);
+ const qClose=more=>{QC.hidden=true;if(more)XT.help.open();else safe(()=>{if(started&&!ended&&overlay.hidden&&!window.__cut){overlay.hidden=false;setPaused(true)}},'qclose')};
+ [['#qGo',false],['#qMore',true]].forEach(([q,m])=>{const b=QC.querySelector(q);b.addEventListener('click',e=>{e.stopPropagation();qClose(m)});['pointerdown','touchstart','mousedown'].forEach(k=>b.addEventListener(k,e=>e.stopPropagation(),{passive:true}))});
+ QC.addEventListener('click',e=>{e.stopPropagation()});
+ addEventListener('keydown',e=>{if(!QC.hidden&&(e.code==='Escape'||e.code==='Enter')){e.preventDefault();e.stopImmediatePropagation();qClose(false)}},true);
+ XT.quickCard=()=>{let seen=false;try{seen=localStorage.getItem('hushQuick')==='1'}catch(e){}if(seen||(XT.night||1)!==1||(window.__mp&&__mp.active))return false;
+  try{localStorage.setItem('hushQuick','1')}catch(e){}safe(()=>{if(document.pointerLockElement)document.exitPointerLock()},'unlock');safe(()=>{if(started&&!ended)setPaused(true)},'pause');overlay.hidden=true;QC.hidden=false;setTimeout(()=>safe(()=>QC.querySelector('#qGo').focus({preventScroll:true})),50);return true};
+ XT.quickCardOpen_=()=>!QC.hidden;
  // a button on the pause screen, beside the journal
  const box_=overlay.querySelector('.box'),b=document.createElement('button');b.id='hBtn';b.type='button';b.textContent='How to play';box_.appendChild(b);
  b.addEventListener('click',e=>{e.stopPropagation();XT.help.open()});
@@ -3868,7 +3894,9 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 
  // ---------- death: you become a ghost; the night ends for everyone only when all of you are gone ----------
  const ghostEl=document.createElement('div');ghostEl.id='mpGhost';ghostEl.hidden=true;document.body.appendChild(ghostEl);
- let gMode='follow',gIdx=0,gUp=0;
+ let gMode='follow',gIdx=0,gUp=0,gPin=null;
+ // v117: pin the ghost camera to one player's eyes (Hide & Seek: watch through the seeker's eyes); null unpins. Tab / V unpin too
+ MP.ghostPin=id=>{gPin=id||null;if(gPin)gMode='follow';ghostHud()};MP.ghostPinned=()=>gPin;
  MP.die=(h,p)=>{if(!MP.active)return false;if(MP.ghost)return true;MP.ghost=true;
   safe(()=>{if(XT.hide&&XT.hide.hid)XT.hide.leave()},'leave');safe(()=>{if(CD.busy)CD.forceIdle()},'idle');
   safe(()=>{if(CD.mp.carrying){CD.mp.carrying=false;CD.mp.inCrib()}},'drop');safe(()=>{if(window.__rlm&&__rlm.on)__rlm.mpLeave()},'realm');
@@ -3876,15 +3904,15 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
   const msg=(h||'Taken.')+(p?' '+p:'');subtitle('You died. '+msg,6000);
   ghostEl.hidden=false;ghostHud();send({t:'dead',h,p});return true};
  function ghostTargets(){const L=[];AV.forEach((a,id)=>{if(a.last&&!a.last.gh)L.push(id)});return L}
- function ghostHud(){if(!MP.ghost){ghostEl.hidden=true;return}const T=ghostTargets(),id=T[gIdx%Math.max(1,T.length)];
-  ghostEl.innerHTML='<b>Ghost</b> '+(gMode==='follow'&&id?'watching <span style="color:'+COL[(roster.find(p=>p.id===id)||{slot:0}).slot]+'">'+esc(MP.nameOf(id))+'</span>':'free camera')+
-   '<br><small>'+(window.__touchMode?'':'[Tab] next teammate &middot; [V] '+(gMode==='follow'?'free camera':'follow')+' &middot; [1-5] pick a scare, [G] haunt'+(gMode==='free'?' &middot; WASD, Space up, C down':''))+'</small>'}
- MP.ghostCam=(dt,f,s)=>{const T=ghostTargets();if(gMode==='follow'&&T.length){const id=T[gIdx%T.length],a=AV.get(id);if(a&&a.cur){const c=a.cur;
+ function ghostHud(){if(!MP.ghost){ghostEl.hidden=true;return}const T=ghostTargets(),id=gPin&&T.includes(gPin)?gPin:T[gIdx%Math.max(1,T.length)];
+  ghostEl.innerHTML='<b>Ghost</b> '+(gMode==='follow'&&id?(gPin===id?'seeing through the eyes of ':'watching ')+'<span style="color:'+COL[(roster.find(p=>p.id===id)||{slot:0}).slot]+'">'+esc(MP.nameOf(id))+'</span>':'free camera')+
+   '<br><small>'+(window.__touchMode?'':'[Tab] next teammate &middot; [V] '+(gMode==='follow'?'free camera':'follow')+(MP.hz?' &middot; [Q] '+(gPin?'back':'seeker\'s eyes'):'')+' &middot; [1-5] pick a scare, [G] haunt'+(gMode==='free'?' &middot; WASD, Space up, C down':''))+'</small>'}
+ MP.ghostCam=(dt,f,s)=>{const T=ghostTargets();if(gPin&&!T.includes(gPin)){gPin=null;ghostHud()}if(gMode==='follow'&&T.length){const id=gPin||T[gIdx%T.length],a=AV.get(id);if(a&&a.cur){const c=a.cur;
     if(c.ar==='r'){cam.position.set(4.8,F+1.6,8);}else{cam.position.set(mX(c.x),c.cy,mZ(c.z));yaw=c.yaw;pitch=c.pi}}return}
   if(gMode==='follow'&&!T.length)gMode='free';
   const sp=(keys.ShiftLeft||keys.ShiftRight?7:3.5)*dt,cp=Math.cos(pitch);cam.position.x+=(-Math.sin(yaw)*cp*f+Math.cos(yaw)*s)*sp;cam.position.z+=(-Math.cos(yaw)*cp*f-Math.sin(yaw)*s)*sp;
   cam.position.y+=(Math.sin(pitch)*f+(keys.Space?1:0)-(keys.KeyC||keys.ControlLeft?1:0))*sp;cam.position.y=Math.max(BF-1,Math.min(8,cam.position.y));fy=cam.position.y-1.6};
- addEventListener('keydown',e=>{if(window.__typing||!MP.active||!MP.ghost||paused)return;if(e.code==='Tab'){e.preventDefault();gIdx++;gMode='follow';ghostHud()}else if(e.code==='KeyV'){gMode=gMode==='follow'?'free':'follow';ghostHud()}
+ addEventListener('keydown',e=>{if(window.__typing||!MP.active||!MP.ghost||paused)return;if(e.code==='Tab'){e.preventDefault();gIdx++;gMode='follow';gPin=null;ghostHud()}else if(e.code==='KeyV'){gMode=gMode==='follow'?'free':'follow';gPin=null;ghostHud()}
   else if(e.code==='KeyG'){if(!e.repeat)ghostScare()}else if(/^Digit[1-5]$/.test(e.code)){gSel=+e.code.slice(5)-1;gsDraw()}},true);
  // ---------- ghost scares: the dead can still be felt. Small, harmless, on cooldowns; the host checks and passes them on ----------
  const GS=[{k:'knock',n:'Knock',cd:12,nz:.02},{k:'creak',n:'Creak',cd:9,nz:.01},{k:'lights',n:'Flicker lights',cd:24,nz:0},{k:'door',n:'Nudge a door',cd:16,nz:.015},{k:'whisper',n:'Whisper',cd:14,nz:0}];
@@ -6179,7 +6207,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const left=()=>Z.ids.filter(id=>!Z.out.includes(id)&&present(id));
 
  // ---------- the normal night is off ----------
- const du=DEMON.update;DEMON.update=function(){if(MP.hz)return;return du.apply(this,arguments)};
+ const du=DEMON.update;DEMON.update=function(){if(MP.hz&&!window.__hzPeek)return;return du.apply(this,arguments)};
  const hu=HUNT.update;HUNT.update=function(){if(MP.hz)return;return hu.apply(this,arguments)};
  const ts=TRAP.start;TRAP.start=function(){if(MP.hz)return false;return ts.apply(this,arguments)};
  safe(()=>{const H=XT.hide,ps=H.prowlStart;H.prowlStart=function(){if(MP.hz)return;return ps.apply(this,arguments)};const hh=XT.hideHunt;XT.hideHunt=function(){if(MP.hz)return true;return hh.apply(this,arguments)}},'hide');
@@ -6203,7 +6231,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   if(Z.ph==='wait'){const P=MP.dbg.P;let ready=!window.__cut;MP.roster().forEach(p=>{if(p.id===MP.id)return;const q=P.get(p.id);if(!q||!q.rep||q.rep.ct)ready=false});
    if(ready||T>=dl){Z.ph='hide';Z.np=1+Z.ids.filter(present).length;dl=T+HIDE_S*1000;MP.subAll('(Hide! '+name(Z.seeker)+' is counting to thirty.)',3500)}}
   else if(Z.ph==='hide'){if(T>=dl){Z.ph='seek';dl=T+SEEK_S*1000;MP.toAll({t:'zgo'})}}
-  else if(Z.ph==='seek'){if(!left().length){finish('seek','Everyone was found.');return}if(T>=dl){finish('hide',left().length===1?name(left()[0])+' was never found.':left().length+' hiders were never found.');lastStand();return}}
+  else if(Z.ph==='seek'){if(!left().length){finish('seek','Everyone was found.');if((Z.np|0)>=3)MP.toAll({t:'zbh',id:Z.seeker});return}if(T>=dl){finish('hide',left().length===1?name(left()[0])+' was never found.':left().length+' hiders were never found.');lastStand();return}}
   Z.t=Math.max(0,Math.ceil((dl-T)/1000))}
  // hs5 (Petra 2026-10-13): 'Last one standing': a hider still unfound when the seek timer runs out, in a round that started with 3+ players
  // (seeker included). Only a full round counts (not 'the seeker left'). Host decides and sends 'zls'; each winner stores hushCustU.laststand
@@ -6218,6 +6246,7 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  function newRoundLocal(){rnSeen=Z.rn;hintAt=-1e9;MP.hz.seeker=Z.seeker;MP.seeker=Z.seeker===MP.id;endShown=false;en.hidden=true;closePick();
   safe(()=>{if(XT.hide&&XT.hide.hid)XT.hide.leave()},'leave');
   if(MP.ghost){MP.ghost=false;const g=document.getElementById('mpGhost');if(g)g.hidden=true}
+  safe(()=>MP.ghostPin&&MP.ghostPin(null),'unpin');
   safe(()=>{seated=null;const sl=(MP.roster().find(p=>p.id===MP.id)||{slot:0}).slot;fy=F;vy=0;cam.position.set(mX(4.8)+(sl-1.5)*.6,F+1.6,mZ(7.6));yaw=0;pitch=0;if(typeof STR!=='undefined'&&blocked(cam.position.x,cam.position.z))STR.unstick()},'spawn');
   subtitle(MP.seeker?'New round: you are the seeker. Count to thirty...':'New round: '+name(Z.seeker)+' is the seeker. Hide!',4000)}
  // a tag or a search from the seeker
@@ -6234,7 +6263,9 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
   if(r.z>9.8)return 'outside';if(r.x<-4&&r.z>-3.5&&r.z<3.5)return 'in the garage';return 'on the ground floor'}
  let hHT={rn:0,t:0};// host only: when Lilith last gave a hint (30 s cooldown, Petra 20:33Z)
  function hostHint(pid,m){if(Z.ph!=='seek'||pid!==Z.seeker)return;const sr=MP.repOf(pid);if(!sr||!nearCrib(mX(sr.x),mZ(sr.z),sr.y))return;
-  if(hHT.rn===Z.rn&&now()-hHT.t<HINT_CD*1000-500)return;const id=m.id;if(!left().includes(id)||Z.asked.filter(x=>x===id).length>=HINTS)return;Z.asked.push(id);hHT={rn:Z.rn,t:now()};
+  if(hHT.rn===Z.rn&&now()-hHT.t<HINT_CD*1000-500)return;const id=m.id;if(!left().includes(id)||Z.asked.filter(x=>x===id).length>=HINTS)return;
+  // v117 (Petra 23:45Z): from 1:00 left, no third hint (the exact spot, bracelet or not); floor and area still work
+  if(Z.asked.filter(x=>x===id).length+1>=3&&Z.t<=FREEZE_T){MP.sendTo(pid,{t:'zhx',n:name(id)});return}Z.asked.push(id);hHT={rn:Z.rn,t:now()};
   const k=Z.asked.filter(x=>x===id).length;MP.sendTo(pid,{t:'zhr',id,n:name(id),k,f:hintText(MP.repOf(id),k,camoOf(id))})}
  // Petra 20:22Z: a hider wearing the jade bracelet gets sharper hints: 1 room + floor ('in the bathroom upstairs'), 2 the nearest hiding spot, 3 exact (in it / in the open)
  const camoOf=id=>{try{if(id===MP.id)return !!(window.__cust&&__cust.mine().hsCamo);const a=MP.dbg.AV.get(id);return !!(a&&a.cam)}catch(e){return false}};
@@ -6267,9 +6298,11 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
    case 'zgo':subtitle(isSeeker()?'Ready or not, here you come! Find them all in 5 minutes.':'(Ready or not... '+name(Z.seeker)+' is looking for you.)',4000);return;
    case 'zfound':if(m.id===MP.id)safe(beFound,'found');else subtitle('('+name(m.id)+' was found!)',3000);return;
    case 'zno':subtitle('Nobody in there.',1500);return;
+   case 'zhx':subtitle('Lilith shakes her head. With a minute left she won\'t give away '+m.n+'\'s exact spot. Ask about someone else.',4000);return;
    case 'zhr':hintAt=now();if(!MP.host&&Z.asked.filter(x=>x===m.id).length<(m.k||1))Z.asked.push(m.id);safe(()=>{XT.voice&&XT.voice('ba ba da','child',1.1,.3)},'coo');subtitle('Lilith babbles and points ('+(m.k||1)+'/'+HINTS+'). '+m.n+' is '+m.f+'.',6000);return;
    case 'zend':return;
    case 'zls':if((m.ids||[]).includes(MP.id))safe(unlockLastStand,'laststand');return;
+   case 'zbh':if(m.id===MP.id)safe(unlockBloodhound,'bloodhound');return;
    case 'zrw':if((m.ids||[]).includes(MP.id))safe(unlockReward,'reward');else subtitle('('+m.ids.map(name).join(' and ')+' topped the 5 rounds.)',4000);return}
   if(oc)return oc(m)}}
  {const orj=MP.onRejoin;MP.onRejoin=(old,nw,aw)=>{if(MP.hz&&MP.host){const sw=a=>a.map(x=>x===old?nw:x);Z.ids=sw(Z.ids);Z.out=sw(Z.out);Z.asked=sw(Z.asked);if(Z.seeker===old){Z.seeker=nw;MP.hz.seeker=nw}}if(orj)return orj(old,nw,aw)}}
@@ -6282,6 +6315,10 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  function unlockLastStand(){let o={};try{o=JSON.parse(localStorage.getItem('hushCustU')||'{}')||{}}catch(e){}const was=!!o.laststand;o.laststand=1;try{localStorage.setItem('hushCustU',JSON.stringify(o))}catch(e){}
   if(!was){safe(()=>XT.achToast&&XT.achToast('Last one standing','Unlocked'),'toast');subtitle('Last one standing: you were never found in a round of 3 or more players!',5000)}}
  MP.hzUnlockLastStand=unlockLastStand;
+ // v117 (Petra): 'Bloodhound': the seeker finds every hider in a round with 3+ players (seeker included) -> hushCustU.bloodhound (Customize: red glowing eyes)
+ function unlockBloodhound(){let o={};try{o=JSON.parse(localStorage.getItem('hushCustU')||'{}')||{}}catch(e){}const was=!!o.bloodhound;o.bloodhound=1;try{localStorage.setItem('hushCustU',JSON.stringify(o))}catch(e){}
+  if(!was){safe(()=>XT.achToast&&XT.achToast('Bloodhound','Unlocked'),'toast');setTimeout(()=>subtitle('Bloodhound: you found every hider! Red glowing eyes unlocked in Customize.',5000),3200)}}
+ MP.hzUnlockBloodhound=unlockBloodhound;
  function beFound(){if(MP.ghost)return;MP.die('Found.','');setTimeout(()=>subtitle(name(Z.seeker)+' found you. You are a ghost now: watch, haunt and chat.',5000),50)}
 
  // ---------- seeker: tag (E) ----------
@@ -6301,9 +6338,10 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
  const pk=document.createElement('div');pk.id='zPick';pk.hidden=true;document.body.appendChild(pk);
  function canHint(){return on()&&Z.ph==='seek'&&isSeeker()&&!MP.ghost&&nearCrib(cam.position.x,cam.position.z,fy)}
  let hintAt=-1e9;const cdLeft=()=>Math.max(0,Math.ceil(HINT_CD-(now()-hintAt)/1000));
- function openPick(){if(!canHint())return;if(cdLeft()>0){subtitle('Lilith needs a moment. Next hint in '+cdLeft()+' s.',2000);return}const L=left().filter(id=>Z.asked.filter(x=>x===id).length<HINTS);
+ function openPick(){if(!canHint())return;if(cdLeft()>0){subtitle('Lilith needs a moment. Next hint in '+cdLeft()+' s.',2000);send({t:'zmad'});return}const L=left().filter(id=>Z.asked.filter(x=>x===id).length<HINTS);
   if(!L.length){subtitle('Lilith yawns. She has told you all she knows this round.',2500);return}
-  pk.innerHTML='<div class="pp" role="dialog" aria-label="Ask Lilith"><h2>Ask Lilith</h2><p>Who should she tell you about? Three hints per person each round, each one closer.</p>'+L.map(id=>'<button type="button" data-id="'+String(id).replace(/"/g,'')+'">'+MP.chat.clean(name(id)).replace(/[<>&]/g,'')+' ('+(Z.asked.filter(x=>x===id).length+1)+'/'+HINTS+')</button>').join('')+'<button type="button" class="x" data-id="">Never mind</button></div>';
+  const late=Z.t<=FREEZE_T,lk=id=>late&&Z.asked.filter(x=>x===id).length+1>=3;
+  pk.innerHTML='<div class="pp" role="dialog" aria-label="Ask Lilith"><h2>Ask Lilith</h2><p>Who should she tell you about? Three hints per person each round, each one closer.'+(late?' With a minute left she won\'t give an exact spot.':'')+'</p>'+L.map(id=>'<button type="button" data-id="'+String(id).replace(/"/g,'')+'"'+(lk(id)?' disabled title="No exact spots in the last minute"':'')+'>'+MP.chat.clean(name(id)).replace(/[<>&]/g,'')+' ('+(Z.asked.filter(x=>x===id).length+1)+'/'+HINTS+')'+(lk(id)?' - not now':'')+'</button>').join('')+'<button type="button" class="x" data-id="">Never mind</button></div>';
   pk.hidden=false;if(document.pointerLockElement)document.exitPointerLock();window.__typing=true}
  function closePick(){pk.hidden=true;window.__typing=false}
  pk.addEventListener('click',e=>{e.stopPropagation();const b=e.target.closest('button');if(!b)return;const id=b.dataset.id;closePick();if(id)send({t:'zh',id})});
@@ -6317,7 +6355,8 @@ body.hDemon #need,body.hDemon #mon{display:none!important}
 #zT{position:fixed;z-index:6;right:calc(env(safe-area-inset-right,0px) + 14px);top:calc(env(safe-area-inset-top,0px) + 24%);}#zT button{min-width:66px;height:44px;border-radius:22px;font:600 .62rem var(--ui,system-ui);color:#f0e6d6;background:rgba(20,18,24,.6);border:1px solid rgba(224,184,112,.6);touch-action:manipulation;padding:0 .8rem}
 #zEnd .sb{font:.85rem/1.5 var(--ui,system-ui);color:#d8cfc0}#zEnd .sb p{margin:.2rem 0}#zEnd table{margin:.4rem auto;border-collapse:collapse}#zEnd td,#zEnd th{padding:.15rem .7rem;text-align:left}#zEnd .nx{font:.8rem var(--ui,system-ui);color:#c9a45c;margin:0}
 #zEnd{position:fixed;inset:0;z-index:11;background:rgba(5,4,5,.92);color:var(--fg,#eee);display:flex;align-items:center;justify-content:center;padding:24px 16px;text-align:center}#zEnd .in{max-width:30rem;display:flex;flex-direction:column;gap:.9rem}#zEnd .tag{font:.7rem var(--ui,system-ui);letter-spacing:.2em;text-transform:uppercase;color:#c9a45c;margin:0}#zEnd h1{font-family:var(--display,serif);font-weight:400;font-size:2.1rem;margin:0}#zEnd p.txt{font-family:var(--display,serif);color:#bfb6a8;font-size:1.05rem;line-height:1.5;margin:0}#zEnd button{align-self:center;font:600 .85rem var(--ui,system-ui);color:#f0e6e0;background:#3a0e10;border:1px solid #6a2024;border-radius:6px;padding:.6rem 1.4rem;cursor:pointer;min-height:44px}
-body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(css);
+body.hz #need,body.hz #mon{display:none!important}
+#zPick button[disabled]{opacity:.45;cursor:default}`;document.head.appendChild(css);
  const hud=document.createElement('div');hud.id='zHud';hud.hidden=true;document.body.appendChild(hud);
  const bl=document.createElement('div');bl.id='zBlind';bl.hidden=true;bl.innerHTML='<div>You are the seeker. Eyes closed, counting...</div><b>30</b><div style="font-size:.85rem;opacity:.7">They are hiding. You can move when the count ends.</div>';document.body.appendChild(bl);
  const tb=document.createElement('div');tb.id='zT';tb.hidden=true;tb.innerHTML='<button type="button">Ask Lilith</button>';document.body.appendChild(tb);
@@ -6329,7 +6368,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   if(Z.ph==='end'){hud.hidden=bl.hidden=tb.hidden=true;if(!endShown)showEnd();en.querySelector('.nx').textContent='Next round in '+Z.t+' s';return}
   const sk=isSeeker(),n=left().length;hud.hidden=false;
   hud.innerHTML='<b>HIDE &amp; SEEK</b> &middot; '+(Z.ph==='wait'?'Getting ready...':Z.ph==='hide'?'Hiding '+mmss(Z.t):'Seeking '+mmss(Z.t)+' &middot; '+n+' hidden')+
-   '<small>'+(sk?(Z.ph==='seek'?'[E] tag someone close, or search a hiding spot &middot; [H] at the crib: ask Lilith':'You are the seeker'):MP.ghost?'You were found. You are a ghost.':'Seeker: '+MP.chat.clean(name(Z.seeker)).replace(/[<>&]/g,'')+(MP.hzSeekerFloor()?' &middot; '+MP.hzSeekerFloor():'')+' (red marker)')+'</small>';
+   '<small>'+(sk?(Z.ph==='seek'?'[E] tag someone close, or search a hiding spot &middot; [H] at the crib: ask Lilith':'You are the seeker'):MP.ghost?'You were found. You are a ghost.':'Seeker: '+MP.chat.clean(name(Z.seeker)).replace(/[<>&]/g,'')+(MP.hzSeekerFloor()?' &middot; '+MP.hzSeekerFloor():'')+' (red marker)'+(MP.hzDecoy&&MP.hzDecoy.canDecoy()?' &middot; [Z] decoy trail':''))+'</small>';
   bl.hidden=!(sk&&(Z.ph==='wait'||Z.ph==='hide'));if(!bl.hidden)bl.querySelector('b').textContent=Z.ph==='wait'?'...':String(Z.t);
   tb.hidden=!(window.__touchMode&&canHint())}
  function showEnd(){endShown=true;closePick();const sk=isSeeker(),seekWon=Z.win==='seek',won=sk?seekWon:!seekWon;
@@ -6365,6 +6404,53 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
    ['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight'].forEach(k=>keys[k]=false);if(window.__joy){__joy.x=0;__joy.y=0}}else fpin=null});
  addEventListener('keydown',e=>{if(e.code==='KeyE'&&!e.repeat&&!window.__typing&&frozen()){e.stopImmediatePropagation();subtitle("You're frozen in place.",1200)}},true);
  window.__hzFrz=()=>frozen();
+ // v117: on touch, the Use button's label says who a tap will tag
+ window.__hzTagLbl=()=>{const id=tagTarget();return id?{label:'Tag '+MP.chat.clean(name(id))}:null};
+
+
+ // ---------- v117 (Petra): Lilith's mood. Asking again during the 30 s wait makes her cry, and the demon peeks out at the seeker for a moment (a scare, no harm).
+ // Host checks: the seeker, at the crib, cooldown really running, at most once per 10 s; then everyone hears her cry and players near the crib see the peek.
+ let madT=-1e9;
+ function hostMad(pid){if(Z.ph!=='seek'||pid!==Z.seeker)return;const sr=MP.repOf(pid);if(!sr||!nearCrib(mX(sr.x),mZ(sr.z),sr.y))return;if(!(hHT.rn===Z.rn&&now()-hHT.t<HINT_CD*1000))return;if(now()-madT<10000)return;madT=now();MP.toAll({t:'zcry',by:pid})}
+ function peek(seeker){if(window.__hzPeek)return;window.__hzPeek=1;let ok=false;const D=DEMON.dbg;
+  safe(()=>{for(const k of ['doorway','hallway','window','painting'].sort(()=>Math.random()-.5)){if(D.show(k)){ok=true;break}}if(!ok)ok=D.show('scare')},'peek');
+  setTimeout(()=>{safe(()=>D.stop(),'peek stop');window.__hzPeek=0},ok?2200:10);return ok}
+ function lilithCries(m){const me=m.by===MP.id,d=Math.hypot(cam.position.x-mX(crib.x),cam.position.z-mZ(crib.z)),near=d<7&&fy>-1.45;
+  safe(()=>{const c=()=>safe(()=>CARE.cryS(),'cry');c();setTimeout(c,1400);setTimeout(c,2800)},'cry');
+  if(me){subtitle('Lilith bursts into tears. You asked too fast. In the dark, something peeks out to see who upset her...',4200);setTimeout(()=>safe(()=>peek(true),'peek'),700)}
+  else if(near&&!MP.ghost){subtitle('(Lilith is crying. Something peeks out of the dark...)',3200);setTimeout(()=>safe(()=>peek(false),'peek'),700)}
+  else subtitle('(Somewhere upstairs, Lilith starts crying.)',2600)}
+ {const oh=MP.onH;MP.onH=(pid,m)=>{if(MP.hz&&m.t==='zmad')return safe(()=>hostMad(pid),'mad');if(oh)return oh(pid,m)}}
+ {const oc=MP.onC;MP.onC=m=>{if(MP.hz&&m.t==='zcry'){safe(()=>lilithCries(m),'cry');return}if(oc)return oc(m)}}
+
+ // ---------- v117 (Petra): spectator cam. A found player (ghost) presses [Q] (touch: Seeker's eyes) to see through the seeker's eyes; again to go back.
+ let spPrev=null;
+ function seekCam(){if(!on()||!MP.ghost||!MP.ghostPin)return;if(MP.ghostPinned()){MP.ghostPin(null);subtitle('Back to the ghost camera.',1400);return}
+  if(!Z.seeker||Z.seeker===MP.id||!MP.dbg.AV.get(Z.seeker)){subtitle('No seeker to watch right now.',1500);return}MP.ghostPin(Z.seeker);subtitle('Seeing through '+MP.chat.clean(name(Z.seeker))+'\'s eyes. [Q] / tap again to go back.',2600)}
+ addEventListener('keydown',e=>{if(e.code!=='KeyQ'||e.repeat||window.__typing||!on()||!MP.ghost)return;e.stopImmediatePropagation();seekCam()},true);
+ {const gb=document.createElement('button');gb.type='button';gb.id='zGC';gb.hidden=true;gb.style.cssText='position:fixed;z-index:6;right:calc(env(safe-area-inset-right,0px) + 14px);top:calc(env(safe-area-inset-top,0px) + 24%);min-width:66px;height:44px;border-radius:22px;font:600 .62rem var(--ui,system-ui);color:#e6eefa;background:rgba(20,26,40,.7);border:1px solid #6a7a9a;touch-action:manipulation;padding:0 .8rem';document.body.appendChild(gb);
+  ['pointerdown','mousedown','touchstart'].forEach(k=>gb.addEventListener(k,e=>e.stopPropagation(),{passive:true}));gb.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();seekCam()});
+  setInterval(()=>safe(()=>{const v=!!(window.__touchMode&&on()&&MP.ghost&&Z.ph!=='end'&&Z.seeker&&Z.seeker!==MP.id);gb.hidden=!v;if(v){const t=MP.ghostPinned&&MP.ghostPinned()?'Back':'Seeker\'s eyes';if(gb.textContent!==t)gb.textContent=t}},'gcB'),300)}
+ // ---------- v117 (Petra): the decoy. Once per round a hider [Z] (touch: Decoy) lays a fake light-blue footprint trail from where they stand, off in the
+ // direction they face (about 9 m, turning at walls), that lasts DEC_LIFE s for everyone. The host checks it (hider, still in play, once per round) and sends the prints to all.
+ const DEC_LIFE=45;let decRn=-1;
+ const canDecoy=()=>on()&&(Z.ph==='hide'||Z.ph==='seek')&&!isSeeker()&&!MP.ghost&&!Z.out.includes(MP.id)&&!(XT.hide&&XT.hide.hid)&&decRn!==Z.rn&&!((Z.dec||[]).includes(MP.id));
+ function decoyPts(){const pts=[];let x=cam.position.x,z=cam.position.z,a=yaw;const st=.5;
+  for(let i=0;i<20;i++){let ok=false;for(const da of [0,.45,-.45,.9,-.9,1.4,-1.4]){const b=a+da,nx=x-Math.sin(b)*st,nz=z-Math.cos(b)*st;if(!blocked(nx,nz)){x=nx;z=nz;a=b+(Math.random()-.5)*.25;ok=true;break}}if(!ok)break;
+   if(i>=1){const [mx,mz]=[x,z];pts.push([+(mx).toFixed(2),+(mz).toFixed(2),+a.toFixed(2)])}}return pts}
+ function decoy(){if(!on())return;if(!canDecoy()){if(isSeeker())return;subtitle(decRn===Z.rn||(Z.dec||[]).includes(MP.id)?'You already laid your decoy trail this round.':MP.ghost?'Ghosts can\'t lay a decoy.':(XT.hide&&XT.hide.hid)?'Get out of your hiding spot to lay a decoy.':'No decoy right now.',1800);return}
+  const pts=decoyPts();if(pts.length<4){subtitle('No room for a decoy trail this way. Face an open floor.',1800);return}decRn=Z.rn;
+  send({t:'zd',y:+fy.toFixed(2),pts:pts.map(p=>[+iX(p[0]).toFixed(2),+iZ(p[1]).toFixed(2),p[2]])});subtitle('You lay a false trail of footprints. Now go the other way!',2500)}
+ function hostDecoy(pid,m){if(Z.ph!=='hide'&&Z.ph!=='seek')return;if(pid===Z.seeker||Z.out.includes(pid)||!Z.ids.includes(pid))return;Z.dec=Z.dec||[];if(Z.dec.includes(pid))return;
+  const pts=(Array.isArray(m.pts)?m.pts:[]).slice(0,24).filter(p=>Array.isArray(p)&&p.length===3&&p.every(v=>typeof v==='number'&&isFinite(v)));if(pts.length<2)return;Z.dec.push(pid);MP.toAll({t:'zdec',id:pid,y:+m.y||0,pts})}
+ function showDecoy(m){const T=window.__lsTrail;if(!T||!T.add)return;let s=1;(m.pts||[]).forEach(p=>{s=-s;T.add(mX(p[0]),m.y,mZ(p[1]),p[2],s,DEC_LIFE)})}
+ {const oh=MP.onH;MP.onH=(pid,m)=>{if(MP.hz&&m.t==='zd')return safe(()=>hostDecoy(pid,m),'decoy');if(oh)return oh(pid,m)}}
+ {const oc=MP.onC;MP.onC=m=>{if(MP.hz&&m.t==='zdec'){if(m.id===MP.id)decRn=Z.rn;safe(()=>showDecoy(m),'decoy');return}if(oc)return oc(m)}}
+ addEventListener('keydown',e=>{if(e.code!=='KeyZ'||e.repeat||window.__typing||!on())return;e.stopImmediatePropagation();decoy()},true);
+ {let db=null;setInterval(()=>safe(()=>{if(!db){const B=document.getElementById('tcB');if(!B)return;db=document.createElement('button');db.type='button';db.id='tcDec';db.textContent='Decoy';db.hidden=true;B.appendChild(db);
+   db.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();decoy()});['click','mousedown','touchstart'].forEach(k=>db.addEventListener(k,e=>e.stopPropagation(),{passive:true}))}
+  db.hidden=!(window.__touchMode&&canDecoy())},'decB'),300)}
+ MP.hzDecoy={decoy,canDecoy,pts:decoyPts};
  MP.hzDbg={get Z(){return Z},hintText,camoOf,frozen:()=>frozen(),endIn(sec){dl=now()+sec*1000},tagTarget,openPick,canHint,floorOf,left};
 })();
 </script>
@@ -7353,7 +7439,11 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   const r=new THREE.Mesh(new THREE.CylinderGeometry(.075,.07,.04,12,1,true),m);m.side=THREE.DoubleSide;g.add(r);for(let i=0;i<5;i++){const a=i/5*Math.PI*2,c=new THREE.Mesh(new THREE.ConeGeometry(.017,.045,4),m);c.position.set(Math.sin(a)*.072,.042,Math.cos(a)*.072);g.add(c)}
   anim(r,t=>{g.position.y=.36+.015*Math.sin(t*2.2);g.rotation.y=t*.6})}
  // Hide & Seek cardboard box disguise: a plain box over the player, legs out of the bottom
- function hsBox(body){const m=P(0xb08048);bx(.74,1.32,.66,m,0,1.21,0,body)}
+ function hsBox(body){const m=P(0xb08048);const g=new THREE.Group();g.position.y=1.21;body.add(g);bx(.74,1.32,.66,m,0,0,0,g);
+  // v117: tape across the top and a seam down the front, so it reads as a box from any side
+  const tp=P(0xc9a868);bx(.1,.006,.67,tp,0,.663,0,g);bx(.1,.3,.006,tp,0,.52,-.333,g);bx(.1,.3,.006,tp,0,.52,.333,g);bx(.006,.6,.006,P(0x8a6232),.2,-.2,-.333,g);
+  // v117 (Petra): crouching, the box drops to the floor and closes over the whole player (no legs below it). The body is squashed to .62 when crouched, so undo that here
+  anim(g.children[0],()=>{const s=body.scale.y||1;if(s<.9){const H=1.2;g.scale.set(1.04,(H/1.32)/s,1.04);g.position.y=(H/2)/s}else{g.scale.set(1,1,1);g.position.y=1.21}})}
  // ---------- Last one standing rewards (Petra 2026-10-13 22:14Z; lock key 'laststand') ----------
  // Shadow aura (Petra 22:29Z, replaces the cloak; the look key stays 'hsCloak' so saved looks and sync keep working): no garment, just dark wisps
  // hugging the whole silhouette, tendrils rising and drifting, a faint dark shadow on the ground. Every sprite animates its own userData.op0 and keeps
@@ -7374,6 +7464,11 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   anim(gr,t=>{const f0=gm.userData.op0>0?gm.opacity/gm.userData.op0:1,on=f0>.5;gm.userData.op0=.6;gm.opacity=on?.6:0;
    pf.forEach(q=>{const k=(t*q.sp0+q.o)%1,mt=q.sp.material,v=Math.sin(Math.PI*k)*q.op;mt.userData.op0=v;mt.opacity=on?v:0;
     const s=q.sz*(.7+.8*k),dr=Math.sin(t*1.3+q.o*9)*.05;q.sp.scale.set(q.tall?s*.6:s,q.tall?s*1.6:s,1);q.sp.position.set(q.x*(1+q.out*k)+dr,q.y+q.rise*k,q.z*(1+q.out*k)+(q.tall?Math.cos(t+q.sw)*.05:0))})})}
+ // ---------- Bloodhound (v117, Petra; lock key 'bloodhound'): red eyes that glow in the dark, over whatever eyes the look has. Unlit (fog off) so they show in a dark room
+ let BHT=null;const bhTex=()=>BHT||(BHT=patTexN('bh-glow',64,q=>{const g=q.createRadialGradient(32,32,0,32,32,30);g.addColorStop(0,'rgba(255,90,70,1)');g.addColorStop(.25,'rgba(255,30,20,.7)');g.addColorStop(1,'rgba(160,0,0,0)');q.fillStyle=g;q.fillRect(0,0,64,64)}));
+ function bhEyes(h){[-1,1].forEach(k=>{const e=new THREE.Mesh(new THREE.CircleGeometry(.017,12),new THREE.MeshBasicMaterial({color:0xff2414,fog:false}));e.rotation.y=Math.PI;e.position.set(k*.045,.012,-.134);e.name='bhEye';h.add(e);
+   const gm=new THREE.SpriteMaterial({map:bhTex(),color:0xffffff,transparent:true,opacity:.75,depthWrite:false,blending:THREE.AdditiveBlending,fog:false});gm.userData.op0=.75;const g=new THREE.Sprite(gm);g.scale.set(.09,.09,1);g.position.set(k*.045,.012,-.15);g.name='bhGlow';h.add(g);
+   anim(g,t=>{const f0=gm.userData.op0>0?gm.opacity/gm.userData.op0:1,v=.62+.13*Math.sin(t*2.1+k);gm.userData.op0=v;gm.opacity=f0>.5?v:0;e.visible=f0>.5})})}
  // Footstep trail: faint shoe prints in a dim glowing light blue that fade after a few seconds (world-space, see LSTRAIL below). Petra 22:29Z: they must read
  // as prints: a sole with a wide ball, a narrow arch and a round heel, tread lines, left and right mirrored. The texture is a LEFT print, toe at the top.
  let FTX=null;const footTex=()=>{if(FTX)return FTX;const c=document.createElement('canvas');c.width=64;c.height=128;const q=c.getContext('2d');
@@ -7543,23 +7638,23 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  // what unlocks what (keys of U())
  const LOCK={hair:{maomao:'pin',nezuko:'blade',miku:'miku',teto:'tetoh',shinobu:'shinobu',mitsuri:'mitsuri',muichiro:'muichiro',genya:'genya',genyad:'genya'},hc:{jade:'pin',grad:'blade',teal:'miku',teto:'teto',shinobu:'shinobu',mitsuri:'mitsuri',inosuke:'inosuke',zenitsu:'zenitsu',muichiro:'muichiro'},bfly:'shinobu',omask:'obanai',boar:'inosuke',cape:'rengoku',ghaori:'genya',gscar:'genya',gun:'genya',mouth:{snake:'snake',shark:'stare'},eyes:{mesm:'stare',ydots:'abst',headlight:'seen',genya:'genya',genyad:'genya'},skin:{purple:'abst'},cap:'bat',bat:'bat',hb:'stare',
   outfit:{maomao:'pin',nezuko:'blade',robes:'cult',yoveralls:'abst',scales:'snake',miku:'miku',teto:'teto',yara:'bat',mesm:'stare',muichiro:'muichiro',genya:'genya',suit:'closet',suitskirt:'closet',evening:'closet',cardigan:'closet'},
-  haori:{tanjiro:'blade',nezuko:'blade',genya:'genya'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen',hsCrown:'hideseek',hsBox:'hideseek',hsCamo:'hideseek',hsCloak:'laststand',ftrail:'laststand'};
+  haori:{tanjiro:'blade',nezuko:'blade',genya:'genya'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen',hsCrown:'hideseek',hsBox:'hideseek',hsCamo:'hideseek',hsCloak:'laststand',ftrail:'laststand',bhEyes:'bloodhound'};
  const HINT={pin:'A gift someone lost, somewhere outside.',blade:'Prove yourself with a blade.',cult:'Some families never let you leave.',snake:'Something scaly hides down below.',abst:'Follow something that is not really there.',
-  miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',genya:'???',seen:'Find every ending.',hideseek:'Top the scoreboard after 5 rounds of Hide & Seek.',laststand:'Stay hidden for a whole round of Hide & Seek with 3 or more players.'};
+  miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',genya:'???',seen:'Find every ending.',hideseek:'Top the scoreboard after 5 rounds of Hide & Seek.',laststand:'Stay hidden for a whole round of Hide & Seek with 3 or more players.',bloodhound:'As the seeker, find every hider in a Hide & Seek round with 3 or more players.'};
  // DS v89: Demon Slayer unlocks. ONE place to change the triggers: each key is unlocked when hushCustU[key] is set (by the secret pickups/events below).
  const DS_KEYS=['shinobu','mitsuri','obanai','inosuke','zenitsu','rengoku','muichiro','genya'];const dsU=(k,a,o)=>!!o[k];
  const LS={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
  const own=()=>{try{return JSON.parse(LS.get('hushCustU')||'{}')||{}}catch(e){return{}}};
  const SIA_DBG=(()=>{try{return new URLSearchParams(location.search).get('seenall')==='1'}catch(e){return false}})();
  function U(){let a={};try{a=JSON.parse(LS.get('hushAch')||'{}')||{}}catch(e){}const o=own();
-  return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,hideseek:!!o.hideseek,laststand:!!o.laststand,seen:!!a.seenall||SIA_DBG}}
+  return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,hideseek:!!o.hideseek,laststand:!!o.laststand,bloodhound:!!o.bloodhound,seen:!!a.seenall||SIA_DBG}}
  const lockKey=(k,v)=>{const L=LOCK[k];if(!L)return null;if(typeof L==='string')return v?L:null;return L[v]||null};
  const isOpen=(k,v,u)=>{const q=lockKey(k,v);return !q||!!(u||U())[q]};
- const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hbr:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,hsCrown:0,notie:0,nochk:0,notag:0,hsBox:0,hsCamo:0,hsCloak:0,ftrail:0};
+ const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hbr:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,hsCrown:0,notie:0,nochk:0,notag:0,hsBox:0,hsCamo:0,hsCloak:0,ftrail:0,bhEyes:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','hbr','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','hsCrown','notie','nochk','notag','hsBox','hsCamo','hsCloak','ftrail'].forEach(k=>o[k]=lk[k]?1:0);/* necktag: the name tag can only be off while invisible */if(!o.invis)o.notag=0;o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','hbr','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','hsCrown','notie','nochk','notag','hsBox','hsCamo','hsCloak','ftrail','bhEyes'].forEach(k=>o[k]=lk[k]?1:0);/* necktag: the name tag can only be off while invisible */if(!o.invis)o.notag=0;o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -7578,7 +7673,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   FITB=body;const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],gr=GRAD[hc],hm=P(gr?0:hc);HAIR[o.hair](hg,hm);FITB=null;
   if(gr)gradHair(hg,hm,gr);
   if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.that)topHat(h,o);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.cape)cape(body);if(o.gscar)genyaScar(h);if(o.gun)genyaGun(arms[1]);
-  if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.hsCrown)hsCrown(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.hsCamo)hsBracelet(arms[o.hbr?1:0]);if(o.hsBox)hsBox(body);if(o.hsCloak)hsCloak(body,h);if(o.invis)seeThrough(body,INV_OP,1);
+  if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.hsCrown)hsCrown(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.hsCamo)hsBracelet(arms[o.hbr?1:0]);if(o.hsBox)hsBox(body);if(o.hsCloak)hsCloak(body,h);if(o.bhEyes)bhEyes(h);if(o.invis)seeThrough(body,INV_OP,1);
   return{legs,arms,head:h}}
  // Nezuko's gradient, fitted to each hairstyle's own height (like her real hair): black at the crown/roots, starting to fade about 30% of the way down
  // (around ear/shoulder height), clearly orange over the lower ~55%, brightest at the tips. Only meshes using the hair material are recoloured,
@@ -7642,6 +7737,7 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
   grp('Seen It All','tog',[['invis','See-through skin (invisible) [I]',0xbfe6ff],['roof','Roof',0xb8502e],['phone','Phone',0x5ab0ff],['disco','Disco ball',0xd8dce4],['tire','Tire tracks',0x222024],['duck','Rubber duck',0xf6d232],['lighter','Lighter',0xc8202e],['keys','Car keys',0xc8ccd4],['demon','Snake demon',0xf3e58a],['fpud','Fire puddles',0xff7a1a],['snek','Baby snake buddy',0xf3e58a]].map(([v,n,c])=>({v,n,c})));
   grp('Hide & Seek','tog',[['hsCrown','Hide & Seek champion crown',0xe8bf3a],['hsBox','Cardboard box disguise',0xb08048],['hsCamo','Jade bracelet (almost invisible while invisible)',0x2e9a6a]].map(([v,n,c])=>({v,n,c})));
   grp('Last one standing','tog',[['hsCloak','Shadow aura',0x17141d],['ftrail','Glowing footstep trail (others see it too, even in Hide & Seek)',0x8fd8ff]].map(([v,n,c])=>({v,n,c})));
+  grp('Bloodhound','tog',[['bhEyes','Red glowing eyes in the dark',0xff2a1a]].map(([v,n,c])=>({v,n,c})));
   sec.innerHTML='';G.forEach(g=>{const h=document.createElement('h3');h.textContent=g.t;sec.appendChild(h);const r=document.createElement('div');r.className='row';sec.appendChild(r);
    g.items.forEach(it=>{const b=document.createElement('button');b.type='button';b.className='ch';
     const lkK=g.k==='tog'||it.tog?it.v:g.k==='earc'?null:g.k,lv=g.k==='tog'||it.tog?1:it.v,locked=lkK&&!isOpen(lkK,lv,u);
@@ -7834,19 +7930,19 @@ body.hz #need,body.hz #mon{display:none!important}`;document.head.appendChild(cs
  // prints on the floor (dim glowing light blue, additive) that fade over FOOT_LIFE s. No prints while invisible, hidden in a spot, a ghost,
  // seated, in the demon realm, or when the avatar isn't drawn. Shown in Hide & Seek too (the player can turn it off in Customize).
  safe(()=>{const XT=window.__xt;if(!XT||!XT.onUpdate)return;const POOL=[],MAXP=180;let pi=0,made=0;
-  const add=(x,y,z,yaw,side)=>{let m=POOL[pi];if(!m){m=new THREE.Mesh(footGeo,footMat());m.userData.noMap=1;m.renderOrder=1;scene.add(m);POOL[pi]=m}pi=(pi+1)%MAXP;made++;
-   const ox=Math.cos(yaw)*.085*side,oz=-Math.sin(yaw)*.085*side;m.position.set(x+ox,y+.012,z+oz);m.rotation.y=yaw;m.scale.x=side>0?-1:1;m.userData.t0=performance.now()/1000;m.visible=true;m.material.opacity=FOOT_OP};
+  const add=(x,y,z,yaw,side,life)=>{let m=POOL[pi];if(!m){m=new THREE.Mesh(footGeo,footMat());m.userData.noMap=1;m.renderOrder=1;scene.add(m);POOL[pi]=m}pi=(pi+1)%MAXP;made++;
+   const ox=Math.cos(yaw)*.085*side,oz=-Math.sin(yaw)*.085*side;m.position.set(x+ox,y+.012,z+oz);m.rotation.y=yaw;m.scale.x=side>0?-1:1;m.userData.t0=performance.now()/1000;m.userData.life=life||FOOT_LIFE;m.visible=true;m.material.opacity=FOOT_OP};
   const tr=new Map(),lkC=new Map();const wears=k=>{if(!lkC.has(k)){let v=0;try{v=JSON.parse(k).ftrail?1:0}catch(e){}lkC.set(k,v)}return lkC.get(k)};
   const step=(id,x,y,z,on)=>{let q=tr.get(id);if(!on){if(q)tr.delete(id);return}if(!q||Math.abs(q.y-y)>.5||Math.hypot(x-q.x,z-q.z)>2.5){tr.set(id,{x,y,z,s:1});return}
    const d=Math.hypot(x-q.x,z-q.z);if(d<.5)return;const yaw=Math.atan2(-(x-q.x),-(z-q.z));q.s=-q.s;add(x,y,z,yaw,q.s);q.x=x;q.y=y;q.z=z};
   XT.onUpdate(()=>safe(()=>{const T=performance.now()/1000,RL=!!(window.__rlm&&__rlm.on),MP=window.__mp;
-   for(const m of POOL){if(!m||!m.visible)continue;const a=(T-m.userData.t0)/FOOT_LIFE;if(a>=1||RL){m.visible=false;continue}m.material.opacity=FOOT_OP*(1-a)*(a<.7?1:1-(a-.7)/.3*.4)}
+   for(const m of POOL){if(!m||!m.visible)continue;const a=(T-m.userData.t0)/(m.userData.life||FOOT_LIFE);if(a>=1||RL){m.visible=false;continue}m.material.opacity=FOOT_OP*(1-a)*(a<.7?1:1-(a-.7)/.3*.4)}
    // me
    const o=mine(),meOn=o.ftrail&&!o.invis&&XT.live&&XT.live()&&!RL&&!(MP&&MP.active&&(MP.ghost||MP.demon))&&!(XT.hide&&XT.hide.hid)&&!(typeof seated!=='undefined'&&seated)&&!window.__dead;
    step('me',cam.position.x,fy,cam.position.z,meOn);
    // everyone else (their avatar is drawn in the main scene, not invisible, not a ghost)
    if(MP&&MP.active&&MP.dbg&&MP.dbg.AV)MP.dbg.AV.forEach((a,id)=>{const r=a.cur;step(id,a.g.position.x,a.g.position.y,a.g.position.z,!!(r&&a.g.visible&&a.g.parent===scene&&!a.inv&&!r.gh&&!RL&&wears(a.lkK||'')))})},'trail'));
-  window.__lsTrail={POOL:()=>POOL.filter(m=>m&&m.visible).length,made:()=>made}},'lstrail');
+  window.__lsTrail={POOL:()=>POOL.filter(m=>m&&m.visible).length,made:()=>made,add}},'lstrail');
  /* necktag (Petra 2026-10-12, silver necklace that 'None' would not take off): an invite link, the auto-rejoin and Back to the lobby can connect before
     this block has run, so the hello carried lk:null and the host kept the player's OLD look (or none). Push the real look as soon as it exists. */
  safe(()=>{const mp=window.__mp;if(mp&&mp.active&&mp.setLook)mp.setLook(mine())},'mp');
