@@ -1305,7 +1305,7 @@ function update(dt,t){
   doors.forEach((d,i)=>{if(d.open!==doorPrev[i]){doorPrev[i]=d.open;const bp=babyPos(),dd=Math.hypot(d.pv.position.x-bp.x,d.pv.position.z-bp.z);noise=Math.min(1,noise+(dd<6?.04:.02));if(asleep&&dd<5&&Math.random()<.35)wake('The door woke her.')}});
   noise=sat(noise+dn*dt)}else doors.forEach((d,i)=>doorPrev[i]=d.open);
   mouth.scale.set(cry?.9:fuss?.7:.5,cry?1.2:fuss?.7:.4,1);
-  voiceT-=dt;if(voiceT<=0){if(cry){cryS();voiceT=1.4+Math.random()*.5;flash=.5}else if(fuss){fussS();voiceT=2+Math.random()*1.2;flash=.35}else voiceT=1}
+  voiceT-=dt;if(voiceT<=0){if(cry){voiceT=1.4+Math.random()*.5;flash=.5;try{cryS()}catch(e){console.error('[Hush] cry sound',e)}}else if(fuss){voiceT=2+Math.random()*1.2;flash=.35;try{fussS()}catch(e){console.error('[Hush] fuss sound',e)}}/* guestfx: a sound error can no longer abort the frame before the red/glitch/stretch block */else voiceT=1}
   // events
   if(MPC){try{__mp.clientEvent(dt,creep)}catch(e){console.error(e)}}
   else if(EV.cur){const c=EV.cur;c.t+=dt;c.nextPlay-=dt;if(c.nextPlay<=0&&AC){c.e.play(c,.55+.6*creep);c.nextPlay=(c.e.gap[0]+Math.random()*(c.e.gap[1]-c.e.gap[0]))/(.7+.5*creep)}
@@ -1738,7 +1738,7 @@ window.__los=losClear;
 function blocked(x,z){if(window.__rlm&&__rlm.on)return __rlm.blocked(x,z);if(groundAt(x,z)>fy+.45)return true;return solids.some(s=>ov(s,x,z,R)&&s.y1>fy+.36&&s.y0<fy+PH())}
 let last=performance.now(),t=0,bob=0;
 let __loopErr=0,skipT0=0,busyT=0,stuckT=0;window.__frames=0;
-function loop(now){window.__frames++;try{loopBody(now)}catch(e){if(__loopErr++<20)console.error('[Hush] frame error (recovered):',e);requestAnimationFrame(loop)}}
+function loop(now){window.__frames++;try{loopBody(now)}catch(e){window.__frameErrs=(window.__frameErrs||0)+1;if(__loopErr++<20)console.error('[Hush] frame error (recovered):',e);requestAnimationFrame(loop)}}
 function loopBody(now){let dt=Math.min(.05,(now-last)/1000);last=now;
 if(TITLE.on){TITLE.frame(dt);requestAnimationFrame(loop);return}
 if(window.__cut){for(const k in keys)keys[k]=false;try{__xt.cut(dt)}catch(e){if(__loopErr++<20)console.error('[Hush] cut error:',e);window.__cut=null}requestAnimationFrame(loop);return}
@@ -1980,7 +1980,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  XT.onUpdate(dt=>{const C=CARE.dbg,d=DIFF[cur];
   if(C.RATE){for(const k in C.RATE){if(base[k]===undefined)base[k]=C.RATE[k];C.RATE[k]=base[k]*d.imp}}
   // noise growth: scale only the rising part of this frame's change
-  const n=C.noise;if(prevN!==null&&n>prevN&&d.nz!==1)C.noise=Math.min(1,prevN+(n-prevN)*d.nz);prevN=C.noise;
+  const n=C.noise;if(prevN!==null&&n>prevN&&d.nz!==1&&!(window.__mp&&__mp.client))/* guestfx: guests get noise already scaled by the host */C.noise=Math.min(1,prevN+(n-prevN)*d.nz);prevN=C.noise;
   // demon aggression: sightings come sooner / later, the hunt closes faster / slower
   /* b118: supernatural events come sooner (Nightmare) or later (Easy): the house's event timer runs faster or slower */
   if(d.ev!==1&&entered&&!ended&&C.EV&&!C.EV.cur&&XT.hour&&XT.hour()>=18.6&&!(window.__rlm&&__rlm.on)&&!(window.__mp&&__mp.client))C.EV.next-=dt*(.5+(window.__atmos?__atmos.creep:0))*(d.ev-1);
@@ -5810,7 +5810,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
 function report(){const L=['Hush bug report','Version: v82','Time: '+new Date().toISOString()];
  try{const p=cam.getWorldPosition(new THREE.Vector3());L.push('Position: '+[p.x,p.y,p.z].map(v=>v.toFixed(2)).join(', '))}catch(e){L.push('Position: ?')}
  const m=window.__mp;let mode='Single-player',n=1;try{if(m&&m.active){mode=m.mode==='hunt'?'Hunt':'Co-op';n=m.roster().length;if(m.demon)mode+=' (demon)';else if(m.ghost)mode+=' (ghost)'}}catch(e){}
- L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Safe mode: '+(window.__safe?'on':'off'));try{const F=window.__lastFreeze;L.push('Last session froze at: '+(F?F.s+' ('+new Date(F.t).toISOString()+(F.safe?', safe mode':'')+')':'(no)'));const LP=window.__lastPerf;L.push('Last session speed: '+(LP?LP.avg+' ms/frame avg, '+LP.max+' ms worst, '+LP.calls+' draw calls, stage '+LP.stage+(LP.avg>500?' (very slow)':''):'(no record)'));try{const M=window.__mrg;if(M)L.push('This session: '+M.calls+' draw calls, merged '+M.recs+' meshes into '+M.chunks+', shadows 1/'+M.shadowEvery)}catch(_){}const B=window.__bcLog||[];L.push('Steps this session: '+B.slice(-12).join(' | '))}catch(e){}try{if(m&&m.active&&m.voiceDiag)L.push(m.voiceDiag())}catch(e){}L.push('Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
+ L.push('Mode: '+mode,'Players: '+n,'Browser: '+navigator.userAgent,'Safe mode: '+(window.__safe?'on':'off'));try{const M=window.__mp,F=CARE.dbg.fx;if(M&&M.active)L.push('MP sync: '+(M.host?'host':'guest')+', started '+!!M.started+', snapshots in '+(M.sN||0)+' out '+(M.sOut||0)+', noise '+(+CARE.dbg.noise).toFixed(2)+', fx red '+F.red.toFixed(2)+' glitch '+F.glitch.toFixed(2)+' stretch '+F.stretch.toFixed(2)+', demon '+!!M.demon+', ghost '+!!M.ghost+', cut '+!!window.__cut+', frame errors '+(window.__frameErrs||0))}catch(e){}try{const F=window.__lastFreeze;L.push('Last session froze at: '+(F?F.s+' ('+new Date(F.t).toISOString()+(F.safe?', safe mode':'')+')':'(no)'));const LP=window.__lastPerf;L.push('Last session speed: '+(LP?LP.avg+' ms/frame avg, '+LP.max+' ms worst, '+LP.calls+' draw calls, stage '+LP.stage+(LP.avg>500?' (very slow)':''):'(no record)'));try{const M=window.__mrg;if(M)L.push('This session: '+M.calls+' draw calls, merged '+M.recs+' meshes into '+M.chunks+', shadows 1/'+M.shadowEvery)}catch(_){}const B=window.__bcLog||[];L.push('Steps this session: '+B.slice(-12).join(' | '))}catch(e){}try{if(m&&m.active&&m.voiceDiag)L.push(m.voiceDiag())}catch(e){}L.push('Last errors:');const E=window.__errs||[];L.push(...(E.length?E:['(none)']));return L.join('\n')}
 function done(){msg.hidden=false;clearTimeout(done.t);done.t=setTimeout(()=>msg.hidden=true,4000)}
 function fallback(t){const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;opacity:0';document.body.appendChild(a);a.select();try{document.execCommand('copy')}catch(e){}a.remove();done()}
 btn.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();const t=report();window.__lastReport=t;
@@ -7876,87 +7876,93 @@ window.__n5cosUnlock=()=>{let o={};try{o=JSON.parse(localStorage.getItem('hushCu
   [-1,1].forEach(k=>{const cv=new THREE.CatmullRomCurve3([new THREE.Vector3(k*.07,.085,-.03),new THREE.Vector3(k*.1,.14,-.02),new THREE.Vector3(k*.125,.18,.02),new THREE.Vector3(k*.115,.215,.06)]);
    const pts=cv.getPoints(7),up=new THREE.Vector3(0,1,0);for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],d=b.clone().sub(a),L=d.length(),r0=.024*(1-i/7)+.003,r1=.024*(1-(i+1)/7)+.002;
     const c=new THREE.Mesh(i===pts.length-2?new THREE.ConeGeometry(r0,L,8):new THREE.CylinderGeometry(r1,r0,L,8),m);c.position.copy(a).addScaledVector(d,.5);c.quaternion.setFromUnitVectors(up,d.normalize());h.add(c)}})}
- // Moth wings (Petra's photo: a hawk / sphinx moth at rest). Each forewing is narrow at the shoulder and WIDENS toward the bottom, the leading (outer) edge
- // bows outward, the outer margin runs from the pointed apex (bottom, outer) back in to the middle with soft scallops. The surface curves around the
- // back and flares out a little toward the bottom; two sheets 6 mm apart with a closed edge give it a thin solid rim. No moth body, no eye spots.
- // Texture space: x = along the wing (0 shoulder .. 1 apex), y = across (0 inner / outer-margin side .. 1 leading edge).
- let N5M=null;const mothTex=()=>N5M||(N5M=(()=>{const W=512,H=256,c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d');
-  const g=q.createLinearGradient(0,0,0,H);g.addColorStop(0,'#a29f99');g.addColorStop(.35,'#8a8680');g.addColorStop(.7,'#7a7671');g.addColorStop(1,'#66625d');q.fillStyle=g;q.fillRect(0,0,W,H);
-  const rnd=(()=>{let z=7;return()=>(z=(z*16807)%2147483647)/2147483647})();
-  // soft lighter and darker mottling
-  for(let i=0;i<70;i++){const x=rnd()*W,y=rnd()*H,r=10+rnd()*40,lt=rnd()<.5,gr=q.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,lt?'rgba(214,212,206,.28)':'rgba(70,66,62,.22)');gr.addColorStop(1,'rgba(0,0,0,0)');q.fillStyle=gr;q.fillRect(x-r,y-r,2*r,2*r)}
-  // dark brown patch near the base
-  const bp=q.createRadialGradient(70,120,4,70,120,70);bp.addColorStop(0,'rgba(70,48,32,.85)');bp.addColorStop(.6,'rgba(80,58,40,.4)');bp.addColorStop(1,'rgba(80,58,40,0)');q.fillStyle=bp;q.fillRect(0,40,160,170);
-  // longitudinal charcoal streaks along the veins (fanning out toward the apex), the strongest one running from the base toward the apex
-  q.lineCap='round';for(let k=0;k<18;k++){const y0=50+k*9,y1=8+k*14,dk=k===10||k===5||k===14;q.strokeStyle=dk?'rgba(36,34,32,.8)':'rgba(48,46,44,'+(.25+.25*rnd())+')';q.lineWidth=dk?4:1.6+rnd()*1.4;
-   q.beginPath();for(let x=10;x<=W;x+=8){const t=x/W,y=y0+(y1-y0)*t+Math.sin(x*.035+k*2)*3;x===10?q.moveTo(x,y):q.lineTo(x,y)}q.stroke()}
-  // fine dark wavy cross-lines (bark-like), across the wing
-  for(let i=0;i<26;i++){const x0=40+i*18+rnd()*10;q.strokeStyle='rgba(40,38,36,'+(.1+.18*rnd())+')';q.lineWidth=.9+rnd();q.beginPath();
-   for(let y=0;y<=H;y+=6){const x=x0+Math.sin(y*.09+i)*4+Math.sin(y*.031+i*.7)*6+y*.12;y===0?q.moveTo(x,y):q.lineTo(x,y)}q.stroke()}
-  // silvery highlights along the inner side and a light streak near the leading edge
-  q.strokeStyle='rgba(228,226,222,.35)';q.lineWidth=3;q.beginPath();for(let x=60;x<=W;x+=8)q.lineTo(x,40+x*.02+Math.sin(x*.04)*3);q.stroke();
-  q.lineWidth=2;q.beginPath();for(let x=30;x<=W*.8;x+=8)q.lineTo(x,226-x*.05+Math.sin(x*.05)*3);q.stroke();
-  // speckle
-  for(let i=0;i<5000;i++){const v=rnd()<.5?40:215;q.fillStyle='rgba('+v+','+v+','+(v-4)+','+(.06+.1*rnd())+')';q.fillRect(rnd()*W,rnd()*H,1.5,1.5)}
-  // darker leading edge
-  const le=q.createLinearGradient(0,H-26,0,H);le.addColorStop(0,'rgba(50,48,46,0)');le.addColorStop(1,'rgba(50,48,46,.7)');q.fillStyle=le;q.fillRect(0,H-26,W,26);
-  // soft scallops on the outer margin (the last stretch of the inner side, x > 80 %): cut into the alpha
-  q.globalCompositeOperation='destination-out';q.fillStyle='#000';for(let i=0;i<7;i++){const x=W*.8+i*W*.2/7+W*.014;q.beginPath();q.ellipse(x,0,W*.014,9,0,0,7);q.fill()}
-  q.globalCompositeOperation='source-over';const t=new THREE.CanvasTexture(c);t.anisotropy=4;return t})());
- const MW={L:1.3,root:.035,lead:.33,tor:.8};
- // outline point for (u along, v across): inner edge runs down the middle to the tornus, then the outer margin goes out to the apex; the leading edge bows outward
- function mwPt(u,v){/* rounded tip: the leading edge curls back in and up over the last stretch */const r2=Math.pow(Math.max(0,(u-.8)/.2),2),lx=MW.root+MW.lead*(1-Math.pow(1-u,1.7))-.11*r2,ly=-MW.L*u+.07*r2;let ix,iy;if(u<=MW.tor){ix=.008+.01*u;iy=-MW.L*.84*(u/MW.tor)}else{const k=(u-MW.tor)/(1-MW.tor);ix=.016+(lx-.016)*k;iy=-MW.L*.84+(ly+MW.L*.84)*k-.06*Math.sin(Math.PI*k)}
-  const x=ix+(lx-ix)*v,y=iy+(ly-iy)*v;return[x,y,.015*y*y-.3*x*x]}
- function mothGeo(){const N=28,M=10,T=.003,pos=[],uv=[],idx=[],rim=[],rp=[];
-  for(const sd of [1,-1]){const o=pos.length/3;for(let i=0;i<=N;i++)for(let j=0;j<=M;j++){const u=i/N,v=j/M,p=mwPt(u,v);pos.push(p[0],p[1],p[2]+sd*T);uv.push(u,v)}
+ // ---------- Moth wings (remodel, Petra 2026-10-15 12:12Z; references n5cos/ref-privet.png; she asked to ignore the second, darker photo) ----------
+ // Petra: the privet hawk moth pattern on BOTH faces (seen from all around, open and folded): warm brown forewings with a dark band and a cream patch,
+ // pink hindwings with black bands. Folded, the hindwings are hidden. Open, each forewing morphs to a straight leading edge and pointed tip and swings out slightly forward/up;
+ // the smaller hindwings fan out down and out behind the forewings' rear edge, partly overlapped by them.
+ // Outlines traced from ref-privet.png at 1 px (n5cos/trace.py; kept every 2nd column, lightly smoothed): forewing top / bottom per photo column,
+ // hindwing top (tucked 6 px under the forewing) / bottom and straight lines fitted to the hindwing's three black bands. Colours are hand-picked zones, not sampled.
+ const N5TR={ft:[[299,143.0],[301,145.0],[303,145.3],[305,144.7],[307,143.7],[309,142.7],[311,142.0],[313,141.3],[315,140.3],[317,139.0],[319,138.0],[321,137.3],[323,136.3],[325,135.3],[327,134.7],[329,133.3],[331,132.7],[333,131.7],[335,131.0],[337,131.0],[339,131.0],[341,129.0],[343,127.3],[345,126.3],[347,125.7],[349,124.7],[351,123.7],[353,122.7],[355,121.7],[357,121.3],[359,120.3],[361,119.3],[363,118.3],[365,117.7],[367,116.7],[369,115.7],[371,114.7],[373,113.7],[375,113.0],[377,112.3],[379,111.3],[381,110.3],[383,109.7],[385,108.7],[387,108.0],[389,107.0],[391,106.0],[393,105.7],[395,104.3],[397,103.7],[399,103.0],[401,102.3],[403,101.3],[405,100.3],[407,100.0],[409,99.3],[411,98.3],[413,97.3],[415,96.3],[417,95.0],[419,94.0],[421,93.3],[423,93.0],[425,92.3],[427,91.7],[429,91.0],[431,90.3],[433,89.7],[435,88.7],[437,88.0],[439,87.3],[441,87.0],[443,86.3],[445,85.7],[447,85.0],[449,84.3],[451,83.7],[453,83.0],[455,83.0],[457,82.3],[459,82.0],[461,81.3],[463,81.0],[465,80.3],[467,80.0],[469,79.7],[471,79.0],[473,79.0],[475,79.0],[477,78.3],[479,78.0],[481,78.0],[483,78.0],[485,78.0],[487,78.0],[489,78.0],[491,77.3],[493,77.0],[495,77.3],[497,78.0],[499,78.0],[501,78.0],[503,78.0],[505,78.3],[507,79.0],[509,79.3],[511,80.0],[513,80.7],[515,81.3],[517,82.3],[519,83.3],[521,84.3],[523,85.5]],fb:[[299,151.9],[301,152.3],[303,152.8],[305,153.3],[307,153.8],[309,154.3],[311,154.9],[313,155.4],[315,155.9],[317,156.4],[319,156.9],[321,157.4],[323,157.9],[325,158.4],[327,158.9],[329,159.4],[331,159.9],[333,160.4],[335,160.8],[337,161.3],[339,161.8],[341,162.2],[343,162.7],[345,163.1],[347,163.5],[349,164.0],[351,164.4],[353,164.8],[355,165.2],[357,165.6],[359,166.0],[361,166.4],[363,166.8],[365,167.1],[367,167.5],[369,167.8],[371,168.2],[373,168.5],[375,168.8],[377,169.2],[379,169.5],[381,169.8],[383,170.1],[385,170.3],[387,170.6],[389,170.9],[391,171.2],[393,171.4],[395,171.7],[397,171.9],[399,172.2],[401,172.4],[403,172.6],[405,172.8],[407,173.0],[409,173.2],[411,173.5],[413,173.6],[415,173.8],[417,174.0],[419,174.2],[421,174.4],[423,174.6],[425,174.7],[427,174.9],[429,175.1],[431,175.3],[433,175.4],[435,176.3],[437,177.3],[439,176.7],[441,175.8],[443,174.8],[445,173.9],[447,172.7],[449,171.4],[451,169.8],[453,168.6],[455,167.0],[457,165.3],[459,163.9],[461,162.3],[463,161.0],[465,159.8],[467,158.2],[469,155.8],[471,154.2],[473,152.9],[475,151.2],[477,149.7],[479,148.2],[481,146.4],[483,144.8],[485,142.3],[487,140.0],[489,138.3],[491,136.8],[493,134.3],[495,132.0],[497,128.9],[499,125.8],[501,124.1],[503,122.9],[505,120.6],[507,116.4],[509,112.4],[511,110.2],[513,107.7],[515,104.3],[517,99.9],[519,96.9],[521,94.4],[523,92.8]],ht:[[299,145.8],[301,146.3],[303,146.8],[305,147.3],[307,147.8],[309,148.3],[311,148.9],[313,149.4],[315,149.9],[317,150.4],[319,150.9],[321,151.4],[323,151.9],[325,152.4],[327,152.9],[329,153.4],[331,153.9],[333,154.4],[335,154.8],[337,155.3],[339,155.8],[341,156.2],[343,156.7],[345,157.1],[347,157.5],[349,158.0],[351,158.4],[353,158.8],[355,159.2],[357,159.6],[359,160.0],[361,160.4],[363,160.8],[365,161.1],[367,161.5],[369,161.8],[371,162.2],[373,162.5],[375,162.8],[377,163.2],[379,163.5],[381,163.8],[383,164.1],[385,164.3],[387,164.6],[389,164.9],[391,165.2],[393,165.4],[395,165.7],[397,165.9],[399,166.2],[401,166.4],[403,166.6],[405,166.8],[407,167.0],[409,167.2],[411,167.5],[413,167.6],[415,167.8],[417,168.0],[419,168.2],[421,168.4],[423,168.6],[425,168.7],[427,168.9],[429,169.1],[431,169.3],[433,169.4],[435,169.6]],hb:[[299,202.5],[301,208.7],[303,212.3],[305,215.3],[307,219.0],[309,222.0],[311,224.3],[313,225.7],[315,227.3],[317,228.3],[319,229.3],[321,230.0],[323,230.3],[325,231.3],[327,232.3],[329,233.0],[331,233.7],[333,234.7],[335,236.0],[337,237.3],[339,237.7],[341,237.3],[343,237.7],[345,237.7],[347,237.3],[349,236.0],[351,235.0],[353,234.3],[355,233.3],[357,233.0],[359,232.7],[361,232.0],[363,231.7],[365,231.0],[367,230.3],[369,230.0],[371,229.7],[373,229.3],[375,229.3],[377,229.0],[379,228.3],[381,227.3],[383,225.7],[385,225.0],[387,224.3],[389,223.0],[391,223.0],[393,222.3],[395,221.3],[397,220.3],[399,219.0],[401,217.7],[403,216.7],[405,215.7],[407,214.7],[409,213.0],[411,212.0],[413,211.7],[415,210.0],[417,208.3],[419,206.0],[421,204.3],[423,203.3],[425,202.0],[427,200.3],[429,185.3],[431,178.0],[433,178.0],[435,178.0]],bd:[[290, 404, 297.653, -0.28177, 0, 5.5], [299, 422, 113.927, 0.1651, 0, 4.3], [321, 448, 385.984, -0.46232, 0, 5.5]]};
+ // Painted texture in the game's simpler style (Petra): flat-ish colour zones with soft edges, a few clean streaks and veins, crisp black hindwing
+ // bands, a thin pale edge. Photo space: canvas = photo x 280..540, y 60..255, 1024 x 768. Forewings and hindwings share it.
+ const n5rnd=sd=>{let z=sd;return()=>(z=(z*16807)%2147483647)/2147483647};
+ const N5K=1024/260,n5P=(X,Y)=>[(X-280)*N5K,(Y-60)*N5K];
+ const n5poly=(q,pts)=>{q.beginPath();pts.forEach(([X,Y],i)=>{const[x,y]=n5P(X,Y);i?q.lineTo(x,y):q.moveTo(x,y)});q.closePath()};
+ const FWP=()=>N5TR.ft.concat(N5TR.fb.slice().reverse()),HWP=()=>N5HW.poly;
+ // hindwing v20: hand-drawn rounded-triangle outline in photo px (right wing), matched to the photo; top edge tucks under the forewing
+ const n5cr=(P,n)=>{const o=[];for(let i=0;i<P.length-1;i++){const p0=P[Math.max(0,i-1)],p1=P[i],p2=P[i+1],p3=P[Math.min(P.length-1,i+2)];for(let k=0;k<n;k++){const t=k/n,t2=t*t,t3=t2*t;o.push([0,1].map(j=>.5*(2*p1[j]+(-p0[j]+p2[j])*t+(2*p0[j]-5*p1[j]+4*p2[j]-p3[j])*t2+(-p0[j]+3*p1[j]-3*p2[j]+p3[j])*t3)))}}o.push(P[P.length-1]);return o};
+ const N5HW=(()=>{const E=n5cr([[300,226],[312,235],[330,237],[352,232],[380,222],[406,210],[424,197],[432,185],[430,175],[420,168]],6),T=n5cr([[420,168],[390,164],[355,159],[322,153],[302,149]],4).slice(1),I=[[300,170],[299,198]];
+  const B=[300,170];return{E,B,poly:E.concat(T,I)}})();
+ let N5W=null;const n5WingTex=()=>N5W||(N5W=(()=>{const c=document.createElement('canvas');c.width=1024;c.height=768;const q=c.getContext('2d'),r=n5rnd(77);
+  // 1. hand-picked zone colours, painted as soft gradients (nothing sampled from the photo)
+  const zone=(pts,col,blur)=>{q.save();q.filter='blur('+Math.round((blur||14)*.45)+'px)';q.fillStyle=col;n5poly(q,pts);q.fill();q.restore()};
+  // hindwing: pink at the base fading to cream-pink outward, two bold black bands parallel to the outer edge, warm brown border.
+  // bands are the outer edge pulled toward the base by a fraction t, so they follow its curve and taper toward the body.
+  q.save();n5poly(q,HWP());q.clip();
+  {const[x0,y0]=n5P(298,175),[x1,y1]=n5P(420,215),g=q.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,'#c9a084');g.addColorStop(1,'#d8b79c');q.fillStyle=g;q.fillRect(0,0,1024,768)}   // warm rosy tan hindwing (no pink)
+  const hl=t=>N5HW.E.map(([X,Y])=>[X+(N5HW.B[0]-X)*t,Y+(N5HW.B[1]-Y)*t]),strip=(t0,t1,col)=>{q.fillStyle=col;n5poly(q,hl(t0).concat(hl(t1).reverse()));q.fill()};
+  strip(-.2,.085,'#a2704a');strip(.085,.1,'#7a5236');   // brown outer border with a darker inner line
+  strip(.14,.235,'#1c1210');   // outer black band
+  strip(.235,.33,'#e6cdb8');   // cream gap
+  strip(.33,.43,'#1c1210');   // inner black band
+  q.restore();
+  // 3. hindwing
+  {const[x0,y0]=n5P(299,150),[x1,y1]=n5P(523,85),g=q.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,'#7c6250');g.addColorStop(.45,'#86705c');g.addColorStop(1,'#7a6654');q.strokeStyle=g;q.lineWidth=14;q.lineJoin='round';n5poly(q,FWP());q.stroke()}   // dilate forewing colour past its edge so no pink bleeds into the fold
+  q.save();n5poly(q,FWP());q.clip();
+  {const[x0,y0]=n5P(299,150),[x1,y1]=n5P(523,85),g=q.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,'#7c6250');g.addColorStop(.45,'#86705c');g.addColorStop(1,'#7a6654');q.fillStyle=g;q.fillRect(0,0,1024,768)}
+  zone([[299,140],[420,96],[523,80],[523,86],[420,104],[299,148]],'rgba(170,146,118,.55)',10);   // pale strip along the leading edge
+  zone([[300,150],[360,146],[420,134],[470,116],[512,94],[518,100],[480,128],[440,150],[400,163],[340,166],[300,164]],'rgba(40,24,16,1)',8);   // dark brown band through the trailing half
+  zone([[360,168],[400,166],[438,170],[440,177],[400,176],[360,174]],'rgba(222,200,168,.8)',8);   // pale cream patch at the trailing edge
+  zone([[446,170],[470,152],[492,134],[512,104],[521,92],[525,92],[516,112],[496,140],[472,160],[448,176]],'rgba(176,150,122,.6)',8);   // lighter band along the outer margin
+  zone([[488,80],[523,82],[524,90],[500,92]],'rgba(60,40,28,.55)',8);   // darker tip
+  q.restore();
+  const dir=(x0,y0,a,len,w,col)=>{q.strokeStyle=col;q.lineWidth=w;q.beginPath();q.moveTo(x0,y0);const bend=(r()-.5)*.08;q.quadraticCurveTo(x0+Math.cos(a+bend)*len*.5,y0+Math.sin(a+bend)*len*.5,x0+Math.cos(a)*len,y0+Math.sin(a)*len);q.stroke()};
+  // 2. forewing
+  q.save();n5poly(q,FWP());q.clip();const[rx,ry]=n5P(299,150),fa=Math.atan2((85-150),(523-299));
+  q.lineCap='round';
+  // veins: fanning from the base to the leading edge and the outer margin
+  const VE=[[440,90],[500,78],[520,92],[497,128],[462,162]];
+  [[330,150,470,118],[350,156,500,104],[320,145,430,118]].forEach(([a,b,c2,d2])=>{const[x0,y0]=n5P(a,b),[x1,y1]=n5P(c2,d2);q.strokeStyle='rgba(36,22,14,.45)';q.lineWidth=3;q.beginPath();q.moveTo(x0,y0);q.lineTo(x1,y1);q.stroke()});
+  VE.forEach(([X,Y],i)=>{const[x,y]=n5P(X,Y),mx=(rx+x)/2,my=(ry+y)/2+(i<4?-40:30);q.strokeStyle='rgba(40,26,18,.6)';q.lineWidth=2.5;q.beginPath();q.moveTo(rx+40,ry-10);q.quadraticCurveTo(mx,my,x,y);q.stroke();q.strokeStyle='rgba(0,0,0,0)';q.lineWidth=0;q.beginPath();q.moveTo(rx+40,ry-14);q.quadraticCurveTo(mx,my-4,x,y-4);q.stroke()});
+  q.restore();
+  // 4. fringe along the outer edges (forewing outer margin, hindwing outer / lower edge)
+  // a thin pale edge along the outer margins
+  const edge=pts=>{q.strokeStyle='rgba(226,206,180,.7)';q.lineWidth=2.5;q.beginPath();pts.forEach(([X,Y],i)=>{const[x,y]=n5P(X,Y);i?q.lineTo(x,y):q.moveTo(x,y)});q.stroke()};
+  edge(N5TR.fb.filter(p=>p[0]>=440));edge(N5HW.E);
+  const t=new THREE.CanvasTexture(c);t.anisotropy=8;return t})());
+ const foreFront=n5WingTex,hindFront=n5WingTex;
+ // geometry: local wing space -y = out along the wing, +x = toward the leading edge; hinge at photo (299,150); 224 px = 1.3 m
+ const MW={L:1.3,s:1.3/224,X0:299,Y0:150};
+ const px2l=(X,Y)=>[(MW.Y0-Y)*MW.s,-(X-MW.X0)*MW.s],l2uv=(X,Y)=>[(X-280)/260,1-(Y-60)/195];
+ function mwXY(i,v){const[X,Ya]=N5TR.ft[i],Yb=N5TR.fb[i][1],Y=Yb+(Ya-Yb)*v;return[X,Y]}
+ function mothGeo(){const N=N5TR.ft.length-1,M=12,T=.003,pos=[],mp=[],uv=[],idx=[],rim=[],rp=[],rmp=[];const P=(i,v)=>{const[X,Y]=mwXY(i,v),[x,y]=px2l(X,Y);return[x,y,.015*y*y-.3*x*x,X,Y]};
+  for(const sd of [1,-1]){const o=pos.length/3;for(let i=0;i<=N;i++)for(let j=0;j<=M;j++){const p=P(i,j/M),u=l2uv(p[3],p[4]+(j===0?-3:j===M?2:0));/* sample a little inside the edge so the pink hindwing paint never bleeds onto the forewing rim */pos.push(p[0],p[1],p[2]+sd*T);mp.push(p[0],p[1],sd*T);uv.push(u[0],u[1])}
    for(let i=0;i<N;i++)for(let j=0;j<M;j++){const a=o+i*(M+1)+j,b=a+M+1;sd>0?idx.push(a,b,a+1,a+1,b,b+1):idx.push(a,a+1,b,a+1,b+1,b)}}
-  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
-  // the rim: a thin strip along the inner edge, the leading edge and the root
-  const loop=[];for(let i=0;i<=N;i++)loop.push([i/N,1]);for(let i=N;i>=0;i--)loop.push([i/N,0]);loop.push([0,1]);
-  loop.forEach(([u,v])=>{const p=mwPt(u,v);rp.push(p[0],p[1],p[2]+T,p[0],p[1],p[2]-T)});for(let i=0;i<loop.length-1;i++){const a=i*2;rim.push(a,a+2,a+1,a+1,a+2,a+3)}
-  const r=new THREE.BufferGeometry();r.setAttribute('position',new THREE.Float32BufferAttribute(rp,3));r.setIndex(rim);r.computeVertexNormals();return[g,r]}
- // Hindwings (hidden under the forewings while folded), patterned like Agrius convolvuli (Petra): soft grey / grey-brown ground, four dark blackish-brown
- // wavy bands running parallel to the outer edge with paler grey between, a darker hairy base near the body and a fine fringe on the edge.
- // Texture: the hinge is the top-left corner; the bands are wavy arcs around it.
- let N5H=null;const hindTex=()=>N5H||(N5H=(()=>{const S=512,c=document.createElement('canvas');c.width=c.height=S;const q=c.getContext('2d');const rnd=(()=>{let z=11;return()=>(z=(z*16807)%2147483647)/2147483647})();
-  const g=q.createRadialGradient(0,0,0,0,0,S*1.4);g.addColorStop(0,'#7c766e');g.addColorStop(.5,'#928d85');g.addColorStop(1,'#858078');q.fillStyle=g;q.fillRect(0,0,S,S);
-  // soft lighter and darker blotches (same treatment as the forewings)
-  for(let i=0;i<90;i++){const x=rnd()*S,y=rnd()*S,r=14+rnd()*50,lt=rnd()<.5,gr=q.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,lt?'rgba(206,204,198,.25)':'rgba(66,60,56,.22)');gr.addColorStop(1,'rgba(0,0,0,0)');q.fillStyle=gr;q.fillRect(x-r,y-r,2*r,2*r)}
-  const arc=(r,w,col,wob)=>{q.strokeStyle=col;q.lineWidth=w;q.beginPath();for(let i=0;i<=90;i++){const a=i/90*Math.PI/2,rr=r+Math.sin(a*(wob||14)+r)*7+Math.sin(a*5+r*.1)*8;i?q.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):q.moveTo(Math.cos(a)*rr,Math.sin(a)*rr)}q.stroke()};
-  // paler grey between the bands, then the four dark wavy bands parallel to the outer edge
-  [[236,24],[300,20],[364,18]].forEach(([r,w])=>arc(r,w,'rgba(176,172,164,.45)'));
-  [[204,22],[268,18],[332,17],[400,20]].forEach(([r,w])=>arc(r,w,'rgba(40,32,28,.68)'));
-  // veins: charcoal streaks fanning out from the hinge
-  q.lineCap='round';for(let k=0;k<12;k++){const a0=.06+k*.125+rnd()*.03,dk=k%4===2;q.strokeStyle=dk?'rgba(34,30,28,.7)':'rgba(46,42,40,'+(.22+.2*rnd())+')';q.lineWidth=dk?3.4:1.4+rnd()*1.2;q.beginPath();
-   for(let r=30;r<=S*1.1;r+=10){const a=a0+Math.sin(r*.03+k)*.015;r===30?q.moveTo(Math.cos(a)*r,Math.sin(a)*r):q.lineTo(Math.cos(a)*r,Math.sin(a)*r)}q.stroke()}
-  // fine dark wavy cross-lines (bark-like), following the bands
-  for(let i=0;i<40;i++)arc(110+i*11+rnd()*5,.9+rnd(),'rgba(40,38,36,'+(.1+.2*rnd())+')',20+rnd()*10);
-  // darker hairy base near the body
-  const hb=q.createRadialGradient(0,0,0,0,0,190);hb.addColorStop(0,'rgba(46,38,32,.95)');hb.addColorStop(.65,'rgba(58,50,42,.6)');hb.addColorStop(1,'rgba(58,50,42,0)');q.fillStyle=hb;q.fillRect(0,0,210,210);
-  for(let i=0;i<1600;i++){const a=rnd()*Math.PI/2,r=rnd()*180,x=Math.cos(a)*r,y=Math.sin(a)*r;q.strokeStyle='rgba('+(rnd()<.5?128:52)+','+(rnd()<.5?116:46)+',100,.4)';q.lineWidth=1;q.beginPath();q.moveTo(x,y);q.lineTo(x+Math.cos(a+rnd()*.4-.2)*16,y+Math.sin(a+rnd()*.4-.2)*16);q.stroke()}
-  // scale speckle
-  for(let i=0;i<14000;i++){const v=rnd()<.5?40:215;q.fillStyle='rgba('+v+','+v+','+(v-4)+','+(.05+.1*rnd())+')';q.fillRect(rnd()*S,rnd()*S,1.5,1.5)}
-  // fine fringe on the outer edge
-  for(let i=0;i<500;i++){const a=i/500*Math.PI/2;q.strokeStyle=i%2?'rgba(210,206,198,.75)':'rgba(40,34,30,.75)';q.lineWidth=1.6;q.beginPath();q.moveTo(Math.cos(a)*440,Math.sin(a)*440);q.lineTo(Math.cos(a)*530,Math.sin(a)*530);q.stroke()}
-  const t=new THREE.CanvasTexture(c);t.anisotropy=4;return t})());
- /* the hindwing has the same 6 mm thickness and dark rim as the forewing: an extruded shape, caps textured, sides plain */
- function hindGeo(){const sh=new THREE.Shape();sh.moveTo(0,0);sh.bezierCurveTo(.16,-.02,.3,-.12,.34,-.28);sh.bezierCurveTo(.37,-.42,.28,-.55,.14,-.58);sh.bezierCurveTo(.06,-.6,.01,-.5,.0,-.36);sh.lineTo(0,0);
-  const g=new THREE.ExtrudeGeometry(sh,{depth:.006,bevelEnabled:false,curveSegments:16});g.translate(0,0,-.003);const p=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i);uv.setXY(i,x/.6,1+y/.6)}return g}
- function mothWings(body){const g=new THREE.Group();g.position.set(0,1.36,.122);g.name='n5moth';body.add(g);const[gw,gr]=mothGeo(),gh=hindGeo();
-  const mt=new THREE.MeshLambertMaterial({map:mothTex(),side:THREE.DoubleSide,alphaTest:.5}),rm=new THREE.MeshLambertMaterial({color:0x5e5a55,side:THREE.DoubleSide}),hm=new THREE.MeshLambertMaterial({map:hindTex(),side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4});const W=[];
-  [-1,1].forEach(k=>{const p=new THREE.Group();p.scale.x=k;p.position.x=-k*.03;g.add(p);const w=new THREE.Mesh(gw,mt);w.rotation.x=-.075;w.position.z=k*.004;p.add(w);const e=new THREE.Mesh(gr,rm);w.add(e);
-   /* the hindwing hangs from a hinge just below the forewing's, in the forewing's middle plane (between its two sheets), so it is covered while folded. Petra (correction): when spread, the hindwings
-      lie IN FRONT of the forewings (on the side people behind you see) hinged right next to the forewings at the back, fanning apart toward the outer edges so they overlap only slightly */
-   const hp=new THREE.Group();hp.position.set(.02,-.1,0);p.add(hp);const hw=new THREE.Mesh(gh,[hm,rm]);hp.add(hw);hp.scale.setScalar(.7);W.push([p,w,hp])});
-  /* fold / unfold (G key or the Wings touch button; Petra 2026-10-15): a remote player's state arrives as body.userData.mwOpen (report field mw),
-     everyone else (your own Customize doll) follows window.__mwOpen. Open is a hawk moth's spread (defensive display, like a pinned moth): each forewing
-     swings forward and out around its shoulder hinge until it sticks out sideways, slightly swept back (tips a little low), flattened so the top pattern faces
-     backward; then the hindwings (much bigger) fan out diagonally down and out, about 35 degrees below the forewings. About 0.8 s; folding runs the same in reverse (hindwings tuck in first). */
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);
+  /* two groups (back sheet, front sheet); both use the same pattern */const h=idx.length/2;g.addGroup(0,h,0);g.addGroup(h,h,1);
+  g.morphAttributes.position=[new THREE.Float32BufferAttribute(mp,3)];g.computeVertexNormals();
+  const loop=[];for(let i=0;i<=N;i++)loop.push([i,1]);for(let i=N;i>=0;i--)loop.push([i,0]);loop.push([0,1]);
+  loop.forEach(([i,v])=>{const p=P(i,v);rp.push(p[0],p[1],p[2]+T,p[0],p[1],p[2]-T);rmp.push(p[0],p[1],T,p[0],p[1],-T)});for(let i=0;i<loop.length-1;i++){const a=i*2;rim.push(a,a+2,a+1,a+1,a+2,a+3)}
+  const r=new THREE.BufferGeometry();r.setAttribute('position',new THREE.Float32BufferAttribute(rp,3));r.setIndex(rim);r.morphAttributes.position=[new THREE.Float32BufferAttribute(rmp,3)];r.computeVertexNormals();return[g,r]}
+ // hindwing: the traced outline, same space as the forewing
+ const hindShape=()=>{const sh=new THREE.Shape();HWP().forEach(([X,Y],i)=>{const[x,y]=px2l(X,Y);i?sh.lineTo(x,y):sh.moveTo(x,y)});sh.closePath();return sh};
+ function hindGeo(){const uvf=g=>{const p=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<p.count;i++){const X=MW.X0-p.getY(i)/MW.s,Y=MW.Y0-p.getX(i)/MW.s,u=l2uv(X,Y);uv.setXY(i,u[0],u[1])}return g};
+  const face=uvf(new THREE.ShapeGeometry(hindShape(),1)),rim=new THREE.ExtrudeGeometry(hindShape(),{depth:.004,bevelEnabled:false});rim.translate(0,0,-.002);return[face,rim]}
+ function mothWings(body){const g=new THREE.Group();g.position.set(0,1.36,.122);g.name='n5moth';body.add(g);const[gw,gr]=mothGeo(),[hf,hr]=hindGeo();
+  const L=(map,o)=>new THREE.MeshLambertMaterial(Object.assign({map,side:THREE.DoubleSide},o||{}));
+  const ff=L(foreFront(),{morphTargets:true}),rm=new THREE.MeshLambertMaterial({color:0x4a3e34,side:THREE.DoubleSide,morphTargets:true}),
+   hfm=L(hindFront(),{polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:4}),hr0=new THREE.MeshLambertMaterial({color:0x3e3028,side:THREE.DoubleSide});const W=[];
+  [-1,1].forEach(k=>{const p=new THREE.Group();p.scale.x=k;p.position.x=-k*.03;g.add(p);const w=new THREE.Mesh(gw,[ff,ff]);w.rotation.x=-.075;w.position.z=k*.004;p.add(w);const e=new THREE.Mesh(gr,rm);w.add(e);
+   /* hindwing (child of the forewing, same traced space): always a few mm nearer the body, so the forewing overlaps it from behind; folded it shrinks inside the forewing's outline */
+   const hp=new THREE.Group();hp.position.set(.14,-.15,-.006);w.add(hp);const hB=new THREE.Mesh(hf,hfm);hB.position.z=.0028;const hF=new THREE.Mesh(hf,hfm);hF.position.z=-.0028;hp.add(hB,hF,new THREE.Mesh(hr,[new THREE.MeshBasicMaterial({visible:false}),hr0]));hp.scale.setScalar(.4);W.push([p,w,hp,e])});
+  /* fold / unfold (G key or the Wings touch button): a remote player's state arrives as body.userData.mwOpen (report field mw), everyone else (your own
+     Customize doll) follows window.__mwOpen. About 0.8 s: the forewings swing out first while morphing to the open outline, then the hindwings fan out. */
   const ss=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)};
   let f=0,lt=0;anim(W[0][1],t=>{const dt=lt?Math.min(.1,t-lt):0;lt=t;const tg=body.userData.mwOpen!=null?(body.userData.mwOpen?1:0):(window.__mwOpen?1:0);
    f=tg>f?Math.min(tg,f+dt/.8):Math.max(tg,f-dt/.8);const e1=ss(f/.7),e2=ss((f-.35)/.65),a=.025*Math.sin(t*1.1)*(1-e1);
-   W.forEach(([p,w,hp],i)=>{p.rotation.y=i?-a:a;p.position.x=(i?1:-1)*(-.03+.07*e1);w.rotation.z=1.42*e1;w.rotation.x=-.075*(1-e1);w.scale.set(1+.5*e1,1+.06*e1,1-.75*e1);
-    hp.rotation.z=.12*e1+.38*e2;hp.scale.setScalar(.7+1.15*e2);hp.position.y=-.1+.04*e2;hp.position.x=.02-.01*e2;hp.position.z=.009*e2})})}
+   W.forEach(([p,w,hp,e],i)=>{p.rotation.y=i?-a:a;p.position.x=(i?1:-1)*(.085-.055*e1);w.rotation.z=Math.PI/2*e1;w.rotation.x=-.075*(1-e1);
+    [w,e].forEach(m=>{m.morphTargetInfluences[0]=e1;m.children.forEach(c=>{if(c.morphTargetInfluences)c.morphTargetInfluences[0]=e1})});
+    hp.visible=e2>.002;hp.scale.setScalar(.4+.6*e2);hp.position.set(.14*(1-e2),-.15*(1-e2),-.006)})})}
  // ragged hem: little hanging cone tatters around a ring
  function tat(m,r,y,n,par,sz,sd){for(let i=0;i<n;i++){const a=i/n*Math.PI*2+(sd||0),L=.05+.06*(((i*37+(sd*10|0))%7)/6),c=new THREE.Mesh(new THREE.ConeGeometry(.035,L,4),m);c.rotation.x=Math.PI;c.position.set(Math.sin(a)*r,y-L/2,Math.cos(a)*r*(sz||1));par.add(c)}}
  let N5V=null;const veinTex=()=>N5V||(N5V=patTexN('n5-vein',128,q=>{q.clearRect(0,0,128,128);const br=(x,y,a,w,d)=>{if(d>6||w<.4)return;const L=10+Math.random()*12,x2=x+Math.sin(a)*L,y2=y-Math.cos(a)*L;q.lineWidth=w;q.strokeStyle='rgba(16,6,14,'+Math.max(.25,1-y2/-160)+')';q.beginPath();q.moveTo(x,y);q.lineTo(x2,y2);q.stroke();br(x2,y2,a+(Math.random()-.5)*.8,w*.82,d+1);if(Math.random()<.45)br(x2,y2,a+(Math.random()<.5?-.7:.7),w*.6,d+2)};
@@ -7996,7 +8002,7 @@ window.__n5cosUnlock=()=>{let o={};try{o=JSON.parse(localStorage.getItem('hushCu
      legs inside the dress and the head under the hair stay hidden. Decals, sprites and glows (no depth write / additive) are left out. The twins are switched
      off while the ghost / invisible pass is on (factor below .5), so an invisible player never blocks the view behind them. */
   const tw=[],ref=[];body.traverse(c=>{if(!c.isMesh||c.userData.noFade)return;const L=Array.isArray(c.material)?c.material:[c.material];if(L.some(m=>m.depthWrite===false||m.blending===THREE.AdditiveBlending))return;
-   const m0=L[0];if(m0.userData.op0===N5_OP&&!ref.length)ref.push(m0);const dm=new THREE.MeshBasicMaterial({colorWrite:false,map:m0.alphaTest?m0.map:null,alphaTest:m0.alphaTest||0,side:m0.side});dm.userData.op0=1;
+   const m0=L[0];if(m0.userData.op0===N5_OP&&!ref.length)ref.push(m0);const dm=new THREE.MeshBasicMaterial({colorWrite:false,map:m0.alphaTest?m0.map:null,alphaTest:m0.alphaTest||0,side:m0.side,morphTargets:!!(c.geometry.morphAttributes&&c.geometry.morphAttributes.position)});dm.userData.op0=1;
    const z=new THREE.Mesh(c.geometry,dm);z.renderOrder=-10;z.userData.noTrack=1;z.name='n5depth';tw.push([c,z])});tw.forEach(([c,z])=>c.add(z));
   const fl=new THREE.Group();fl.name='n5float';[...body.children].forEach(c=>fl.add(c));body.add(fl);
   const an=new THREE.Mesh(new THREE.PlaneGeometry(.001,.001),new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false}));an.frustumCulled=false;an.userData.noFade=1;an.userData.noTrack=1;body.add(an);
