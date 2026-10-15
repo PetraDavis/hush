@@ -896,7 +896,7 @@ addEventListener('keydown',e=>{if(!window.__typing)return;const i=document.getEl
 addEventListener('keydown',e=>{if(e.code==='KeyM'&&!(window.__mp&&__mp.active)){muted=!muted;if(outG)outG.gain.value=muted?0:.8*VOL;subtitle(muted?'Sound off':'Sound on',1200)}
 if(e.code==='KeyT'&&!e.repeat&&!paused)skipHour()});
 document.getElementById('overlay').addEventListener('click',()=>{initAudio();if(AC&&AC.state==='suspended')AC.resume()});
-function fmtTime(h){const hh=Math.floor(h),mm=Math.floor((h-hh)*60);return ((hh-1)%12+1)+':'+String(mm).padStart(2,'0')+(hh>=24?' AM':' PM')}
+function fmtTime(h){const hh=Math.floor(h),mm=Math.floor((h-hh)*60);return ((hh-1)%12+1)+':'+String(mm).padStart(2,'0')+(hh%24<12?' AM':' PM')}
 
 // ===== loudness atmosphere (visual): the louder she gets, the thicker the fog and dust, shadows crawl over the ceiling,
 // doors drift open by themselves, small things rattle on the shelves, and your view breathes, sways and blurs at the edges =====
@@ -984,7 +984,7 @@ const SND=(function(){let last=null,acc=0,prevDoors=null,prevSw=null,prevLight=n
   const bf=AC.createBiquadFilter();bf.type='bandpass';bf.frequency.value=800;bf.Q.value=1.5;o.connect(bf);const g=env(bf,.08*(nz-.3),t0+.08,.2,1.2,dst);send(g);o.start(t0);lf.start(t0);o.stop(t0+1.6);lf.stop(t0+1.6)}
  return{update,cryLayer,send,get nz(){return nz},tvStop}})();window.__snd=SND;
 let skipping=false;const skipB=document.getElementById('skipB'),tfadeEl=document.getElementById('tfade');
-function skipHour(){const MPS=(window.__mp&&__mp.active);if(MPS&&!skipHour.force){try{__mp.voteSkip()}catch(e){console.error(e)}return}const cos=MPS&&!__mp.host;skipHour.force=false;
+function skipHour(){if(window.__endless){subtitle('There is no skipping ahead tonight.',2200);return}const MPS=(window.__mp&&__mp.active);if(MPS&&!skipHour.force){try{__mp.voteSkip()}catch(e){console.error(e)}return}const cos=MPS&&!__mp.host;skipHour.force=false;
 if(skipping||!started||(!MPS&&(!entered||ended||window.__dead||window.__tbc||(window.__rlm&&__rlm.on)||TRAP.on||CARE.busy()||DEMON.dbg.active||HUNT.t>0))||(!cos&&18+clockT/HOUR_SEC>=29.5))return;
  skipping=true;for(const k in keys)keys[k]=false;tfadeEl.hidden=false;tfadeEl.textContent='';requestAnimationFrame(()=>tfadeEl.classList.add('on'));
  setTimeout(()=>{tfadeEl.textContent='One hour later...';let m='';if(cos){m=skipHour.msg||'The hour passes.';skipHour.msg=''}else{try{m=CARE.skip(HOUR_SEC)}catch(e){console.error(e)}clockT+=HOUR_SEC;if(MPS)try{__mp.skipDone(m)}catch(e){console.error(e)}}
@@ -994,8 +994,8 @@ function atmos(dt,t){
 if(entered&&!ended){clockT+=dt}const hour=18+clockT/HOUR_SEC;
 if(!ended){const ramp=Math.min(1,clockT/(6*HOUR_SEC)),sm=ramp*ramp*(3-2*ramp);creep=basementEntered||hour>=24?1:.6*sm;
 if(hour>=24&&!nineDone){nineDone=true;powerFlick=3;if(AC)chime(12);subtitle('The clock strikes midnight.',4000)}
-if(hour>=30){ended=true;let xe=false;try{xe=!!(window.__xt&&__xt.ending('parents'))}catch(err){console.error(err)}if(!xe){endEl.hidden=false;if(document.pointerLockElement)document.exitPointerLock();if(AC)AC.suspend()}}}
-hud.hidden=!entered;skipB.hidden=!entered||ended||!!(window.__rlm&&__rlm.on);if(entered)hud.textContent=fmtTime(Math.min(hour,30));
+if(hour>=30&&!window.__endless){ended=true;let xe=false;try{xe=!!(window.__xt&&(__xt.night===5?__xt.ending('death',{h:'Nobody came home.',p:'Six o\'clock came and went, and the sun did not. The rite was never finished.'}):__xt.ending('parents')))}catch(err){console.error(err)}if(!xe){endEl.hidden=false;if(document.pointerLockElement)document.exitPointerLock();if(AC)AC.suspend()}}}
+hud.hidden=!entered;skipB.hidden=!entered||ended||!!(window.__rlm&&__rlm.on);if(entered)hud.textContent=fmtTime(window.__endless?hour:Math.min(hour,30));
 const hh=hour%12,ma=(hour%1)*Math.PI*2;gcH.rotation.x=hh/12*Math.PI*2;gcM.rotation.x=ma;pend.rotation.x=Math.sin(t*Math.PI)*.18;
 // lights: flicker + power flicker at nine
 if(powerFlick>0)powerFlick-=dt;
@@ -1793,7 +1793,7 @@ const TITLE=(function(){const el=document.getElementById('title'),setEl=document
  renderer.shadowMap.enabled=!window.__safe;
  // --- the note ---
  const RULES=['If someone knocks on the door, do not answer it.','If you hear footsteps in our bedroom, do not check it out.','If you hear whispering, don\'t answer. It stops.','If something scratches at the basement door, leave it be.','Keep Lilith quiet. Whatever happens, keep her quiet.'];
- const OPT=[{k:'start',t:'Start',y:1020},{k:'cont',t:'Continue',y:1090},{k:'set',t:'Settings',y:1160},{k:'diff',get t(){return 'Difficulty: '+(window.__xt?__xt.diffName():'Normal')},y:1230},{k:'night',get t(){return 'Night: '+(window.__xt&&__xt.night||1)},get hide(){return !(window.__xt&&__xt.nightsUnlocked&&__xt.nightsUnlocked()>1)},y:1020,x:560},{k:'gfx',get t(){const q=window.__set&&__set.q||'medium';return 'Graphics: '+q[0].toUpperCase()+q.slice(1)+(window.__safe?' (safe)':'')},y:1160,x:560},{k:'mp',t:'Play together',get hide(){return !(window.__mp&&__mp.available)},y:1300},{k:'hunt',t:'Hunt',get hide(){return !(window.huntUnlocked&&huntUnlocked())},y:1090,x:640}];
+ const OPT=[{k:'start',t:'Start',y:1020},{k:'cont',t:'Continue',y:1090},{k:'set',t:'Settings',y:1160},{k:'diff',get t(){return 'Difficulty: '+(window.__xt?__xt.diffName():'Normal')},y:1230},{k:'night',get t(){return 'Night: '+(window.__xt&&__xt.nightLabel?__xt.nightLabel():(window.__xt&&__xt.night||1))},get hide(){return !(window.__xt&&__xt.nightsUnlocked&&__xt.nightsUnlocked()>1)},y:1020,x:560},{k:'gfx',get t(){const q=window.__set&&__set.q||'medium';return 'Graphics: '+q[0].toUpperCase()+q.slice(1)+(window.__safe?' (safe)':'')},y:1160,x:560},{k:'mp',t:'Play together',get hide(){return !(window.__mp&&__mp.available)},y:1300},{k:'hunt',t:'Hunt',get hide(){return !(window.huntUnlocked&&huntUnlocked())},y:1090,x:640}];
  let hsV=false,hsT=-1e9;const hasSave=()=>{const n=performance.now();if(n-hsT>1000){hsT=n;try{const v=localStorage.getItem('hushSave');hsV=!!v&&v.charAt(0)==='{'}catch(e){hsV=false}}return hsV};
  let hov=null,idle=0,idleAt=10+Math.random()*10,ph=0,pt=0,drips=[],on=true,T=0,lastDraw=0,dirty=true;
  const HAND="'Caveat','Segoe Print','Bradley Hand',cursive";
@@ -1973,7 +1973,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 (function(){const XT=window.__xt;
  const DIFF={easy:{n:'Easy',imp:.65,nz:.7,agg:.6,js:.5,ev:.65},normal:{n:'Normal',imp:1,nz:1,agg:1,js:1,ev:1},nightmare:{n:'Nightmare',imp:1.45,nz:1.35,agg:1.6,js:1.6,ev:1.4}},ORDER=['easy','normal','nightmare'];
  let cur=XT.ls.get('hushDiff');if(!DIFF[cur])cur='normal';
- XT.diff=()=>DIFF[cur];XT.jsK=()=>DIFF[cur].js*({1:1,2:1.4,3:1.9,4:2.6}[XT.night||1]||1);XT.diffKey=()=>cur;XT.diffName=()=>DIFF[cur].n;
+ XT.diff=()=>DIFF[cur];XT.jsK=()=>DIFF[cur].js*({1:1,2:1.4,3:1.9,4:2.6,5:3.2}[XT.night||1]||(XT.night>=6?3.2*(XT.endlessK?XT.endlessK():1):1));XT.diffKey=()=>cur;XT.diffName=()=>DIFF[cur].n;
  XT.cycleDiff=()=>{cur=ORDER[(ORDER.indexOf(cur)+1)%3];XT.ls.set('hushDiff',cur)};
  XT.parts.diff={save:()=>cur,load:v=>{if(DIFF[v])cur=v}};
  const base={};let prevN=null;
@@ -2157,7 +2157,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
    cam.position.set(mX(sx),F+1.6+Math.sin(t*1.7)*.004,mZ(sz));cam.rotation.set(pitch,yaw,0);
    return t>15.2},
    end(){mom.visible=dad.visible=car.visible=false;fdoor.open=false;fdoor.pv.rotation.y=0;fdoor.solid.off=false;gate.rotation.y=0;engine(false);beam.intensity=0;yaw=0;pitch=0;cam.position.set(mX(sx),F+1.6,mZ(sz));fy=F;vy=0;
-    subtitle("Headlights shrink down the road. The house is very quiet.",3500);XT.cutEnd();if(!(XT.quickCard&&XT.quickCard())&&XT.help)XT.help.open()}})};
+    subtitle("Headlights shrink down the road. The house is very quiet.",3500);XT.cutEnd();/* n5 batch: the How to play card now shows at the start of the game (players with no endings), not here */}})};
 })();
 // ---------- 7. endings, exit cutscenes, credits ----------
 (function(){const XT=window.__xt;
@@ -2240,8 +2240,8 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
      const lk=t>7?1:0;look(mX(4.8)+(lk?.35:0),F+1.65,mZ(9.5));
      if(t>12&&!window.__getCalm()){const f=Math.random()<.2?.1:1;allL.forEach(l=>{if(l.userData.base>0)l.intensity=l.userData.base*f})}
      say(L,t,st);if(t>15.6&&!fade.classList.contains('on'))fadeTo(true);return t>17},end(){mom.visible=dad.visible=false;mom.rotation.z=dad.rotation.z=0}}},
-  dawn(){const out=window.__ext&&__ext.out,sky=out&&out.children.find(o=>o.geometry&&o.geometry.type==='SphereGeometry');if(sky)sky.material.color.setHex(0x6a5068);scene.background=new THREE.Color(0x4a3a4a);scene.fog.color.setHex(0x5a4a52);scene.fog.density=.03;
-   const {car}=XT.props;car.visible=true;car.position.set(mX(6.6),F,mZ(15.2));car.rotation.y=Math.PI/2;const L=[[1.5,null,'Dawn.',2],[3.6,null,'Upstairs, she is crying. An ordinary, hungry, morning cry.',3.6],[7.8,null,'Headlights in the drive. Her parents sit very still behind the windshield, watching the house.',4],[12.4,null,'They do not get out.',2.6]],st={i:0};
+  dawn(ex){const n5=!!(ex&&ex.n5);const out=window.__ext&&__ext.out,sky=out&&out.children.find(o=>o.geometry&&o.geometry.type==='SphereGeometry');if(sky)sky.material.color.setHex(0x6a5068);scene.background=new THREE.Color(0x4a3a4a);scene.fog.color.setHex(0x5a4a52);scene.fog.density=.03;
+   const {car}=XT.props;car.visible=!n5;car.position.set(mX(6.6),F,mZ(15.2));car.rotation.y=Math.PI/2;const L=n5?[[1.5,null,'Dawn.',2],[3.6,null,'The house is quiet. Properly quiet, for the first time.',3.6],[7.8,null,'Upstairs she wakes with an ordinary, hungry, morning cry.',3.6],[12.4,null,'Nobody comes home. Nothing comes up, either.',2.8]]:[[1.5,null,'Dawn.',2],[3.6,null,'Upstairs, she is crying. An ordinary, hungry, morning cry.',3.6],[7.8,null,'Headlights in the drive. Her parents sit very still behind the windshield, watching the house.',4],[12.4,null,'They do not get out.',2.6]],st={i:0};
    fadeTo(false);let cr=3;
    return{step(dt,t){const k=t/16;cam.position.set(mX(3.2-1.4*k),F+1.75+.5*k,mZ(16.5+2.4*k));look(mX(4.6),F+2.6,mZ(7.5));
      say(L,t,st);cr-=dt;if(cr<=0&&t>3&&t<9&&AC&&!muted){cr=2.2;const o=AC.createOscillator(),g=AC.createGain(),t0=AC.currentTime;g.gain.value=.03;g.connect(master);o.type='sawtooth';o.frequency.setValueAtTime(470,t0);o.frequency.linearRampToValueAtTime(640,t0+.3);o.frequency.linearRampToValueAtTime(520,t0+1);const f=AC.createBiquadFilter();f.type='bandpass';f.frequency.value=1200;o.connect(f);env(f,.8,t0,.08,1.1,g);o.start(t0);o.stop(t0+1.3)}
@@ -2703,12 +2703,26 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
 })();
 // ---------- 12. nights 2 and 3: harder nights, new events, calls, notes and rules; night select; the finale ----------
 (function(){const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush ext] nights '+(t||''),e)}};
- const NK={1:{need:1,ev:1,k:1},2:{need:1.2,ev:1.4,k:1.35},3:{need:1.4,ev:1.8,k:1.75},4:{need:1.55,ev:2.2,k:2.2}};/* b118: night 4, Blood Moon */
- let unlocked=cl3(parseInt(XT.ls.get('hushNights'))||1),sel=Math.min(unlocked,cl3(parseInt(XT.ls.get('hushNightSel'))||1));
- function cl3(v){return Math.max(1,Math.min(4,v|0))}
- XT.night=sel;XT.nightsUnlocked=()=>unlocked;XT.nightK=()=>NK[XT.night].k;XT.nightNeed=()=>NK[XT.night].need;
- XT.cycleNight=()=>{XT.night=XT.night%unlocked+1;XT.ls.set('hushNightSel',XT.night);apply()};
- XT.unlockNight=n=>{n=cl3(n);if(n>unlocked){unlocked=n;XT.ls.set('hushNights',n)}};
+ const EK=()=>XT.endlessK?XT.endlessK():1;
+ const NK={1:{need:1,ev:1,k:1},2:{need:1.2,ev:1.4,k:1.35},3:{need:1.4,ev:1.8,k:1.75},4:{need:1.55,ev:2.2,k:2.2},5:{need:1.7,ev:2.6,k:2.65},/* n5: night 5, The Last Night */
+  6:{get need(){return 1.7*EK()},get ev(){return 2.6*EK()},get k(){return 2.65*EK()}}};/* n5: the Endless night: night 5's pace, +12% every hour */
+ // n5 (Petra 2026-10-15): Night 5 needs nights 1-4 won (stored as hushNights >= 5) AND every ending the Seen It All achievement needs
+ // (all but Six O'Clock and Lullaby Choir). The Endless night (6) needs the Night 5 win (hushEndless).
+ const allEnds=()=>{try{const e=XT.endInfo();const need=e.order.filter(k=>k!=='parents'&&k!=='choir');return need.every(k=>e.got.includes(k))}catch(e){return false}};
+ const endless=()=>{try{return localStorage.getItem('hushEndless')==='1'}catch(e){return false}};
+ const avail=n=>n>=1&&(n<=4?n<=unlocked:n===5?unlocked>=5&&allEnds():n===6?endless():false);
+ let unlocked=cl3(parseInt(XT.ls.get('hushNights'))||1),sel=cl3(parseInt(XT.ls.get('hushNightSel'))||1);
+ function cl3(v){return Math.max(1,Math.min(6,v|0))}
+ const best=()=>{let b=1;for(let n=1;n<=6;n++)if(avail(n))b=n;return b};
+ if(!avail(sel))sel=Math.min(sel,unlocked,4);if(!avail(sel))sel=1;
+ XT.night=sel;XT.nightAvail=avail;XT.nightsUnlocked=()=>best();XT.nightK=()=>NK[XT.night].k;XT.nightNeed=()=>NK[XT.night].need;XT.n5Ready=()=>avail(5);
+ XT.nightLabel=()=>XT.night===6?'Endless':XT.night===5?'5, The Last Night':String(XT.night||1);
+ XT.cycleNight=()=>{const L=[1,2,3,4,5,6].filter(avail);const i=L.indexOf(XT.night);XT.night=L[(i+1)%L.length]||1;XT.ls.set('hushNightSel',XT.night);apply()};
+ /* n5 bug fix (Petra: "we beat night 3 together but it said she only got to night 2"): winning saved the unlock, but the night shown on the
+    title and in the lobby is the remembered selection (hushNightSel), which only moved when the host pressed "Go back"; a guest never does,
+    so her title kept showing her old night. Now the selection moves to the newly unlocked night for everyone, guests included. */
+ XT.unlockNight=n=>{n=cl3(n);if(n>unlocked){unlocked=n;XT.ls.set('hushNights',n)}const m=Math.min(n,5);if(avail(m))XT.ls.set('hushNightSel',m);else if(avail(m-1))XT.ls.set('hushNightSel',m-1)};
+
  // ---- phone calls for each night ----
  const N1=XT.phone.CALLS.map(c=>Object.assign({},c));
  const N2=[
@@ -2764,7 +2778,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
     return s>4},
    emerge(){if(window.__wallChase&&safe(()=>__wallChase.start(),'chase'))return;safe(()=>{DEMON.dbg.show('scare');CARE.dbg.noise=Math.min(1,CARE.dbg.noise+.2);setTimeout(()=>subtitle('(It tears out of the wall beside you, right into your face, and is gone again.)',3200),700)},'emerge')},
    end(){this.mx=undefined;this.lt=0}}];
- const PS={2:['If the television turns itself on, don\'t look at it.','If someone outside calls your name, stay away from the windows.'],3:['If you hear humming in the nursery, stay out until it stops.','If something follows you inside the walls, don\'t stop moving.'],4:['Under the blood moon: if the clocks start chiming, stand completely still until they stop.','If every light in the house turns red, keep your flashlight off.']};
+ const PS={2:['If the television turns itself on, don\'t look at it.','If someone outside calls your name, stay away from the windows.'],3:['If you hear humming in the nursery, stay out until it stops.','If something follows you inside the walls, don\'t stop moving.'],4:['Under the blood moon: if the clocks start chiming, stand completely still until they stop.','If every light in the house turns red, keep your flashlight off.'],5:['If a door opens onto the wrong room, keep walking.','If the upstairs hall won\'t end, turn around.']};
  // ---- b118 (Petra 2026-10-14): Night 4, Blood Moon. Unlocked by a good ending on night 3. Faster needs, more events, a faster and hungrier demon,
  // its own calls and two new rules on the note (stand still while the clocks chime; flashlight off while the lights are red). Same endings as night 3. ----
  const N4=[
@@ -2798,12 +2812,19 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
   moon.visible=on;
 }
 
+ const N5=[
+  {h:18.7,who:'mom',lines:[['mom',"It's us. We're... not coming home tonight.",3],['mom',"Not at six. Not at all. We made a promise a long time ago, and tonight they're collecting.",4.2],['dad',"(quietly) Lock the doors. It won't help. Lock them anyway.",3]]},
+  {h:19.6,who:'stranger',lines:[['stranger',"It's Ruth. Listen. No morning is coming unless you make one.",3.4],['stranger',"Salt, chalk, the black candles, a little silver bell and a hand mirror. They're all in that house.",4.2],['stranger',"Take them to the foyer, by the front door. Draw the circle and stay inside it until the candles go out.",4.4]]},
+  {h:21.4,who:'child',lines:[['child',"(Samuel.) The house is moving the doors. It doesn't want you to find them.",3.4],['child',"If the hall won't end, turn around.",2.4]]},
+  {h:23.4,who:'chorus',lines:[['chorus',"No one is coming... no one is coming home...",3.4]]},
+  {h:25.8,who:'you',lines:[['you',"(Your own voice.) The circle. Don't step out of the circle.",3]]},
+  {h:28.4,who:'stranger',lines:[['stranger',"If the sun comes up and you haven't finished, it won't be the sun.",3.4]]}];
  const noteP=document.querySelector('#note .paper');
- function apply(){const n=XT.night;window.__n4Spd=n>=4?1.12:1;safe(()=>bloodMoon(n>=4),'moon');
-  safe(()=>{const C=XT.phone.CALLS;const src=n>=4?N4:n===3?N3:n===2?N2:N1;C.length=0;src.forEach(c=>C.push(Object.assign({},c)))},'calls');
+ function apply(){const n=XT.night;window.__n4Spd=n>=4?1.12:1;window.__endless=n===6;safe(()=>bloodMoon(n===4),'moon');
+  safe(()=>{const C=XT.phone.CALLS;const src=n>=6?[]:n===5?N5:n>=4?N4:n===3?N3:n===2?N2:N1;C.length=0;src.forEach(c=>C.push(Object.assign({},c)))},'calls');
   safe(()=>XT.notes&&XT.notes.apply(),'notes');
   safe(()=>{const E=CARE.dbg.EVENTS;EVX.forEach(e=>{const i=E.indexOf(e);if(e.night<=n&&i<0)E.push(e);if(e.night>n&&i>=0)E.splice(i,1)})},'events');
-  safe(()=>{if(!noteP)return;let d=noteP.querySelector('#nightPS');const rules=[];for(let k=2;k<=n;k++)rules.push(...PS[k]);
+  safe(()=>{if(!noteP)return;let d=noteP.querySelector('#nightPS');const rules=[];for(let k=2;k<=Math.min(n,5);k++)rules.push(...(PS[k]||[]));
    if(!d&&rules.length){d=document.createElement('div');d.id='nightPS';noteP.appendChild(d)}if(d)d.innerHTML=rules.length?'<p class="hd">P.S. A few more rules this time:</p><ul>'+rules.map(r=>'<li>'+r+'</li>').join('')+'</ul>':'';
    if(noteP._o!==undefined&&!noteOpen)noteP._o=noteP.innerHTML},'note')}
  apply();
@@ -2813,7 +2834,7 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
  XT.onUpdate(dt=>{const k=NK[XT.night],C=CARE.dbg;if(!k)return;
   if(k.need!==1&&C.RATE)for(const q in C.RATE)C.RATE[q]*=k.need;// difficulty resets RATE from its base each frame just before this
   if(!XT.live())return;
-  if(!banner){banner=true;if(XT.night>1&&!XT.restored)setTimeout(()=>subtitle(XT.night===2?'Night 2. They asked you back.':XT.night>=4?'Night 4. The moon is the colour of blood.':'Night 3. The last night.',4000),3800)}
+  if(!banner){banner=true;if(XT.night>1&&!XT.restored)setTimeout(()=>subtitle(XT.night===2?'Night 2. They asked you back.':XT.night>=6?'The Endless night. It does not end. Last as long as you can.':XT.night===5?'Night 5. The last night. Nobody is coming home.':XT.night>=4?'Night 4. The moon is the colour of blood.':'Night 3. The last night.',4000),3800)}
   const cr=window.__atmos?__atmos.creep:0;
   if(k.ev!==1&&!C.EV.cur&&XT.hour()>=18.6&&!(window.__rlm&&__rlm.on))C.EV.next-=dt*(.5+cr)*(k.ev-1);
   const D=DEMON.dbg;if(k.ev!==1&&!D.active&&D.next>0)D.next-=dt*(k.ev-1)*(.35+1.6*C.noise);
@@ -2828,21 +2849,27 @@ XT.skipCut=function(){if(cuts.cur)cuts.cur.skip=true};
     tvM.material.map.needsUpdate=true}}});
  // ---- endings: unlock the next night, offer it on the card; night 3 gets a finale first ----
  const oe=XT.ending;let fin=false;
- XT.ending=function(id,extra){if(id==='parents'||id==='dawn')safe(()=>XT.unlockNight(XT.night+1),'unlock');
-  if(XT.night>=3&&(id==='parents'||id==='dawn')&&!fin&&!(XT.endings&&XT.endings.done)){fin=true;ended=true;let ok=false;safe(()=>{finale(id,()=>oe.call(XT,id,extra));ok=true},'finale');if(ok)return true}
+ XT.ending=function(id,extra){if((id==='parents'||id==='dawn')&&XT.night<=4)safe(()=>XT.unlockNight(XT.night+1),'unlock');
+  if(id==='dawn'&&extra&&extra.n5&&XT.night===5&&!(XT.endings&&XT.endings.done))safe(()=>onNight5Win(),'n5 win');
+  if(XT.night===6&&!(XT.endings&&XT.endings.done))safe(()=>{XT.endlessRes=XT.endlessScore()},'endless');
+  if(XT.night>=3&&XT.night<=4&&(id==='parents'||id==='dawn')&&!fin&&!(XT.endings&&XT.endings.done)){fin=true;ended=true;let ok=false;safe(()=>{finale(id,()=>oe.call(XT,id,extra));ok=true},'finale');if(ok)return true}
   return oe.call(XT,id,extra)};
  const card=document.getElementById('xend');
  if(card)new MutationObserver(()=>{if(card.hidden||card.dataset.night)return;card.dataset.night=1;safe(()=>{const id=XT.endings&&XT.endings.done,n=XT.night,tag=card.querySelector('.tag');if(tag)tag.innerHTML='Night '+n+' &middot; '+tag.innerHTML;
    const good=id==='parents'||id==='dawn',back=card.querySelector('#xBack');
    if(good&&n===3){const p=document.createElement('p');p.className='txt';p.textContent='You made it through all three nights.';back.parentNode.insertBefore(p,back)}
-   if(good&&n>=4){const p=document.createElement('p');p.className='txt';p.textContent='You survived the Blood Moon.';back.parentNode.insertBefore(p,back);/* halo (Petra 2026-10-14): hushCustU.bloodmoon -> Blood Moon halo */let o={};try{o=JSON.parse(localStorage.getItem('hushCustU')||'{}')||{}}catch(e){}if(!o.bloodmoon){o.bloodmoon=1;try{localStorage.setItem('hushCustU',JSON.stringify(o))}catch(e){}const q=document.createElement('p');q.className='txt';q.textContent='Unlocked: the Blood Moon halo (in Customize).';back.parentNode.insertBefore(q,back)}}
-   if(good&&n<4)goBack(card,back,n)})}).observe(card,{attributes:true,attributeFilter:['hidden']});
+   if(n>=5)safe(()=>{if(tag)tag.innerHTML=tag.innerHTML.replace(/^Night 6 (&middot;|\u00b7)/,'Endless night &middot;').replace(/^Night 5 (&middot;|\u00b7)/,'Night 5, The Last Night &middot;');
+    if(n===5&&window.__n5Won&&id==='dawn'){const d=card.querySelector('.desc'),t=card.querySelector('.txt');if(d)d.textContent='You finished the rite. Nobody came home, and it is over anyway.';if(t)t.textContent='Dawn. The last candle is out and the circle is only chalk on the floorboards. Upstairs she wakes with an ordinary, hungry, morning cry. Nobody is coming home to this house, but nothing is coming up out of it either. Not ever again.';const p=document.createElement('p');p.className='txt';p.textContent='You banished it. Unlocked: the Endless night (choose it on the title screen).';back.parentNode.insertBefore(p,back)}
+    if(n===6&&XT.endlessRes){const r=XT.endlessRes,p=document.createElement('p');p.className='txt';p.textContent='Endless night: you lasted '+XT.fmtMins(r.mins)+'. '+(r.nb?'A new best!':'Best: '+XT.fmtMins(r.best)+'.');back.parentNode.insertBefore(p,back)}},'card5');
+   if(good&&n===4){const p=document.createElement('p');p.className='txt';p.textContent='You survived the Blood Moon.';back.parentNode.insertBefore(p,back);/* halo (Petra 2026-10-14): hushCustU.bloodmoon -> Blood Moon halo */let o={};try{o=JSON.parse(localStorage.getItem('hushCustU')||'{}')||{}}catch(e){}if(!o.bloodmoon){o.bloodmoon=1;try{localStorage.setItem('hushCustU',JSON.stringify(o))}catch(e){}const q=document.createElement('p');q.className='txt';q.textContent='Unlocked: the Blood Moon halo (in Customize).';back.parentNode.insertBefore(q,back)}}
+   /* Night 5 cosmetics: winning Night 5 unlocks hushCustU.night5 */if(good&&n>=5&&window.__n5cosUnlock&&(__n5cosUnlock()||window.__n5cosJust)){window.__n5cosJust=0;const q=document.createElement('p');q.className='txt';q.textContent='Unlocked: Night 5 looks (Candle crown, Demon horns, Moth wings, Possessed, Last Rite and Blood Moon sets) in Customize. With the moth wings on, press G to spread them.';back.parentNode.insertBefore(q,back)}
+   if(good&&n<4)goBack(card,back,n);if(good&&n===4){if(avail(5))goBack(card,back,n);else{const p=document.createElement('p');p.className='txt';p.textContent='One more night is waiting. Find every ending (all but Six O\'Clock and Lullaby Choir) to unlock Night 5.';back.parentNode.insertBefore(p,back)}}})}).observe(card,{attributes:true,attributeFilter:['hidden']});
  // v76: Petra: three nights in all; after night 1 and 2 the game asks whether you go back. In multiplayer the host chooses; the others return to the lobby.
  const HANDF="'Caveat','Segoe Print','Bradley Hand',cursive";
- function goBack(card,back,n){const MP=window.__mp,mp=!!(MP&&MP.active),host=mp&&MP.host;const N=Math.min(4,n+1);
+ function goBack(card,back,n){const MP=window.__mp,mp=!!(MP&&MP.active),host=mp&&MP.host;const N=Math.min(5,n+1);
   const st=document.createElement('style');st.textContent='#xend{overflow-y:auto;-webkit-overflow-scrolling:touch}@media (max-height:560px){#xGo p{font-size:1.25rem!important}#xGo{margin:.5rem auto!important;padding:.6rem 1rem!important}}#xGo{margin:1rem auto;max-width:min(24rem,calc(100vw - 32px));box-sizing:border-box;background:#efe6cf;color:#2a1c14;border-radius:3px;padding:1rem 1.2rem;transform:rotate(-1deg);box-shadow:0 6px 24px rgba(0,0,0,.6);font-family:'+HANDF+';text-align:center}#xGo p{font-size:1.6rem;line-height:1.25;margin:0 0 .8rem}#xGo .r{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}#xGo button{font:700 1.35rem '+HANDF+';color:#2a1c14;background:none;border:0;border-bottom:2px solid #8a2020;padding:.35rem .6rem;min-height:44px;cursor:pointer;touch-action:manipulation}#xGo button:focus-visible{outline:2px solid #8a2020}';document.head.appendChild(st);
   const w=document.createElement('div');w.id='xGo';w.setAttribute('role','group');w.setAttribute('aria-label','Go back tomorrow night?');
-  const p=document.createElement('p');p.textContent=N>=4?'Night 4 unlocked: Blood Moon. One more night, harder than the rest. Will you go back?':'They want you back tomorrow night. Will you go back?';w.appendChild(p);const r=document.createElement('div');r.className='r';w.appendChild(r);
+  const p=document.createElement('p');p.textContent=N>=5?'Night 5 unlocked: The Last Night. Nobody is coming home this time. Will you go back?':N>=4?'Night 4 unlocked: Blood Moon. One more night, harder than the rest. Will you go back?':'They want you back tomorrow night. Will you go back?';w.appendChild(p);const r=document.createElement('div');r.className='r';w.appendChild(r);
   if(mp&&!host){const s=document.createElement('p');s.style.fontSize='1.1rem';s.textContent='The host chooses. You can wait in the lobby.';w.appendChild(s)}
   else{const go=document.createElement('button');go.type='button';go.textContent='Go back (Night '+N+')';const no=document.createElement('button');no.type='button';no.textContent='Not tonight';r.appendChild(go);r.appendChild(no);
    go.onclick=e=>{e.stopPropagation();XT.unlockNight(N);XT.ls.set('hushNightSel',N);try{clearSave()}catch(_){}if(mp){MP.backToLobby();return}try{sessionStorage.setItem('hushAutoStart','1')}catch(_){}location.reload()};
@@ -3396,7 +3423,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 <dt>${K('Shift')} while hiding</dt><dd>Hold your breath</dd>
 <dt>${K('Esc')}</dt><dd>Pause (journal, settings and this screen)</dd>
 <dt>${K('T')}</dt><dd>Skip an hour, when nothing is happening</dd>
-<dt>${K('F')}</dt><dd>Reduce flashing effects</dd><dt>${K('M')}</dt><dd>Mute</dd></dl>
+<dt>${K('F')}</dt><dd>Reduce flashing effects</dd><dt>${K('M')}</dt><dd>Mute</dd><dt>${K('G')}</dt><dd>Open or fold your moth wings (if you wear them)</dd></dl>
 <h3>Touch screens</h3><p>Turn your phone sideways. Use the stick on the left to move and drag on the right side to look. The buttons are Use, Jump, Light, Crouch, Sprint, Hide / hold breath, and II to pause.</p>
 </div><div>
 <h3>Caring for the baby</h3><ul>
@@ -3443,16 +3470,34 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
 <li>Read the note on the dining table and follow the house rules.</li>
 <li>Your flashlight is <span class="k">${K('L')}</span><span class="t">the Light button</span>. If you need to, hide in a closet or under a bed.</li></ul>
 <div class="bar"><button type="button" class="alt" id="qMore">All controls</button><button type="button" id="qGo">Got it</button></div></div>`;document.body.appendChild(QC);
- const qClose=more=>{QC.hidden=true;if(more)XT.help.open();else safe(()=>{if(started&&!ended&&overlay.hidden&&!window.__cut){overlay.hidden=false;setPaused(true)}},'qclose')};
+ const qClose=more=>{if(qcAuto&&qGo.disabled)return;const af=qcAfter;qcAfter=null;const wasAuto=qcAuto;qcAuto=false;QC.hidden=true;if(af){safe(af,'qafter');return}if(wasAuto&&window.__mp&&__mp.active)return;if(more)XT.help.open();else safe(()=>{if(started&&!ended&&overlay.hidden&&!window.__cut){overlay.hidden=false;setPaused(true)}},'qclose')};
  [['#qGo',false],['#qMore',true]].forEach(([q,m])=>{const b=QC.querySelector(q);b.addEventListener('click',e=>{e.stopPropagation();qClose(m)});['pointerdown','touchstart','mousedown'].forEach(k=>b.addEventListener(k,e=>e.stopPropagation(),{passive:true}))});
  QC.addEventListener('click',e=>{e.stopPropagation()});
  addEventListener('keydown',e=>{if(!QC.hidden&&(e.code==='Escape'||e.code==='Enter')){e.preventDefault();e.stopImmediatePropagation();qClose(false)}},true);
- XT.quickCard=()=>{let seen=false;try{seen=localStorage.getItem('hushQuick')==='1'}catch(e){}if(seen||(XT.night||1)!==1||(window.__mp&&__mp.active))return false;
-  try{localStorage.setItem('hushQuick','1')}catch(e){}safe(()=>{if(document.pointerLockElement)document.exitPointerLock()},'unlock');safe(()=>{if(started&&!ended)setPaused(true)},'pause');overlay.hidden=true;QC.hidden=false;setTimeout(()=>safe(()=>QC.querySelector('#qGo').focus({preventScroll:true})),50);return true};
+ // n5 batch (Petra 2026-10-15): the How to play card shows as soon as a game starts (single player before the intro, multiplayer over it) for players
+ // with no endings yet; "Got it" waits a few seconds and until the card is scrolled to the end. Anyone with an ending only sees it from the buttons.
+ const endsN=()=>{try{return (XT.endInfo().got||[]).length}catch(e){return 0}};
+ let qcAuto=false,qcUntil=0,qcAfter=null,qcIv=0;
+ const qGo=QC.querySelector('#qGo'),qMore=QC.querySelector('#qMore'),qPn=QC.querySelector('.pn');
+ function qcGate(){if(QC.hidden){clearInterval(qcIv);qcIv=0;return}if(!qcAuto){qGo.disabled=false;qGo.textContent='Got it';qMore.hidden=false;return}
+  const left=Math.ceil((qcUntil-performance.now())/1000),end=qPn.scrollHeight-qPn.clientHeight-qPn.scrollTop<=6;
+  if(left>0){qGo.disabled=true;qGo.textContent='Got it ('+left+')'}else if(!end){qGo.disabled=true;qGo.textContent='Scroll to the end'}else{qGo.disabled=false;qGo.textContent='Got it'}}
+ qPn.addEventListener('scroll',qcGate,{passive:true});
+ {const st=document.createElement('style');st.textContent='#qCard button:disabled{opacity:.55;cursor:default}#qCard .rd{font-size:.74rem;color:var(--dim);margin:.6rem 0 0}#tHow{position:absolute;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 110px);font:600 .78rem var(--ui);letter-spacing:.06em;color:#e8dcc8;background:rgba(20,16,20,.8);border:1px solid #5a4a3a;border-radius:6px;padding:.5rem .9rem;cursor:pointer;z-index:2;min-height:44px;touch-action:manipulation}#tHow:hover,#tHow:focus-visible{background:#2a2026;outline:none}@media (orientation:portrait) and (max-width:700px){#tHow{top:calc(env(safe-area-inset-top,0px) + 424px);bottom:auto}}';document.head.appendChild(st);
+  const rd=document.createElement('p');rd.className='rd';rd.id='qRd';rd.textContent='New here? Please read this first.';qPn.insertBefore(rd,qPn.querySelector('.bar'))}
+ const qcShow=(auto,after)=>{qcAuto=!!auto;qcAfter=after||null;qcUntil=performance.now()+(auto?6000:0);qMore.hidden=!!auto;QC.querySelector('#qRd').hidden=!auto;
+  safe(()=>{if(document.pointerLockElement)document.exitPointerLock()},'unlock');QC.hidden=false;qPn.scrollTop=0;qcGate();if(!qcIv)qcIv=setInterval(qcGate,250);setTimeout(()=>safe(()=>(auto?qPn:qGo).focus({preventScroll:true})),50)};
+ if(!qPn.hasAttribute('tabindex'))qPn.setAttribute('tabindex','-1');
+ XT.quickCardShow=qcShow;XT.quickCardAuto=()=>endsN()===0;
+ XT.quickCard=()=>false;/* old once-only night-1 card: replaced by the start-of-game card */
+ {const oi=XT.intro;XT.intro=function(){const a=arguments,self=this;if(!XT.quickCardAuto()||window.__noHelpCard)return oi.apply(self,a);
+   if(window.__mp&&__mp.active){const r=oi.apply(self,a);safe(()=>qcShow(true,null),'mp card');return r}
+   safe(()=>setPaused(true),'pause');overlay.hidden=true;qcShow(true,()=>{safe(()=>setPaused(false),'unpause');overlay.hidden=true;oi.apply(self,a)})}}
+ {const t=document.getElementById('title');if(t){const tb=document.createElement('button');tb.id='tHow';tb.type='button';tb.textContent='How to play';t.appendChild(tb);['pointerdown','mousedown','touchstart'].forEach(k=>tb.addEventListener(k,e=>e.stopPropagation(),{passive:true}));tb.addEventListener('click',e=>{e.stopPropagation();qcShow(false,null)});setInterval(()=>{tb.hidden=t.hidden||started},500)}}
  XT.quickCardOpen_=()=>!QC.hidden;
  // a button on the pause screen, beside the journal
  const box_=overlay.querySelector('.box'),b=document.createElement('button');b.id='hBtn';b.type='button';b.textContent='How to play';box_.appendChild(b);
- b.addEventListener('click',e=>{e.stopPropagation();XT.help.open()});
+ b.addEventListener('click',e=>{e.stopPropagation();overlay.hidden=true;qcShow(false,null)});/* n5 batch: the pause button opens the How to play card (All controls opens the full help) */
  // v77: Petra: "when you press esc there should be a option to go to the home screen". Quit to title, with a confirm; a reload is the clean reset (all state, audio, pointer lock)
  {const qb=document.createElement('button');qb.id='qBtn';qb.type='button';qb.textContent='Quit to title';box_.appendChild(qb);
   const cf=document.createElement('div');cf.id='qCf';cf.hidden=true;cf.innerHTML='<p>Leave the night? Your progress will be saved.</p><button type="button" id="qYes">Leave</button> <button type="button" id="qNo">Stay</button>';box_.appendChild(cf);
@@ -3874,7 +3919,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
  function myReport(){const RL=!!(window.__rlm&&__rlm.on),c=cam.position,B=XT.bladeFight&&XT.bladeFight.S;
   return{x:+(RL?c.x:iX(c.x)).toFixed(2),z:+(RL?c.z:iZ(c.z)).toFixed(2),y:+fy.toFixed(2),cy:+c.y.toFixed(2),yaw:+yaw.toFixed(3),pi:+pitch.toFixed(3),cr:crouch?1:0,
    hid:XT.hide&&XT.hide.hid?1:0,gh:gone()?1:0,tor:XT.torch&&XT.torch.on?1:0,ar:RL?'r':'h',gl:CD.mp.carrying&&CD.mp.inGlider()?1:0,nu:CD.mp.inNursery()?1:0,
-   inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],dm:MP.demon?1:0,hs:XT.hide&&XT.hide.hid||'',cl:window.__dmCeil?1:0,busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,nm:V.denied?1:0,ent:entered?1:0,gf:window.__genyaF|0,dq:demonRep(),sr:XT.hide&&XT.hide.S?1:0,sg:MP.singing&&MP.singing()?1:0,fb:window.__fbF|0}}
+   inv:XT.shelfDbg?XT.shelfDbg.inv.slice():[],dm:MP.demon?1:0,hs:XT.hide&&XT.hide.hid||'',cl:window.__dmCeil?1:0,busy:CD.busy?1:0,ct:window.__cut&&!B?1:0,bs:B?1:0,lat:B?+(B.lane0+B.px).toFixed(2):0,mu:V.muted?1:0,nm:V.denied?1:0,ent:entered?1:0,gf:window.__genyaF|0,dq:demonRep(),sr:XT.hide&&XT.hide.S?1:0,sg:MP.singing&&MP.singing()?1:0,fb:window.__fbF|0,mw:window.__mwOpen?1:0}}
  const isDm=id=>!!(MP.hm&&MP.hm.demon===id);
  // v103 mpfix (Petra 2026-10-10: "when the demon was searching for me once my friend couldn't see it"). The demon figure (DEMON.dbg.g) is one local mesh per
  // player. Sightings, hunts, prowls and the closet search are aimed at one player and run only on that player's machine, so nobody else ever saw it.
@@ -4110,7 +4155,7 @@ body.touch #mon{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 66px);left:6
    const spd=prev?Math.hypot(r.x-prev.x,r.z-prev.z)/Math.max(dt,1e-3):0;a.ph+=dt*Math.min(9,spd*5);const sw=spd>.3?Math.sin(a.ph)*.5:0;
    a.legs[0].rotation.x=sw;a.legs[1].rotation.x=-sw;a.arms[0].rotation.x=-sw*.7;a.arms[1].rotation.x=sw*.7;a.head.rotation.x=-r.pi*.6;
    /*GENYA v102: their pistol comes up and flashes when they fire (cosmetic)*/if(window.__cust&&__cust.genyaPose&&a.arms[1].getObjectByName('genyaGun')){const gf=r.gf|0;if(a.gf0==null)a.gf0=gf;else if(gf!==a.gf0){a.gf0=gf;a.gaT=1.6;a.gfl=.12;try{__cust.genyaBang()}catch(e){}}if(a.gaT>0){a.gaT-=dt;a.gfl=(a.gfl||0)-dt;__cust.genyaPose(a,a.gfl>0?2:1);if(a.gaT<=0)__cust.genyaPose(a,0)}}
-   a.body.scale.y=r.cr?.62:1;a.body.position.y=0;a.torch.visible=!!r.tor;
+   a.body.scale.y=r.cr?.62:1;a.body.position.y=0;a.body.userData.mwOpen=r.mw|0;a.torch.visible=!!r.tor;
    /*SIA*/a.body.userData.dmMove=spd>.3;a.body.userData.crouch=!!r.cr;const ivq=window.__cust?__cust.invOp(performance.now()/1000,a.cam):.03;/* chatfix (Petra 2026-10-11): Lilith rides on a.arm while this player carries her; never fade her with the holder's ghost / invisibility pass (her materials are shared and never reset, so she stayed invisible after being put down) */const bbX=CD.mp.bb,avT=(o,f)=>{if(o===bbX)return;f(o);for(const c of o.children)avT(c,f)};avT(a.g,o=>{if(o.material&&o!==a.tag){const iv=a.inv&&!r.gh;(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>{const b0=m.userData&&m.userData.op0!=null?m.userData.op0:1;m.transparent=!!r.gh||iv||b0<1;m.opacity=b0*(r.gh?.28:iv?ivq:1);if(iv&&m.userData.op0==null)m.depthWrite=false})}});
    const spk=V.levels.get(id)>.03;if(spk!==a.spk||!!r.mu!==a.mu)drawTag(a,a.name,spk,r.mu)});
   // the baby in someone else's arms
@@ -4446,7 +4491,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  lobbyEl.innerHTML='<div class="pp" role="dialog" aria-label="Play together"><h2>Play together</h2>'+
   '<label>Your name<input id="mpName" maxlength="16" autocomplete="nickname" placeholder="Player 1"></label>'+
   '<div id="mpPre"><div class="row"><button type="button" id="mpHost">Host a game</button></div><div class="or">or join with a code</div><div class="row"><input id="mpCode" maxlength="8" placeholder="CODE" aria-label="Game code" autocapitalize="characters"><button type="button" id="mpJoin">Join</button></div></div>'+
-  '<div id="mpIn" hidden><div class="code" id="mpCodeShow"></div><div class="mode" id="mpMode" role="radiogroup" aria-label="Mode"><button type="button" data-m="coop" role="radio">Co-op</button><button type="button" data-m="hunt" role="radio">Hunt</button><button type="button" data-m="hide" role="radio">Hide &amp; Seek</button></div><div class="sm" id="mpModeD"></div><div class="mode" id="mpNight" role="radiogroup" aria-label="Night"><button type="button" data-n="1" role="radio">Night 1</button><button type="button" data-n="2" role="radio">Night 2</button><button type="button" data-n="3" role="radio">Night 3</button><button type="button" data-n="4" role="radio">Night 4</button></div><div class="mode" id="mpDiff" role="radiogroup" aria-label="Difficulty"><button type="button" data-d="easy" role="radio">Easy</button><button type="button" data-d="normal" role="radio">Normal</button><button type="button" data-d="nightmare" role="radio">Nightmare</button></div><div class="row"><button type="button" id="mpCopy">Copy invite link</button></div><ul id="mpRoster"></ul><details id="mpVd"><summary>Voice check</summary><pre id="mpVdT"></pre></details></div>'+
+  '<div id="mpIn" hidden><div class="code" id="mpCodeShow"></div><div class="mode" id="mpMode" role="radiogroup" aria-label="Mode"><button type="button" data-m="coop" role="radio">Co-op</button><button type="button" data-m="hunt" role="radio">Hunt</button><button type="button" data-m="hide" role="radio">Hide &amp; Seek</button></div><div class="sm" id="mpModeD"></div><div class="mode" id="mpNight" role="radiogroup" aria-label="Night"><button type="button" data-n="1" role="radio">Night 1</button><button type="button" data-n="2" role="radio">Night 2</button><button type="button" data-n="3" role="radio">Night 3</button><button type="button" data-n="4" role="radio">Night 4</button><button type="button" data-n="5" role="radio">Night 5</button><button type="button" data-n="6" role="radio">Endless</button></div><div class="mode" id="mpDiff" role="radiogroup" aria-label="Difficulty"><button type="button" data-d="easy" role="radio">Easy</button><button type="button" data-d="normal" role="radio">Normal</button><button type="button" data-d="nightmare" role="radio">Nightmare</button></div><div class="row"><button type="button" id="mpCopy">Copy invite link</button></div><ul id="mpRoster"></ul><details id="mpVd"><summary>Voice check</summary><pre id="mpVdT"></pre></details></div>'+
   '<div class="st" id="mpSt" role="status" aria-live="polite"></div><div class="row"><button type="button" class="ghost" id="mpBack" hidden>Back</button></div><p class="sm">Up to 4 players. One baby, one house. The host\'s difficulty and night are used. Voice chat is on: press M to mute.</p>'+
   '<div class="row"><button type="button" id="mpStart" hidden>Start the night</button><button type="button" class="ghost" id="mpClose">Close</button></div></div>';
  document.body.appendChild(lobbyEl);
@@ -4459,7 +4504,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
  lobbyEl.addEventListener('click',e=>e.stopPropagation());
  L$('mpHost').onclick=()=>hostGame();L$('mpJoin').onclick=()=>joinGame(codeIn.value);codeIn.addEventListener('keydown',e=>{if(e.key==='Enter')joinGame(codeIn.value)});
  L$('mpStart').onclick=()=>hostStart();L$('mpBack').onclick=()=>cancelConnect();
- L$('mpNight').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled||!MP.host||MP.started)return;const n=+b.dataset.n;if(!(n>=1&&n<=(XT.nightsUnlocked?XT.nightsUnlocked():1)))return;safe(()=>{XT.parts.night.load(n);XT.ls.set('hushNightSel',n);TITLE.redraw&&TITLE.redraw()},'night');lobbyDraw();bcastRoster(true)});
+ L$('mpNight').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled||!MP.host||MP.started)return;const n=+b.dataset.n;if(!(XT.nightAvail?XT.nightAvail(n):n>=1&&n<=(XT.nightsUnlocked?XT.nightsUnlocked():1)))return;safe(()=>{XT.parts.night.load(n);XT.ls.set('hushNightSel',n);TITLE.redraw&&TITLE.redraw()},'night');lobbyDraw();bcastRoster(true)});
  L$('mpDiff').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!MP.host||MP.started)return;const d=b.dataset.d;safe(()=>{XT.parts.diff.load(d);XT.ls.set('hushDiff',d);TITLE.redraw&&TITLE.redraw()},'diff');lobbyDraw();bcastRoster(true)});
  L$('mpMode').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!MP.host||MP.started)return;const m=b.dataset.m;MP.mode=m;lobbyDraw();bcastRoster(true)});
  L$('mpClose').onclick=()=>{rjClear();if(!MP.active&&peer)cancelConnect();if(MP.active&&!MP.started){teardown(false)}lobbyEl.hidden=true;lobbyDraw()};
@@ -4476,7 +4521,7 @@ body.touch #mpMic{left:70px}#mpMic .mic{display:inline-flex;align-items:center;g
   L$('mpCodeShow').textContent=MP.code||'';invEl.hidden=!(inS&&!MP.started&&TITLE.on);
   L$('mpRoster').innerHTML=roster.slice().sort((a,b)=>a.slot-b.slot).map(p=>'<li><i style="background:'+COL[p.slot%4]+'"></i>'+esc(p.name)+(p.id===MP.id?' (you)':'')+(p.join===0||p.id===MP.hostId?' &middot; host':'')+'</li>').join('');
   // v79: the host picks the night (any night they have unlocked); guests see it, and the start message carries it to everyone
-  {const nk=MP.host?(XT.night||1):MP.hostNight||1,un=XT.nightsUnlocked?XT.nightsUnlocked():1;L$('mpNight').querySelectorAll('button').forEach(b=>{const n=+b.dataset.n,on=n===nk;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');b.disabled=!MP.host||MP.started||n>un;b.title=MP.host&&n>un?'Not unlocked yet':''})}
+  {const nk=MP.host?(XT.night||1):MP.hostNight||1,un=XT.nightsUnlocked?XT.nightsUnlocked():1;L$('mpNight').querySelectorAll('button').forEach(b=>{const n=+b.dataset.n,on=n===nk;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');const ok=XT.nightAvail?XT.nightAvail(n):n<=un;b.disabled=!MP.host||MP.started||!ok;b.title=MP.host&&!ok?(n===5?'Win nights 1-4 and find every ending (all but Six O\'Clock and Lullaby Choir)':n===6?'Win Night 5 first':'Not unlocked yet'):''})}
   {const dk=MP.host?XT.diffKey():MP.hostDiff||'normal';L$('mpDiff').querySelectorAll('button').forEach(b=>{const on=b.dataset.d===dk;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');b.disabled=!MP.host||MP.started})}
   {const hu=true;// Hunt is always available in multiplayer (v65)
    L$('mpMode').querySelectorAll('button').forEach(b=>{const m=b.dataset.m,on=MP.mode===m;b.classList.toggle('on',on);b.setAttribute('aria-checked',on?'true':'false');
@@ -4921,7 +4966,7 @@ body.touch #chat{bottom:calc(env(safe-area-inset-bottom,0px) + 150px)}
  // v95: the window reads as open: the lower sash is raised a few inches (a dark gap and a white rail under it) and its curtains stir in the draught
  {const wg=new THREE.Group(),wt=mats.white;box(.78,.03,.06,wt,0,1.17,0,wg);box(.78,.02,.05,wt,0,1.45,.0,wg);box(.76,.13,.01,new THREE.MeshBasicMaterial({color:0x05060a}),0,1.075,.045,wg);XT.place(wg,5.0,0,8.6)}
  const stir=curtains.filter(c=>Math.abs(c.position.z-(8.6-.13))<.05&&(Math.abs(c.position.x-4.48)<.05||Math.abs(c.position.x-5.52)<.05));
- function fall(){if(over)return;subtitle('',1);hiss(.5,.15,1600,'bandpass');end('roof')}
+ function fall(){if(over)return;subtitle('',1);/* Night 5 cosmetics: jumping off the roof while wearing the moth wings unlocks the moth antennae */try{if(window.__cust&&__cust.mine().moth){let o={};try{o=JSON.parse(localStorage.getItem('hushCustU')||'{}')||{}}catch(e){}if(!o.mothant){o.mothant=1;localStorage.setItem('hushCustU',JSON.stringify(o))}}}catch(e){}hiss(.5,.15,1600,'bandpass');end('roof')}
 
  // ---------- 2. the kitchen phone: when it isn't ringing, E calls the parents ----------
  const PL={1:'It rings and rings. Voicemail: "Hi! You\'ve reached the Hales. We can\'t come to the phone right now. Or ever."',2:'Straight to voicemail.',3:'Voicemail. You leave a message: "Hi, it\'s the babysitter! Just checking in."',
@@ -7055,6 +7100,7 @@ body.hz #need,body.hz #mon{display:none!important}
 // ===== CUSTOMIZE v81: character customization (title-screen Customize screen, new rounded body for every avatar, unlockables, parents' bedroom pickups) =====
 // Purely cosmetic. Look saved in localStorage 'hushLook', pickup unlocks in 'hushCustU'. Other unlocks read 'hushAch' and 'hushHuntUnlocked'.
 // Shown to other players through roster entries (p.lk). window.__cust = {build,key,clean,mine,open,U}.
+window.__n5cosUnlock=()=>{let o={};try{o=JSON.parse(localStorage.getItem('hushCustU')||'{}')||{}}catch(e){}if(o.night5)return false;o.night5=1;try{localStorage.setItem('hushCustU',JSON.stringify(o))}catch(e){}window.__n5cosJust=1;return true};
 (function(){'use strict';
  const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush cust] '+(t||''),e)}};
  // ---------- geometry helpers (same style as mkAvatar: flatShading Phong, boxes and blocky spheres) ----------
@@ -7810,11 +7856,167 @@ body.hz #need,body.hz #mon{display:none!important}
  const EYEN={dots:'Dots',ydots:'Yellow dots (rabbit)',wide:'Wide',sleepy:'Sleepy',mesm:'Big round (Mesmerizer)',lashes:'Lashes',headlight:'Headlights',genya:"Genya's glare",genyad:"Genya's demon eyes"},MOUTHN={none:'None',smile:'Smile',flat:'Flat',oh:'Gasp',snake:'Snake grin',shark:'Open smile'};
  const NECK={'':'None',pearl:'Pearl necklace',gold:'Gold necklace',silver:'Small silver necklace'},HAORI={'':'None',tanjiro:"Tanjiro's haori",nezuko:'Black haori',genya:"Genya's sleeveless haori"};
  const EARC=[0xf2ece4,0x5a2a4a,0x141010,0xf0b0c0,0x8ab0d8,0xe8c030,0x7a9a4a,0xc02030];
+ // ---------- Night 5 cosmetics (Petra 2026-10-15; lock key 'night5', won by surviving Night 5) ----------
+ // Candle crown, Demon horns (black / red), Moth wings; outfits: Possessed dress + Possessed (shirt and trousers), Last Rite robe, Blood Moon coat.
+ // Possessed only: the wearer is a little see-through (opacity .75 via userData.op0, so the ghost / invisible / jade passes still multiply on top) and floats with a gentle bob.
+ const N5_OP=.75;
+ let N5F=null;const n5Flame=()=>N5F||(N5F=patTexN('n5-flame',64,q=>{q.clearRect(0,0,64,64);const g=q.createRadialGradient(32,40,1,32,40,22);g.addColorStop(0,'rgba(255,250,210,1)');g.addColorStop(.35,'rgba(255,190,70,.85)');g.addColorStop(1,'rgba(255,90,10,0)');q.fillStyle=g;q.beginPath();q.moveTo(32,4);q.bezierCurveTo(46,26,50,44,32,60);q.bezierCurveTo(14,44,18,26,32,4);q.fill()}));
+ function candleCrown(h){const g=new THREE.Group();g.position.y=.125;g.userData.noTrack=1;h.add(g);
+  const iron=P(0x2a2420,{shininess:40,specular:0x554433});iron.side=THREE.DoubleSide;const band=new THREE.Mesh(new THREE.CylinderGeometry(.118,.128,.035,16,1,true),iron);g.add(band);
+  const wax=P(0xf2ead6,{emissive:0x2a2214});wax.transparent=true;wax.userData.op0=1;const wk=B(0x141010),fl=[];
+  for(let i=0;i<5;i++){const a=i/5*Math.PI*2+Math.PI,hh=.045+.012*((i*7)%3),x=Math.sin(a)*.12,z=Math.cos(a)*.12;
+   const c=new THREE.Mesh(new THREE.CylinderGeometry(.012,.013,hh,8),wax);c.position.set(x,.017+hh/2,z);g.add(c);sph(.006,wax,1,1.6,1,x+.011,.017+hh*.7,z,g);
+   bx(.002,.01,.002,wk,x,.017+hh+.005,z,g);
+   const m=new THREE.SpriteMaterial({map:n5Flame(),color:0xffffff,transparent:true,opacity:.95,depthWrite:false,blending:THREE.AdditiveBlending,fog:false});m.userData.op0=.95;const s=new THREE.Sprite(m);s.position.set(x,.017+hh+.022,z);s.scale.set(.03,.05,1);g.add(s);fl.push([s,m,.017+hh+.022]);
+   const gm=new THREE.SpriteMaterial({map:bmTex(),color:0xffb040,transparent:true,opacity:.3,depthWrite:false,blending:THREE.AdditiveBlending,fog:false});gm.userData.op0=.3;const gs=new THREE.Sprite(gm);gs.position.copy(s.position);gs.scale.set(.1,.1,1);g.add(gs);fl.push([gs,gm,-1])}
+  const an=new THREE.Mesh(new THREE.PlaneGeometry(.001,.001),new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false}));an.frustumCulled=false;an.userData.noFade=1;an.userData.noTrack=1;h.add(an);
+  /* flames switch off completely while invisible or a ghost (like the halo); the wax material carries the fade factor */
+  anim(an,t=>{const on=wax.opacity/(wax.userData.op0||1)>.5;fl.forEach(([s,m,y],i)=>{s.visible=on;const f=.75+.25*Math.sin(t*13+i*2.1)*Math.sin(t*7.3+i);if(y>0){s.scale.set(.028+.006*f,.044+.014*f,1);s.position.y=y+.003*f;m.opacity=m.userData.op0=.8+.15*f}else{m.opacity=m.userData.op0=.22+.12*f}})})}
+ function demonHorns(h,red){const hg=new THREE.Group();hg.scale.setScalar(1.35);hg.position.y=-.02;h.add(hg);h=hg;const m=P(red?0x8e1418:0x16121a,{shininess:70,specular:red?0x663333:0x444050});m.name='n5horn';
+  [-1,1].forEach(k=>{const cv=new THREE.CatmullRomCurve3([new THREE.Vector3(k*.07,.085,-.03),new THREE.Vector3(k*.1,.14,-.02),new THREE.Vector3(k*.125,.18,.02),new THREE.Vector3(k*.115,.215,.06)]);
+   const pts=cv.getPoints(7),up=new THREE.Vector3(0,1,0);for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],d=b.clone().sub(a),L=d.length(),r0=.024*(1-i/7)+.003,r1=.024*(1-(i+1)/7)+.002;
+    const c=new THREE.Mesh(i===pts.length-2?new THREE.ConeGeometry(r0,L,8):new THREE.CylinderGeometry(r1,r0,L,8),m);c.position.copy(a).addScaledVector(d,.5);c.quaternion.setFromUnitVectors(up,d.normalize());h.add(c)}})}
+ // Moth wings (Petra's photo: a hawk / sphinx moth at rest). Each forewing is narrow at the shoulder and WIDENS toward the bottom, the leading (outer) edge
+ // bows outward, the outer margin runs from the pointed apex (bottom, outer) back in to the middle with soft scallops. The surface curves around the
+ // back and flares out a little toward the bottom; two sheets 6 mm apart with a closed edge give it a thin solid rim. No moth body, no eye spots.
+ // Texture space: x = along the wing (0 shoulder .. 1 apex), y = across (0 inner / outer-margin side .. 1 leading edge).
+ let N5M=null;const mothTex=()=>N5M||(N5M=(()=>{const W=512,H=256,c=document.createElement('canvas');c.width=W;c.height=H;const q=c.getContext('2d');
+  const g=q.createLinearGradient(0,0,0,H);g.addColorStop(0,'#a29f99');g.addColorStop(.35,'#8a8680');g.addColorStop(.7,'#7a7671');g.addColorStop(1,'#66625d');q.fillStyle=g;q.fillRect(0,0,W,H);
+  const rnd=(()=>{let z=7;return()=>(z=(z*16807)%2147483647)/2147483647})();
+  // soft lighter and darker mottling
+  for(let i=0;i<70;i++){const x=rnd()*W,y=rnd()*H,r=10+rnd()*40,lt=rnd()<.5,gr=q.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,lt?'rgba(214,212,206,.28)':'rgba(70,66,62,.22)');gr.addColorStop(1,'rgba(0,0,0,0)');q.fillStyle=gr;q.fillRect(x-r,y-r,2*r,2*r)}
+  // dark brown patch near the base
+  const bp=q.createRadialGradient(70,120,4,70,120,70);bp.addColorStop(0,'rgba(70,48,32,.85)');bp.addColorStop(.6,'rgba(80,58,40,.4)');bp.addColorStop(1,'rgba(80,58,40,0)');q.fillStyle=bp;q.fillRect(0,40,160,170);
+  // longitudinal charcoal streaks along the veins (fanning out toward the apex), the strongest one running from the base toward the apex
+  q.lineCap='round';for(let k=0;k<18;k++){const y0=50+k*9,y1=8+k*14,dk=k===10||k===5||k===14;q.strokeStyle=dk?'rgba(36,34,32,.8)':'rgba(48,46,44,'+(.25+.25*rnd())+')';q.lineWidth=dk?4:1.6+rnd()*1.4;
+   q.beginPath();for(let x=10;x<=W;x+=8){const t=x/W,y=y0+(y1-y0)*t+Math.sin(x*.035+k*2)*3;x===10?q.moveTo(x,y):q.lineTo(x,y)}q.stroke()}
+  // fine dark wavy cross-lines (bark-like), across the wing
+  for(let i=0;i<26;i++){const x0=40+i*18+rnd()*10;q.strokeStyle='rgba(40,38,36,'+(.1+.18*rnd())+')';q.lineWidth=.9+rnd();q.beginPath();
+   for(let y=0;y<=H;y+=6){const x=x0+Math.sin(y*.09+i)*4+Math.sin(y*.031+i*.7)*6+y*.12;y===0?q.moveTo(x,y):q.lineTo(x,y)}q.stroke()}
+  // silvery highlights along the inner side and a light streak near the leading edge
+  q.strokeStyle='rgba(228,226,222,.35)';q.lineWidth=3;q.beginPath();for(let x=60;x<=W;x+=8)q.lineTo(x,40+x*.02+Math.sin(x*.04)*3);q.stroke();
+  q.lineWidth=2;q.beginPath();for(let x=30;x<=W*.8;x+=8)q.lineTo(x,226-x*.05+Math.sin(x*.05)*3);q.stroke();
+  // speckle
+  for(let i=0;i<5000;i++){const v=rnd()<.5?40:215;q.fillStyle='rgba('+v+','+v+','+(v-4)+','+(.06+.1*rnd())+')';q.fillRect(rnd()*W,rnd()*H,1.5,1.5)}
+  // darker leading edge
+  const le=q.createLinearGradient(0,H-26,0,H);le.addColorStop(0,'rgba(50,48,46,0)');le.addColorStop(1,'rgba(50,48,46,.7)');q.fillStyle=le;q.fillRect(0,H-26,W,26);
+  // soft scallops on the outer margin (the last stretch of the inner side, x > 80 %): cut into the alpha
+  q.globalCompositeOperation='destination-out';q.fillStyle='#000';for(let i=0;i<7;i++){const x=W*.8+i*W*.2/7+W*.014;q.beginPath();q.ellipse(x,0,W*.014,9,0,0,7);q.fill()}
+  q.globalCompositeOperation='source-over';const t=new THREE.CanvasTexture(c);t.anisotropy=4;return t})());
+ const MW={L:1.3,root:.035,lead:.33,tor:.8};
+ // outline point for (u along, v across): inner edge runs down the middle to the tornus, then the outer margin goes out to the apex; the leading edge bows outward
+ function mwPt(u,v){/* rounded tip: the leading edge curls back in and up over the last stretch */const r2=Math.pow(Math.max(0,(u-.8)/.2),2),lx=MW.root+MW.lead*(1-Math.pow(1-u,1.7))-.11*r2,ly=-MW.L*u+.07*r2;let ix,iy;if(u<=MW.tor){ix=.008+.01*u;iy=-MW.L*.84*(u/MW.tor)}else{const k=(u-MW.tor)/(1-MW.tor);ix=.016+(lx-.016)*k;iy=-MW.L*.84+(ly+MW.L*.84)*k-.06*Math.sin(Math.PI*k)}
+  const x=ix+(lx-ix)*v,y=iy+(ly-iy)*v;return[x,y,.015*y*y-.3*x*x]}
+ function mothGeo(){const N=28,M=10,T=.003,pos=[],uv=[],idx=[],rim=[],rp=[];
+  for(const sd of [1,-1]){const o=pos.length/3;for(let i=0;i<=N;i++)for(let j=0;j<=M;j++){const u=i/N,v=j/M,p=mwPt(u,v);pos.push(p[0],p[1],p[2]+sd*T);uv.push(u,v)}
+   for(let i=0;i<N;i++)for(let j=0;j<M;j++){const a=o+i*(M+1)+j,b=a+M+1;sd>0?idx.push(a,b,a+1,a+1,b,b+1):idx.push(a,a+1,b,a+1,b+1,b)}}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();
+  // the rim: a thin strip along the inner edge, the leading edge and the root
+  const loop=[];for(let i=0;i<=N;i++)loop.push([i/N,1]);for(let i=N;i>=0;i--)loop.push([i/N,0]);loop.push([0,1]);
+  loop.forEach(([u,v])=>{const p=mwPt(u,v);rp.push(p[0],p[1],p[2]+T,p[0],p[1],p[2]-T)});for(let i=0;i<loop.length-1;i++){const a=i*2;rim.push(a,a+2,a+1,a+1,a+2,a+3)}
+  const r=new THREE.BufferGeometry();r.setAttribute('position',new THREE.Float32BufferAttribute(rp,3));r.setIndex(rim);r.computeVertexNormals();return[g,r]}
+ // Hindwings (hidden under the forewings while folded), patterned like Agrius convolvuli (Petra): soft grey / grey-brown ground, four dark blackish-brown
+ // wavy bands running parallel to the outer edge with paler grey between, a darker hairy base near the body and a fine fringe on the edge.
+ // Texture: the hinge is the top-left corner; the bands are wavy arcs around it.
+ let N5H=null;const hindTex=()=>N5H||(N5H=(()=>{const S=512,c=document.createElement('canvas');c.width=c.height=S;const q=c.getContext('2d');const rnd=(()=>{let z=11;return()=>(z=(z*16807)%2147483647)/2147483647})();
+  const g=q.createRadialGradient(0,0,0,0,0,S*1.4);g.addColorStop(0,'#7c766e');g.addColorStop(.5,'#928d85');g.addColorStop(1,'#858078');q.fillStyle=g;q.fillRect(0,0,S,S);
+  // soft lighter and darker blotches (same treatment as the forewings)
+  for(let i=0;i<90;i++){const x=rnd()*S,y=rnd()*S,r=14+rnd()*50,lt=rnd()<.5,gr=q.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,lt?'rgba(206,204,198,.25)':'rgba(66,60,56,.22)');gr.addColorStop(1,'rgba(0,0,0,0)');q.fillStyle=gr;q.fillRect(x-r,y-r,2*r,2*r)}
+  const arc=(r,w,col,wob)=>{q.strokeStyle=col;q.lineWidth=w;q.beginPath();for(let i=0;i<=90;i++){const a=i/90*Math.PI/2,rr=r+Math.sin(a*(wob||14)+r)*7+Math.sin(a*5+r*.1)*8;i?q.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):q.moveTo(Math.cos(a)*rr,Math.sin(a)*rr)}q.stroke()};
+  // paler grey between the bands, then the four dark wavy bands parallel to the outer edge
+  [[236,24],[300,20],[364,18]].forEach(([r,w])=>arc(r,w,'rgba(176,172,164,.45)'));
+  [[204,22],[268,18],[332,17],[400,20]].forEach(([r,w])=>arc(r,w,'rgba(40,32,28,.68)'));
+  // veins: charcoal streaks fanning out from the hinge
+  q.lineCap='round';for(let k=0;k<12;k++){const a0=.06+k*.125+rnd()*.03,dk=k%4===2;q.strokeStyle=dk?'rgba(34,30,28,.7)':'rgba(46,42,40,'+(.22+.2*rnd())+')';q.lineWidth=dk?3.4:1.4+rnd()*1.2;q.beginPath();
+   for(let r=30;r<=S*1.1;r+=10){const a=a0+Math.sin(r*.03+k)*.015;r===30?q.moveTo(Math.cos(a)*r,Math.sin(a)*r):q.lineTo(Math.cos(a)*r,Math.sin(a)*r)}q.stroke()}
+  // fine dark wavy cross-lines (bark-like), following the bands
+  for(let i=0;i<40;i++)arc(110+i*11+rnd()*5,.9+rnd(),'rgba(40,38,36,'+(.1+.2*rnd())+')',20+rnd()*10);
+  // darker hairy base near the body
+  const hb=q.createRadialGradient(0,0,0,0,0,190);hb.addColorStop(0,'rgba(46,38,32,.95)');hb.addColorStop(.65,'rgba(58,50,42,.6)');hb.addColorStop(1,'rgba(58,50,42,0)');q.fillStyle=hb;q.fillRect(0,0,210,210);
+  for(let i=0;i<1600;i++){const a=rnd()*Math.PI/2,r=rnd()*180,x=Math.cos(a)*r,y=Math.sin(a)*r;q.strokeStyle='rgba('+(rnd()<.5?128:52)+','+(rnd()<.5?116:46)+',100,.4)';q.lineWidth=1;q.beginPath();q.moveTo(x,y);q.lineTo(x+Math.cos(a+rnd()*.4-.2)*16,y+Math.sin(a+rnd()*.4-.2)*16);q.stroke()}
+  // scale speckle
+  for(let i=0;i<14000;i++){const v=rnd()<.5?40:215;q.fillStyle='rgba('+v+','+v+','+(v-4)+','+(.05+.1*rnd())+')';q.fillRect(rnd()*S,rnd()*S,1.5,1.5)}
+  // fine fringe on the outer edge
+  for(let i=0;i<500;i++){const a=i/500*Math.PI/2;q.strokeStyle=i%2?'rgba(210,206,198,.75)':'rgba(40,34,30,.75)';q.lineWidth=1.6;q.beginPath();q.moveTo(Math.cos(a)*440,Math.sin(a)*440);q.lineTo(Math.cos(a)*530,Math.sin(a)*530);q.stroke()}
+  const t=new THREE.CanvasTexture(c);t.anisotropy=4;return t})());
+ /* the hindwing has the same 6 mm thickness and dark rim as the forewing: an extruded shape, caps textured, sides plain */
+ function hindGeo(){const sh=new THREE.Shape();sh.moveTo(0,0);sh.bezierCurveTo(.16,-.02,.3,-.12,.34,-.28);sh.bezierCurveTo(.37,-.42,.28,-.55,.14,-.58);sh.bezierCurveTo(.06,-.6,.01,-.5,.0,-.36);sh.lineTo(0,0);
+  const g=new THREE.ExtrudeGeometry(sh,{depth:.006,bevelEnabled:false,curveSegments:16});g.translate(0,0,-.003);const p=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i);uv.setXY(i,x/.6,1+y/.6)}return g}
+ function mothWings(body){const g=new THREE.Group();g.position.set(0,1.36,.122);g.name='n5moth';body.add(g);const[gw,gr]=mothGeo(),gh=hindGeo();
+  const mt=new THREE.MeshLambertMaterial({map:mothTex(),side:THREE.DoubleSide,alphaTest:.5}),rm=new THREE.MeshLambertMaterial({color:0x5e5a55,side:THREE.DoubleSide}),hm=new THREE.MeshLambertMaterial({map:hindTex(),side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-4});const W=[];
+  [-1,1].forEach(k=>{const p=new THREE.Group();p.scale.x=k;p.position.x=-k*.03;g.add(p);const w=new THREE.Mesh(gw,mt);w.rotation.x=-.075;w.position.z=k*.004;p.add(w);const e=new THREE.Mesh(gr,rm);w.add(e);
+   /* the hindwing hangs from a hinge just below the forewing's, in the forewing's middle plane (between its two sheets), so it is covered while folded. Petra (correction): when spread, the hindwings
+      lie IN FRONT of the forewings (on the side people behind you see) hinged right next to the forewings at the back, fanning apart toward the outer edges so they overlap only slightly */
+   const hp=new THREE.Group();hp.position.set(.02,-.1,0);p.add(hp);const hw=new THREE.Mesh(gh,[hm,rm]);hp.add(hw);hp.scale.setScalar(.7);W.push([p,w,hp])});
+  /* fold / unfold (G key or the Wings touch button; Petra 2026-10-15): a remote player's state arrives as body.userData.mwOpen (report field mw),
+     everyone else (your own Customize doll) follows window.__mwOpen. Open is a hawk moth's spread (defensive display, like a pinned moth): each forewing
+     swings forward and out around its shoulder hinge until it sticks out sideways, slightly swept back (tips a little low), flattened so the top pattern faces
+     backward; then the hindwings (much bigger) fan out diagonally down and out, about 35 degrees below the forewings. About 0.8 s; folding runs the same in reverse (hindwings tuck in first). */
+  const ss=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)};
+  let f=0,lt=0;anim(W[0][1],t=>{const dt=lt?Math.min(.1,t-lt):0;lt=t;const tg=body.userData.mwOpen!=null?(body.userData.mwOpen?1:0):(window.__mwOpen?1:0);
+   f=tg>f?Math.min(tg,f+dt/.8):Math.max(tg,f-dt/.8);const e1=ss(f/.7),e2=ss((f-.35)/.65),a=.025*Math.sin(t*1.1)*(1-e1);
+   W.forEach(([p,w,hp],i)=>{p.rotation.y=i?-a:a;p.position.x=(i?1:-1)*(-.03+.07*e1);w.rotation.z=1.42*e1;w.rotation.x=-.075*(1-e1);w.scale.set(1+.5*e1,1+.06*e1,1-.75*e1);
+    hp.rotation.z=.12*e1+.38*e2;hp.scale.setScalar(.7+1.15*e2);hp.position.y=-.1+.04*e2;hp.position.x=.02-.01*e2;hp.position.z=.009*e2})})}
+ // ragged hem: little hanging cone tatters around a ring
+ function tat(m,r,y,n,par,sz,sd){for(let i=0;i<n;i++){const a=i/n*Math.PI*2+(sd||0),L=.05+.06*(((i*37+(sd*10|0))%7)/6),c=new THREE.Mesh(new THREE.ConeGeometry(.035,L,4),m);c.rotation.x=Math.PI;c.position.set(Math.sin(a)*r,y-L/2,Math.cos(a)*r*(sz||1));par.add(c)}}
+ let N5V=null;const veinTex=()=>N5V||(N5V=patTexN('n5-vein',128,q=>{q.clearRect(0,0,128,128);const br=(x,y,a,w,d)=>{if(d>6||w<.4)return;const L=10+Math.random()*12,x2=x+Math.sin(a)*L,y2=y-Math.cos(a)*L;q.lineWidth=w;q.strokeStyle='rgba(16,6,14,'+Math.max(.25,1-y2/-160)+')';q.beginPath();q.moveTo(x,y);q.lineTo(x2,y2);q.stroke();br(x2,y2,a+(Math.random()-.5)*.8,w*.82,d+1);if(Math.random()<.45)br(x2,y2,a+(Math.random()<.5?-.7:.7),w*.6,d+2)};
+  q.lineCap='round';for(let i=0;i<7;i++)br(8+i*18,128,(Math.random()-.5)*.4,3.2,0)}));
+ let N5C=null;const crackTex=()=>N5C||(N5C=patTexN('n5-crack',256,q=>{q.clearRect(0,0,256,128*2);q.lineCap='round';const cr=(x,y,a,n)=>{for(let i=0;i<n;i++){const L=4+Math.random()*7,x2=x+Math.cos(a)*L,y2=y+Math.sin(a)*L;q.strokeStyle='rgba(30,14,20,.9)';q.lineWidth=1.4;q.beginPath();q.moveTo(x,y);q.lineTo(x2,y2);q.stroke();if(Math.random()<.3)cr(x2,y2,a+(Math.random()<.5?-1:1),n-i-2);x=x2;y=y2;a+=(Math.random()-.5)*.9}};
+  /* sphere uv: the face (-z) is at u=.75; eyes near the middle row, so cracks go on the cheeks, jaw and one temple */
+  cr(166,150,.3,7);cr(220,148,2.7,7);cr(178,176,1.2,5);cr(208,180,1.9,5);cr(200,84,-1.9,6);cr(150,120,-.2,6)}));
+ // Possessed dress hem (Petra: longer, slimmer, "more streamy"): ankle-length, with torn strips hanging from the hem that sway gently, each on its own pivot
+ function streamers(s,b){const m=s.clone();m.side=THREE.DoubleSide;const P0=[];for(let i=0;i<14;i++){const a=i/14*Math.PI*2+.1,L=.1+.09*(((i*5)%7)/6),g=new THREE.PlaneGeometry(.045,L);
+  const pa=g.attributes.position;for(let j=0;j<pa.count;j++)if(pa.getY(j)<0)pa.setX(j,pa.getX(j)*.25);g.translate(0,-L/2,0);
+  const pv=new THREE.Group();pv.position.set(Math.sin(a)*.232,.17,Math.cos(a)*.232);pv.rotation.y=a;b.add(pv);const st=new THREE.Mesh(g,m);st.rotation.x=.12;pv.add(st);P0.push([st,i])}
+  anim(P0[0][0],t=>P0.forEach(([st,i])=>{st.rotation.x=.14+.1*Math.sin(t*1.3+i*.9);st.rotation.z=.08*Math.sin(t*.9+i*1.7)}))}
+ function possSkin(h){const m=new THREE.MeshPhongMaterial({map:crackTex(),transparent:true,depthWrite:false,flatShading:true,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});const o=new THREE.Mesh(new THREE.SphereGeometry(.1315,24,16),m);o.scale.set(.95,1.1,1);o.renderOrder=3;o.name='n5crack';h.add(o)}
+ function possArms(r,s){const vm=new THREE.MeshPhongMaterial({map:veinTex(),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+  /* veins and cracks always draw after the (see-through) skin: renderOrder 3. Without it the transparent sort compared the decal's centre with the arm's
+     centre, the order flipped as the figure turned, and the arm was painted over the veins (they blinked in and out) */
+  r.arms.forEach(a=>{bx(.104,.42,.104,vm,0,-.39,0,a).renderOrder=3;bx(.094,.094,.094,vm,0,-.6,0,a).renderOrder=3;const sl=bx(.118,.15,.118,s,0,-.07,0,a);tat(s,.045,-.145,4,a,1,.4)})}
+ Object.assign(OUTFIT,{
+  poss:{n:'Possessed (dress)',shirt:0xd8d2c4,legs:0,skinLegs:1,bare:1,shoe:0x2a2420,poss:1,x:(b,s,r)=>{skirt(s,.175,.235,.74,.53,b,10);streamers(s,b);const st=D(0x9e968a);[[.08,1.0],[-.1,.78],[.12,.6]].forEach(([x,y])=>bx(.05,.04,.004,st,x,y,-.118-(y<.8?.05:0),b));possArms(r,s)},hx:possSkin},
+  possb:{n:'Possessed (shirt and trousers)',shirt:0xd8d2c4,legs:0x6e6a62,bare:1,shoe:0x2a2420,poss:1,x:(b,s,r)=>{tat(s,.17,.86,9,b,.62,.5);const st=D(0x9e968a);bx(.06,.05,.004,st,.08,1.02,-.114,b);possArms(r,s);const lm=P(0x6e6a62);r.legs.forEach((q,i)=>tat(lm,.05,-.7,4,q,1,i))},hx:possSkin},
+  lastrite:{n:'Last Rite robe',shirt:0x121015,legs:0x121015,shoe:0x1a1418,x:(b,s,r)=>{skirt(s,.2,.34,.84,.44,b,10);const rd=D(0x9a1018),gold=P(0xd8b04a,{shininess:80,specular:0x806020});
+    [-1,1].forEach(k=>{const l=bx(.035,.56,.006,rd,k*.05,1.13,-.115,b);l.rotation.z=k*.12;const f=bx(.04,.82,.006,rd,k*.035,.45,-.185,b);f.rotation.x=-.16});
+    const rope=P(0xb89a68);const ro=new THREE.Mesh(new THREE.TorusGeometry(.205,.014,6,20),rope);ro.rotation.x=Math.PI/2;ro.scale.y=.62;ro.position.y=.88;b.add(ro);[-1,1].forEach(k=>{bx(.016,.22,.016,rope,k*.035,.76,-.135,b);sph(.02,rope,1,1,1,k*.035,.64,-.135,b)});
+    const sm=new THREE.MeshPhongMaterial({map:sigTex(),transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});r.arms.forEach(a=>{bx(.104,.34,.104,sm,0,-.24,0,a);bx(.118,.07,.118,rd,0,-.52,0,a)})}},
+  bmcoat:{n:'Blood Moon coat',shirt:0x5a0d14,legs:0x1a1216,shoe:0x141012,x:(b,s,r)=>{skirt(s,.21,.29,.46,.62,b,12);tat(s,.28,.4,12,b,1,.1);
+    const cm=P(0x5a0d14);cm.side=THREE.DoubleSide;const col=new THREE.Mesh(new THREE.CylinderGeometry(.15,.13,.12,14,1,true,.45,Math.PI*2-.9),cm);col.rotation.y=Math.PI;col.position.y=1.48;b.add(col);
+    const sv=P(0xd8dce4,{shininess:100,specular:0xffffff});[1.3,1.18,1.06,.94].forEach(y=>[-1,1].forEach(k=>sph(.014,sv,1,1,.6,k*.06,y,-.118,b)));bx(.006,.56,.004,D(0x2a0608),0,1.12,-.114,b);
+    r.arms.forEach(a=>bx(.112,.07,.112,P(0x3a080c),0,-.52,0,a))}},
+ });
+ let N5S=null;const sigTex=()=>N5S||(N5S=patTexN('n5-sig',64,q=>{q.clearRect(0,0,64,64);q.strokeStyle='#e0b84c';q.fillStyle='#e0b84c';q.lineWidth=2.5;
+  q.beginPath();q.arc(16,14,7,0,7);q.stroke();q.fillRect(15,13,3,3);q.beginPath();q.moveTo(40,6);q.lineTo(50,22);q.lineTo(30,22);q.closePath();q.stroke();
+  q.beginPath();q.arc(18,44,8,.6,5.6);q.stroke();q.beginPath();q.moveTo(36,36);q.lineTo(52,52);q.moveTo(52,36);q.lineTo(36,52);q.stroke();q.fillRect(0,30,64,2)}));
+ // Possessed: see-through and floating. Runs at the end of dress, before the invisible pass.
+ function n5Poss(body,o){const of=OUTFIT[o.outfit];if(!of||!of.poss)return;
+  body.traverse(c=>{if(!c.material)return;(Array.isArray(c.material)?c.material:[c.material]).forEach(m=>{if(m.userData.op0!=null)return;m.userData.op0=N5_OP;m.transparent=true;m.opacity=N5_OP})});
+  /* one solid see-through figure (Petra): each solid mesh gets a depth-only twin drawn first (renderOrder -10), so only the front-most surface shows;
+     legs inside the dress and the head under the hair stay hidden. Decals, sprites and glows (no depth write / additive) are left out. The twins are switched
+     off while the ghost / invisible pass is on (factor below .5), so an invisible player never blocks the view behind them. */
+  const tw=[],ref=[];body.traverse(c=>{if(!c.isMesh||c.userData.noFade)return;const L=Array.isArray(c.material)?c.material:[c.material];if(L.some(m=>m.depthWrite===false||m.blending===THREE.AdditiveBlending))return;
+   const m0=L[0];if(m0.userData.op0===N5_OP&&!ref.length)ref.push(m0);const dm=new THREE.MeshBasicMaterial({colorWrite:false,map:m0.alphaTest?m0.map:null,alphaTest:m0.alphaTest||0,side:m0.side});dm.userData.op0=1;
+   const z=new THREE.Mesh(c.geometry,dm);z.renderOrder=-10;z.userData.noTrack=1;z.name='n5depth';tw.push([c,z])});tw.forEach(([c,z])=>c.add(z));
+  const fl=new THREE.Group();fl.name='n5float';[...body.children].forEach(c=>fl.add(c));body.add(fl);
+  const an=new THREE.Mesh(new THREE.PlaneGeometry(.001,.001),new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false}));an.frustumCulled=false;an.userData.noFade=1;an.userData.noTrack=1;body.add(an);
+  anim(an,t=>{fl.position.y=.06+.025*Math.sin(t*1.6);const m=ref[0],on=!m||m.opacity/N5_OP>.5;tw.forEach(([c,z])=>z.visible=on)})}
+ // Moth antennae (Petra 2026-10-15 04:30Z; lock key 'mothant': do the Jump Off the Roof ending while wearing the moth wings). Hawk-moth antennae:
+ // ~20 cm, light whitish-tan with fine darker rings (segments), no comb; they rise from just above the forehead forward, up and outward, thicken gradually
+ // toward the outer part, then taper to a small hook curving backward. They sway a little.
+ let N5A=null;const antTex=()=>N5A||(N5A=patTexN('n5-ant',64,q=>{q.fillStyle='#d9cfbe';q.fillRect(0,0,64,64);q.fillStyle='rgba(120,104,86,.55)';for(let x=0;x<64;x+=4)q.fillRect(x,0,1.2,64);q.fillStyle='rgba(255,250,240,.35)';q.fillRect(0,20,64,10)},1));
+ function mothAnt(h){const tx=antTex().clone();tx.needsUpdate=true;tx.repeat.set(10,1);const m=new THREE.MeshPhongMaterial({map:tx,color:0xffffff,shininess:12,flatShading:false}),A=[];
+  [-1,1].forEach(k=>{const p=new THREE.Group();p.position.set(k*.03,.085,-.105);h.add(p);
+   const cv=new THREE.CatmullRomCurve3([new THREE.Vector3(0,0,0),new THREE.Vector3(k*.025,.05,-.035),new THREE.Vector3(k*.06,.1,-.045),new THREE.Vector3(k*.09,.14,-.03),new THREE.Vector3(k*.105,.16,0),new THREE.Vector3(k*.105,.155,.02)]);
+   const N=40,R=6,tg=new THREE.TubeGeometry(cv,N,1,R,false),pa=tg.attributes.position;
+   for(let i=0;i<=N;i++){const t=i/N,c=cv.getPoint(t),r=t<.75?.004+.0045*(t/.75):.0085*(1-(t-.75)/.25)+.0012;for(let j=0;j<=R;j++){const n=i*(R+1)+j;pa.setXYZ(n,c.x+(pa.getX(n)-c.x)*r,c.y+(pa.getY(n)-c.y)*r,c.z+(pa.getZ(n)-c.z)*r)}}
+   tg.computeVertexNormals();p.add(new THREE.Mesh(tg,m));A.push([p,k])});
+  anim(A[0][0].children[0],t=>A.forEach(([p,k])=>{p.rotation.z=k*.04*Math.sin(t*1.7+k);p.rotation.x=.03*Math.sin(t*1.3)}))}
  // what unlocks what (keys of U())
  const LOCK={hair:{maomao:'pin',nezuko:'blade',miku:'miku',teto:'tetoh',shinobu:'shinobu',mitsuri:'mitsuri',muichiro:'muichiro',genya:'genya',genyad:'genya'},hc:{jade:'pin',grad:'blade',teal:'miku',teto:'teto',shinobu:'shinobu',mitsuri:'mitsuri',inosuke:'inosuke',zenitsu:'zenitsu',muichiro:'muichiro'},bfly:'shinobu',omask:'obanai',boar:'inosuke',cape:'rengoku',ghaori:'genya',gscar:'genya',gun:'genya',mouth:{snake:'snake',shark:'stare'},eyes:{mesm:'stare',ydots:'abst',headlight:'seen',genya:'genya',genyad:'genya'},skin:{purple:'abst'},cap:'bat',bat:'bat',hb:'stare',
-  outfit:{maomao:'pin',nezuko:'blade',robes:'cult',yoveralls:'abst',scales:'snake',miku:'miku',teto:'teto',yara:'bat',mesm:'stare',muichiro:'muichiro',genya:'genya',suit:'closet',suitskirt:'closet',evening:'closet',cardigan:'closet'},
-  haori:{tanjiro:'blade',nezuko:'blade',genya:'genya'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen',hsCrown:'hideseek',hsBox:'hideseek',hsCamo:'hideseek',hsCloak:'laststand',ftrail:'laststand',bhEyes:'bloodhound',bmHalo:'bloodmoon'};
- const HINT={pin:'A gift someone lost, somewhere outside.',blade:'Prove yourself with a blade.',cult:'Some families never let you leave.',snake:'Something scaly hides down below.',abst:'Follow something that is not really there.',
+  outfit:{maomao:'pin',nezuko:'blade',robes:'cult',yoveralls:'abst',scales:'snake',miku:'miku',teto:'teto',yara:'bat',mesm:'stare',muichiro:'muichiro',genya:'genya',suit:'closet',suitskirt:'closet',evening:'closet',cardigan:'closet',poss:'night5',possb:'night5',lastrite:'night5',bmcoat:'night5'},
+  haori:{tanjiro:'blade',nezuko:'blade',genya:'genya'},muzzle:'blade',sheath:'blade',mask:'snake',ears:'abst',tie:'miku',pin:'pin',neck:{pearl:'jewel',gold:'jewel',silver:'jewel'},invis:'seen',roof:'seen',phone:'seen',disco:'seen',tire:'seen',duck:'seen',lighter:'seen',keys:'seen',demon:'seen',fpud:'seen',snek:'seen',hsCrown:'hideseek',hsBox:'hideseek',hsCamo:'hideseek',hsCloak:'laststand',ftrail:'laststand',bhEyes:'bloodhound',bmHalo:'bloodmoon',ccrown:'night5',horns:'night5',moth:'night5',mothant:'mothant'};
+ const HINT={night5:'Survive Night 5.',mothant:'Try your wings somewhere high.',pin:'A gift someone lost, somewhere outside.',blade:'Prove yourself with a blade.',cult:'Some families never let you leave.',snake:'Something scaly hides down below.',abst:'Follow something that is not really there.',
   miku:'Someone upstairs left something teal behind.',closet:'The grown-ups keep nicer clothes than yours.',jewel:'A little box of treasures, upstairs.',teto:'Something long and crusty, down in the kitchen.',bat:'Someone left their swing out in the yard.',tetoh:'Something long and crusty in the kitchen, or a swing left in the yard.',stare:'Some things in the nursery are worth watching closely.',shinobu:'???',mitsuri:'???',obanai:'???',inosuke:'???',zenitsu:'???',rengoku:'???',muichiro:'???',genya:'???',seen:'Find every ending.',hideseek:'Top the scoreboard after 5 rounds of Hide & Seek.',laststand:'Stay hidden for a whole round of Hide & Seek with 3 or more players.',bloodmoon:'Survive the Blood Moon (Night 4).',bloodhound:'As the seeker, find every hider in a Hide & Seek round with 3 or more players.'};
  // DS v89: Demon Slayer unlocks. ONE place to change the triggers: each key is unlocked when hushCustU[key] is set (by the secret pickups/events below).
  const DS_KEYS=['shinobu','mitsuri','obanai','inosuke','zenitsu','rengoku','muichiro','genya'];const dsU=(k,a,o)=>!!o[k];
@@ -7822,14 +8024,14 @@ body.hz #need,body.hz #mon{display:none!important}
  const own=()=>{try{return JSON.parse(LS.get('hushCustU')||'{}')||{}}catch(e){return{}}};
  const SIA_DBG=(()=>{try{return new URLSearchParams(location.search).get('seenall')==='1'}catch(e){return false}})();
  function U(){let a={};try{a=JSON.parse(LS.get('hushAch')||'{}')||{}}catch(e){}const o=own();
-  return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,hideseek:!!o.hideseek,laststand:!!o.laststand,bloodhound:!!o.bloodhound,bloodmoon:!!o.bloodmoon,seen:!!a.seenall||SIA_DBG}}
+  return{pin:!!a.hairpin,blade:!!a.secret,cult:!!a.cult,abst:!!a.abstracted,snake:LS.get('hushHuntUnlocked')==='1',miku:!!o.miku,closet:!!o.closet,jewel:!!o.jewel,teto:!!o.teto,tetoh:!!(o.teto||o.bat),bat:!!o.bat,stare:!!o.stare,...Object.fromEntries(DS_KEYS.map(k=>[k,dsU(k,a,o)])),/* v102 (Petra): the Genya set is the Bang Bang Bang ending's reward, like The Blade -> blade */genya:!!a.gun||!!o.genya,hideseek:!!o.hideseek,laststand:!!o.laststand,bloodhound:!!o.bloodhound,bloodmoon:!!o.bloodmoon,night5:!!o.night5,mothant:!!o.mothant,seen:!!a.seenall||SIA_DBG}}
  const lockKey=(k,v)=>{const L=LOCK[k];if(!L)return null;if(typeof L==='string')return v?L:null;return L[v]||null};
  const isOpen=(k,v,u)=>{const q=lockKey(k,v);return !q||!!(u||U())[q]};
- const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hbr:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,hsCrown:0,notie:0,nochk:0,notag:0,hsBox:0,hsCamo:0,hsCloak:0,ftrail:0,bhEyes:0,bmHalo:0};
+ const DEF={hair:'short',hc:null,skin:'peach',eyes:'dots',mouth:'none',outfit:'classic',haori:'',muzzle:0,sheath:0,mask:0,ears:null,tie:0,pin:0,neck:'',cap:0,bat:0,hb:0,bfly:0,omask:0,boar:0,cape:0,ghaori:0,gscar:0,gun:0,that:0,ths:100,thp:0,hbr:0,hlb:100,invis:0,roof:0,phone:0,disco:0,tire:0,duck:0,lighter:0,keys:0,demon:0,fpud:0,snek:0,hsCrown:0,notie:0,nochk:0,notag:0,hsBox:0,hsCamo:0,hsCloak:0,ftrail:0,bhEyes:0,bmHalo:0,ccrown:0,horns:0,hornc:0,moth:0,mothant:0};
  const isCol=v=>typeof v==='number'&&v>=0&&v<=0xffffff;
  function clean(lk){const o=Object.assign({},DEF);if(!lk||typeof lk!=='object')return o;
   if(HAIR[lk.hair])o.hair=lk.hair;if(HC[lk.hc])o.hc=lk.hc;if(SKIN[lk.skin])o.skin=lk.skin;if(EYES[lk.eyes])o.eyes=lk.eyes;if(MOUTH[lk.mouth])o.mouth=lk.mouth;if(OUTFIT[lk.outfit])o.outfit=lk.outfit;
-  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','hbr','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','hsCrown','notie','nochk','notag','hsBox','hsCamo','hsCloak','ftrail','bhEyes','bmHalo'].forEach(k=>o[k]=lk[k]?1:0);/* necktag: the name tag can only be off while invisible */if(!o.invis)o.notag=0;o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
+  if(lk.haori in HAORI)o.haori=lk.haori;/* old looks: the Layers toggle ghaori:1 becomes the Haori choice */if(lk.ghaori&&!o.haori)o.haori='genya';if(lk.neck in NECK)o.neck=lk.neck;['muzzle','sheath','mask','tie','pin','cap','bat','hb','bfly','omask','boar','cape','gscar','gun','that','thp','hbr','invis','roof','phone','disco','tire','duck','lighter','keys','demon','fpud','snek','hsCrown','notie','nochk','notag','hsBox','hsCamo','hsCloak','ftrail','bhEyes','bmHalo','ccrown','horns','moth','mothant'].forEach(k=>o[k]=lk[k]?1:0);o.hornc=lk.hornc?1:0;/* necktag: the name tag can only be off while invisible */if(!o.invis)o.notag=0;o.dz=Math.max(0,+lk.dz|0);o.hlb=lk.hlb==null?100:Math.max(15,Math.min(100,Math.round(+lk.hlb)||100));o.ths=lk.ths==null?100:Math.max(40,Math.min(100,Math.round(+lk.ths)||100));o.ears=isCol(lk.ears)?lk.ears:null;return o}
  // my own look, with anything no longer unlocked dropped
  let LOOK=(()=>{let v=null;try{v=JSON.parse(LS.get('hushLook')||'null')}catch(e){}return clean(v)})();
  let DZ=0;function mine(){const u=U(),o=clean(LOOK);o.dz=DZ;Object.keys(o).forEach(k=>{if(k==='ears'){if(o.ears!=null&&!isOpen('ears',1,u))o.ears=null;return}if(!isOpen(k,o[k],u))o[k]=DEF[k]});return o}
@@ -7848,7 +8050,7 @@ body.hz #need,body.hz #mon{display:none!important}
   FITB=body;const hg=new THREE.Group();h.add(hg);const hc=HC[o.hc][1],gr=GRAD[hc],hm=P(gr?0:hc);HAIR[o.hair](hg,hm);FITB=null;
   if(gr)gradHair(hg,hm,gr);
   if(o.ears!=null)ears(h,o.ears);if(o.muzzle)muzzle(h);if(o.sheath)sheath(body);EYES[o.eyes](h,o);MOUTH[o.mouth](h);if(o.pin)hairpin(h,o.hair);if(of.hx)of.hx(h);if(o.hb)headband(h);if(o.cap)capHat(h);if(o.that)topHat(h,o);if(o.mask)mask(h);if(o.omask)obanaiMask(h);if(o.boar)boarHead(h);if(o.bfly)butterfly(h,o.hair);if(o.cape)cape(body);if(o.gscar)genyaScar(h);if(o.gun)genyaGun(arms[1]);
-  if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.hsCrown)hsCrown(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.hsCamo)hsBracelet(arms[o.hbr?1:0]);if(o.hsBox)hsBox(body);if(o.hsCloak)hsCloak(body,h);if(o.bhEyes)bhEyes(h);if(o.bmHalo)bmHalo(h);if(o.invis)seeThrough(body,INV_OP,1);
+  if(o.tire)tireTracks(body);if(o.roof)roof(h);if(o.hsCrown)hsCrown(h);if(o.disco)disco(h);if(o.duck)duck(body);if(o.snek)snek(body);if(o.lighter)lighter(body);if(o.phone)phone(arms[1]);if(o.keys)carKeys(arms[0]);if(o.hsCamo)hsBracelet(arms[o.hbr?1:0]);if(o.hsBox)hsBox(body);if(o.hsCloak)hsCloak(body,h);if(o.bhEyes)bhEyes(h);if(o.bmHalo)bmHalo(h);if(o.ccrown)candleCrown(h);if(o.horns)demonHorns(h,o.hornc);if(o.moth)mothWings(body);if(o.mothant)mothAnt(h);n5Poss(body,o);if(o.invis)seeThrough(body,INV_OP,1);
   return{legs,arms,head:h}}
  // Nezuko's gradient, fitted to each hairstyle's own height (like her real hair): black at the crown/roots, starting to fade about 30% of the way down
  // (around ear/shoulder height), clearly orange over the lower ~55%, brightest at the tips. Only meshes using the hair material are recoloured,
@@ -7914,6 +8116,7 @@ body.hz #need,body.hz #mon{display:none!important}
   grp('Last one standing','tog',[['hsCloak','Shadow aura',0x17141d],['ftrail','Glowing footstep trail (others see it too, even in Hide & Seek)',0x8fd8ff]].map(([v,n,c])=>({v,n,c})));
   grp('Bloodhound','tog',[['bhEyes','Red glowing eyes in the dark',0xff2a1a]].map(([v,n,c])=>({v,n,c})));
   grp('Blood Moon','tog',[['bmHalo','Blood Moon halo',0xd0141e]].map(([v,n,c])=>({v,n,c})));
+  grp('Night 5','tog',[['ccrown','Candle crown',0xffc860],['horns','Demon horns',o.hornc?0x8e1418:0x16121a],['moth','Moth wings',0x8a7c68]].map(([v,n,c])=>({v,n,c})));grp('Moth','tog',[['mothant','Moth antennae',0x6e6256]].map(([v,n,c])=>({v,n,c})));if(o.horns)grp('Horn color','hornc',[{v:0,n:'Black',c:0x16121a},{v:1,n:'Red',c:0x8e1418}]);
   sec.innerHTML='';G.forEach(g=>{const h=document.createElement('h3');h.textContent=g.t;sec.appendChild(h);const r=document.createElement('div');r.className='row';sec.appendChild(r);
    g.items.forEach(it=>{const b=document.createElement('button');b.type='button';b.className='ch';
     const lkK=g.k==='tog'||it.tog?it.v:g.k==='earc'?null:g.k,lv=g.k==='tog'||it.tog?1:it.v,locked=lkK&&!isOpen(lkK,lv,u);
@@ -8145,7 +8348,168 @@ body.hz #need,body.hz #mon{display:none!important}
   hold.rotation.x=Math.PI/2-.02+Math.max(0,flT)*2.5},'upd'));
  XT.genya={fire,get aimT(){return aimT},equipped,hold};
 })();
+// ===== Night 5 cosmetics: moth wings fold / unfold (Petra 2026-10-15). With the moth wings on, G (or the touch "Wings" button) toggles them between folded
+// and spread wide open. Cosmetic only. Others see it through the report field mw (MP avatar update -> body.userData.mwOpen); the animation is in mothWings().
+(function(){'use strict';const XT=window.__xt,C=window.__cust;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush wings] '+(t||''),e)}};
+ if(!XT||!C)return;window.__mwOpen=0;
+ let eqT=0,eq=false;const worn=()=>{const n=performance.now();if(n>eqT){eqT=n+500;eq=!!safe(()=>C.mine().moth,'mine')}return eq};
+ const can=()=>started&&!paused&&XT.live()&&!noteOpen&&!(window.__mp&&(__mp.ghost||__mp.demon))&&worn();
+ function tog(){if(!can())return false;window.__mwOpen=window.__mwOpen?0:1;return true}
+ addEventListener('keydown',e=>{if(e.code!=='KeyG'||e.repeat||window.__typing)return;if(tog())e.stopPropagation()});
+ let tb=null;const mkB=()=>{const B=document.getElementById('tcB');if(!B||tb)return;tb=document.createElement('button');tb.type='button';tb.id='tcMW';tb.textContent='Wings';tb.hidden=true;B.appendChild(tb);
+  tb.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();tog()});['touchstart','click','mousedown'].forEach(k=>tb.addEventListener(k,e=>e.stopPropagation()))};
+ XT.onUpdate(()=>safe(()=>{mkB();const w=worn();if(tb)tb.hidden=!w;if(!w)window.__mwOpen=0},'upd'));
+ XT.mothWings={tog,worn,get open(){return window.__mwOpen}};
+})();
 // ===== end CUSTOMIZE v81 =====
+</script>
+<script type="text/x-hush">
+// ===== Night 5, "The Last Night" (Petra 2026-10-15). The parents call: they are not coming home. Gather five things from around the house
+// (salt, chalk, black candles, a silver bell, a hand mirror), draw the circle in the foyer and hold it until the rite is done, while the house
+// fights back: doors open onto the wrong room, the upstairs hallway loops. Six o'clock without the rite is a loss ('death' ending, own text).
+// Multiplayer: the host owns the ritual state (items, phase, progress) and the house shifts and broadcasts them; each player is moved locally.
+// Also here: the Endless night (night 6 internally; unlocked by onNight5Win) and three lore scraps hinting at Night 5 (nights 1-4). =====
+// HOOK: the Night 5 win. Runs on every player as the Night 5 win ending starts (single player and multiplayer). The reward lives here.
+function onNight5Win(){try{window.__n5cosUnlock&&__n5cosUnlock()}catch(e){}
+ try{window.__n5Won=1}catch(e){}
+ try{localStorage.setItem('hushEndless','1')}catch(e){}/* the reward: the Endless night (Petra 2026-10-15) */
+ try{window.__xt&&__xt.n5OnWin&&__xt.n5OnWin()}catch(e){console.error('[Hush n5] onWin',e)}}
+(function(){'use strict';const XT=window.__xt;const safe=(f,t)=>{try{return f()}catch(e){console.error('[Hush n5] '+(t||''),e)}};if(!XT)return;
+ const MPa=()=>!!(window.__mp&&__mp.active),host=()=>!MPa()||!!__mp.host;
+ const N5=()=>XT.night===5,SH=()=>XT.night>=5;
+ // ---------- the five things ----------
+ const mat=(c,o)=>new THREE.MeshPhongMaterial(Object.assign({color:c,shininess:30},o||{}));
+ const mk={
+  salt(){const g=new THREE.Group();const c=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.13,12),mat(0x2a4a8a));c.position.y=.065;g.add(c);const t=new THREE.Mesh(new THREE.CylinderGeometry(.046,.046,.012,12),mat(0xe8e4dc));t.position.y=.136;g.add(t);return g},
+  chalk(){const g=new THREE.Group();[0,1,2].forEach(i=>{const s=new THREE.Mesh(new THREE.CylinderGeometry(.009,.009,.08,6),mat(0xf4f0e6));s.rotation.z=Math.PI/2;s.position.set(0,.01,i*.024-.024);g.add(s)});const b=new THREE.Mesh(new THREE.BoxGeometry(.1,.012,.09),mat(0x7a3020));b.position.y=.002;g.add(b);return g},
+  candles(){const g=new THREE.Group();[[-.04,0,.16],[.04,.02,.12],[0,-.04,.1]].forEach(([x,z,h])=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(.016,.016,h,8),mat(0x141214));c.position.set(x,h/2,z);g.add(c)});return g},
+  bell(){const g=new THREE.Group();const b=new THREE.Mesh(new THREE.ConeGeometry(.05,.08,12,1,true),mat(0xc8ccd4,{shininess:90,side:THREE.DoubleSide}));b.position.y=.045;g.add(b);const h=new THREE.Mesh(new THREE.CylinderGeometry(.008,.01,.07,6),mat(0x2a1a14));h.position.y=.115;g.add(h);return g},
+  mirror(){const g=new THREE.Group();const f=new THREE.Mesh(new THREE.CylinderGeometry(.06,.06,.012,16),mat(0x6a5a3a,{shininess:60}));f.position.y=.006;g.add(f);const gl=new THREE.Mesh(new THREE.CylinderGeometry(.05,.05,.013,16),mat(0xb8c8d8,{shininess:120,specular:0xffffff}));gl.position.y=.008;g.add(gl);const h=new THREE.Mesh(new THREE.BoxGeometry(.11,.012,.025),mat(0x6a5a3a));h.position.set(.11,.006,0);g.add(h);return g}};
+ // rest positions (x, floor-or-surface y, z); none in the basement
+ const ITEMS=[
+  {k:'salt',n:'the salt',x:8.25,y:-1.97,z:-2.3,room:'kitchen counter'},
+  {k:'chalk',n:'the chalk',x:-7.95,y:-1.86,z:-3.0,room:'garage workbench'},
+  {k:'candles',n:'the black candles',x:5.55,y:-2.14,z:-1.25,room:'dining table'},
+  {k:'bell',n:'the silver bell',x:7.55,y:.8,z:4.95,room:'parents\' bedroom'},
+  {k:'mirror',n:'the hand mirror',x:7.4,y:.005,z:-2.0,room:'upstairs bathroom floor'}];
+ const S={got:{},ph:0,p:0};// ph 0 gather, 1 rite, 2 done
+ const isAll=()=>ITEMS.every(i=>S.got[i.k]);const showItems=()=>{};
+ ITEMS.forEach(it=>{const g=mk[it.k]();g.visible=false;XT.place(g,it.x,it.y,it.z);it.g=g;
+  const hb=new THREE.Mesh(BG(.3,.3,.3),hitM);XT.place(hb,it.x,it.y+.1,it.z);it.hb=hb;
+  hb.userData.i={get label(){return 'Take '+it.n},act(){take(it.k)}}});
+ function take(k){if(S.got[k]||S.ph)return;if(MPa()&&!__mp.host){safe(()=>__mp.send({t:'n5take',k}),'send');pickFx(k);return}hostTake(k)}
+ function pickFx(k){const it=ITEMS.find(i=>i.k===k);if(it){it.g.visible=false;showItems()}if(AC&&!muted)safe(()=>burst(AC.currentTime,1800,6,.05,.15,'bandpass'),'snd')}
+ function hostTake(k){if(S.got[k]||S.ph)return;S.got[k]=1;push();const n=ITEMS.filter(i=>S.got[i.k]).length;const it=ITEMS.find(i=>i.k===k);
+  const t=n>=5?'(You have everything. Go to the foyer and draw the circle by the front door.)':'(You take '+it.n+'. '+n+' of 5.)';subAll(t,3600);
+  // the house notices: each thing taken brings the next shift sooner
+  shiftT=Math.min(shiftT,6+Math.random()*6)}
+ // ---------- the circle in the foyer ----------
+ const CX=4.8,CZ=7.75,CR=.95;
+ const ring=new THREE.Mesh(new THREE.RingGeometry(CR-.04,CR,48),new THREE.MeshBasicMaterial({color:0xece4d4,transparent:true,opacity:.85,depthWrite:false,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.visible=false;XT.place(ring,CX,F+.012,CZ);
+ const ring2=new THREE.Mesh(new THREE.RingGeometry(CR*.55-.03,CR*.55,5),ring.material);ring2.rotation.x=-Math.PI/2;ring2.visible=false;XT.place(ring2,CX,F+.013,CZ);
+ const flameM=new THREE.MeshBasicMaterial({color:0xffb050}),cand=[];
+ for(let i=0;i<5;i++){const a=i/5*Math.PI*2,g=new THREE.Group();const c=new THREE.Mesh(new THREE.CylinderGeometry(.02,.02,.14,8),mat(0x141214));c.position.y=.07;g.add(c);const f=new THREE.Mesh(new THREE.ConeGeometry(.014,.045,6),flameM);f.position.y=.165;g.add(f);g.userData.f=f;g.visible=false;XT.place(g,CX+Math.cos(a)*CR,F,CZ+Math.sin(a)*CR);cand.push(g)}
+ const cl=new THREE.PointLight(0xffa050,0,4.5,1.6);cl.userData.noMap=1;scene.add(cl);
+ const chb=new THREE.Mesh(BG(1.4,.3,1.4),hitM);XT.place(chb,CX,F+.15,CZ);
+ chb.userData.i={get label(){if(S.ph===1)return 'The circle';const n=ITEMS.filter(i=>S.got[i.k]).length;return isAll()?'Draw the circle and begin':'The ritual circle ('+n+' of 5)'},
+  act(){if(S.ph)return;if(!isAll()){const miss=ITEMS.filter(i=>!S.got[i.k]).map(i=>i.n);subtitle('(You still need '+miss.join(', ')+'.)',3600);return}
+   if(MPa()&&!__mp.host){safe(()=>__mp.send({t:'n5begin'}),'send');return}hostBegin()}};
+ function hostBegin(){if(S.ph||!isAll())return;S.ph=1;S.p=0;push();fxT=4;subAll('(You draw the circle in chalk and pour the salt along it. The candles catch by themselves. Stay inside the circle.)',5200)}
+ // ---------- shared state ----------
+ function push(){if(MPa()&&__mp.host)safe(()=>__mp.bcast({t:'n5s',s:S}),'bcast');apply()}
+ function subAll(t,ms){subtitle(t,ms);if(MPa()&&__mp.host)safe(()=>__mp.bcast({t:'sub',txt:t,ms}),'sub')}
+ function apply(){const on=N5()&&started;ITEMS.forEach(it=>{const show=on&&!S.got[it.k]&&!S.ph;it.g.visible=show;const i=inter.indexOf(it.hb);if(show&&i<0)inter.push(it.hb);if(!show&&i>=0)inter.splice(i,1)});
+  const ci=inter.indexOf(chb);if(on&&S.ph<2&&ci<0)inter.push(chb);if((!on||S.ph>=2)&&ci>=0)inter.splice(ci,1);
+  const r=on&&S.ph>=1;ring.visible=ring2.visible=r;cand.forEach(c=>c.visible=r);cl.intensity=r&&S.ph===1?1.4:0;showItems()}
+ XT.n5={get S(){return S},apply,take,hostBegin,ITEMS,CX,CZ,CR,set p(v){S.p=v;push()},inC};
+ // ---------- the house fights back (host decides when; each player handles their own position) ----------
+ let shiftT=40,sh=null,fxT=0;
+ const PORT=[// door portals: plane (ax x = X), z range, which side is the room, the floor, where you stand inside and which way you face
+  {n:'the nursery',X:4,z0:1.35,z1:2.25,side:-1,f:0,ix:3.3,iz:1.8},
+  {n:'the parents\' room',X:6,z0:1.2,z1:2.05,side:1,f:0,ix:6.75,iz:1.62},
+  {n:'the bathroom',X:6,z0:-1.9,z1:-1.1,side:1,f:0,ix:6.75,iz:-1.5},
+  {n:'the guest room',X:4,z0:6.5,z1:7.3,side:-1,f:0,ix:3.3,iz:6.9},
+  {n:'the downstairs bathroom',X:-1.8,z0:4.6,z1:5.4,side:-1,f:F,ix:-2.5,iz:5.0},
+  {n:'the garage',X:-4,z0:2.45,z1:3.3,side:-1,f:F,ix:-4.75,iz:2.88}];
+ XT.n5PORT=PORT;XT.n5Shift=(k,d)=>startShift(k,d||30);
+ function startShift(k,d){sh={k,until:performance.now()+d*1000};
+  subtitle(k==='doors'?'(Every door in the house clicks at once. The rooms are not where you left them.)':'(The upstairs hallway is longer than it was. It keeps going.)',4200);
+  if(AC&&!muted)safe(()=>{const t0=AC.currentTime;burst(t0,90,1,.35,.6,'lowpass');burst(t0+.25,140,1,.25,.5,'lowpass')},'snd')}
+ function hostShift(){const k=Math.random()<.6?'doors':'loop',d=22+Math.random()*12;if(MPa())safe(()=>__mp.bcast({t:'n5sh',k,d}),'bcast');startShift(k,d)}
+ const blink=()=>safe(()=>{const e=document.getElementById('outFx');if(!e)return;e.style.transition='none';e.style.background='#000';e.style.opacity=1;setTimeout(()=>{e.style.transition='opacity .45s';e.style.opacity=0},90)},'blink');
+ function tp(x,z,f,ny){fy=f;vy=0;grounded=true;cam.position.x=mX(x);cam.position.z=mZ(z);cam.position.y=f+1.6;RP.x=x;RP.z=z;if(ny!==undefined){yaw=ny;cam.rotation.set(pitch,yaw,0)}}
+ XT.n5tp=tp;
+ let prev=null,loops=0;
+ function busy(){return seated||window.__cut||(XT.hide&&XT.hide.hid)||(window.__trap&&__trap.on)||(window.__rlm&&__rlm.on)||(window.__mp&&(__mp.ghost||__mp.demon))||window.__dead}
+ function movers(){const R={x:iX(cam.position.x),z:iZ(cam.position.z)};const P=prev;prev=R;if(!P||!sh||performance.now()>sh.until){if(sh&&performance.now()>sh.until){sh=null;loops=0}return}
+  if(busy())return;
+  if(sh.k==='doors'){for(let i=0;i<PORT.length;i++){const d=PORT[i];if(Math.abs(fy-d.f)>1)continue;const zm=(P.z+R.z)/2;if(zm<d.z0-.05||zm>d.z1+.05)continue;
+    const a=(P.x-d.X)*d.side,b=(R.x-d.X)*d.side;if(a<=0&&b>0&&Math.random()<.8){const o=PORT.filter((q,j)=>j!==i),q=o[(Math.random()*o.length)|0];blink();tp(q.ix,q.iz,q.f,q.side<0?Math.PI/2:-Math.PI/2);prev={x:q.ix,z:q.iz};
+     subtitle('(You step through into '+q.n+'. That is not the door you opened.)',3200);if(AC&&!muted)safe(()=>burst(AC.currentTime,220,2,.18,.35,'lowpass'),'snd');return}}}
+  if(sh.k==='loop'&&fy>-1&&R.x>4.05&&R.x<5.95&&P.z>=-2.7&&R.z<-2.7){blink();tp(R.x,R.z+6.05,0);prev={x:R.x,z:R.z+6.05};loops++;
+   subtitle(loops<2?'(The bathroom door goes by again. And the nursery. Again.)':'(If the hall won\'t end, turn around.)',3000)}}
+ // ---------- the rite: someone has to stay inside the circle ----------
+ function inC(x,z,y){return Math.hypot(x-CX,z-CZ)<CR+.1&&y<-1.5}
+ function anyIn(){if(!MPa())return !busyGh()&&inC(iX(cam.position.x),iZ(cam.position.z),fy);if(inC(iX(cam.position.x),iZ(cam.position.z),fy)&&!(__mp.ghost))return true;
+  let any=false;safe(()=>__mp.roster().forEach(p=>{if(p.id===__mp.id)return;const r=__mp.repOf(p.id);if(r&&!r.gh&&inC(r.x,r.z,r.y))any=true}),'reps');return any}
+ const busyGh=()=>!!window.__dead;
+ const RITE_S=55;let warnT=0,pushT=0;
+ const FX=['slam','scare','whisper','noise'];
+ function riteFx(k){if(k==='slam'){doors.forEach(d=>{if(d.open){d.sp=6;d.open=false}});if(AC&&!muted)safe(()=>{const t0=AC.currentTime;for(let i=0;i<4;i++)burst(t0+i*.18,80,1,.4,.25,'lowpass')},'snd');subtitle('(Every door in the house slams at once.)',2600)}
+  else if(k==='scare'){safe(()=>{if(!DEMON.dbg.active)DEMON.dbg.show('scare')},'scare')}
+  else if(k==='whisper'){const L=['(Something whispers your name from the stairs. Don\'t answer.)','(The candle flames lean towards the door, all at once.)','(Something big walks across the floor upstairs, slowly.)','(The mirror in the circle shows the room behind you. Something is in it.)'];subtitle(L[(Math.random()*L.length)|0],3400)}
+  else if(k==='noise'){if(host())safe(()=>{CARE.dbg.noise=Math.min(1,CARE.dbg.noise+.12)},'nz');subtitle('(Upstairs, she wakes and starts to cry.)',2600)}}
+ XT.onUpdate(dt=>{if(!SH())return;if(!XT.live())return;
+  safe(movers,'move');
+  if(host()&&!(window.__rlm&&__rlm.on)&&XT.hour()>=18.6){shiftT-=dt*(1+.15*ITEMS.filter(i=>S.got[i.k]).length);if(shiftT<=0&&!sh&&S.ph!==1){shiftT=45+Math.random()*30;hostShift()}}
+  if(!N5())return;
+  // rite progress (host)
+  if(S.ph===1){cand.forEach(c=>{c.userData.f.scale.y=.8+.5*Math.random()});cl.position.set(mX(CX),F+.6,mZ(CZ));cl.intensity=1.2+.3*Math.random();
+   if(host()){const ins=anyIn();S.p=Math.max(0,Math.min(1,S.p+(ins?dt/RITE_S:-dt/(RITE_S*2))));
+    if(!ins){warnT-=dt;if(warnT<=0){warnT=8;subAll('(The candles gutter. Someone has to stand inside the circle.)',3000)}}else warnT=0;
+    fxT-=dt;if(fxT<=0&&ins){fxT=6+Math.random()*5;const k=FX[(Math.random()*FX.length)|0];if(MPa())safe(()=>__mp.bcast({t:'n5fx',k}),'bcast');riteFx(k)}
+    pushT-=dt;if(pushT<=0){pushT=1;if(MPa())safe(()=>__mp.bcast({t:'n5s',s:S}),'bcast')}
+    if(S.p>=1){S.ph=2;push();complete()}}}
+  hud()});
+ function complete(){subAll('(The last candle goes out. Under your feet, something lets go of the house.)',4200);setTimeout(()=>safe(()=>XT.ending('dawn',{n5:1}),'end'),2600)}
+ XT.n5Complete=()=>{S.ph=2;push();complete()};
+ // ---------- HUD: what is left to do ----------
+ const hEl=document.createElement('div');hEl.id='n5Hud';hEl.hidden=true;hEl.style.cssText='position:fixed;left:16px;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:3;max-width:min(22rem,calc(100vw - 32px));font:600 .74rem var(--ui,system-ui);letter-spacing:.04em;color:#ece2d0;background:rgba(10,8,10,.55);border:1px solid #3a2c26;border-radius:6px;padding:.4rem .6rem;pointer-events:none;line-height:1.4';document.body.appendChild(hEl);
+ let lastH='';function hud(){let t='';if(N5()&&XT.live()){if(S.ph===0)t=isAll()?'The ritual: you have all 5. Draw the circle in the foyer, by the front door.':'The ritual: find '+ITEMS.filter(i=>!S.got[i.k]).map(i=>i.n.replace(/^the /,'')).join(', ')+' ('+ITEMS.filter(i=>S.got[i.k]).length+' of 5)';else if(S.ph===1)t='The ritual: '+Math.floor(S.p*100)+'% - stay inside the circle'}
+  if(t!==lastH){lastH=t;hEl.textContent=t;hEl.hidden=!t}}
+ setInterval(()=>safe(()=>{if(!N5()||!XT.live()){if(!hEl.hidden){hEl.hidden=true;lastH=''}}}),500);
+ // ---------- multiplayer messages ----------
+ safe(()=>{const MP=window.__mp;if(!MP)return;const oc=MP.onC,oh=MP.onH;
+  MP.onC=m=>{switch(m.t){case 'n5s':if(m.s){const was=S.ph;S.got=m.s.got||{};S.ph=m.s.ph|0;S.p=+m.s.p||0;apply()}return;case 'n5sh':startShift(m.k==='loop'?'loop':'doors',Math.min(60,+m.d||25));return;case 'n5fx':if(FX.includes(m.k))riteFx(m.k);return}if(oc)return oc(m)};
+  MP.onH=(pid,m)=>{if(m.t==='n5take'){if(N5()&&ITEMS.some(i=>i.k===m.k))hostTake(m.k);return}if(m.t==='n5begin'){if(N5())hostBegin();return}if(oh)return oh(pid,m)};
+  // a player joining late gets the state
+  setInterval(()=>safe(()=>{if(MP.active&&MP.host&&MP.started&&N5())MP.bcast({t:'n5s',s:S})}),4000)},'mp');
+ // save / restore (single player Continue)
+ XT.parts.n5={save:()=>({got:S.got,ph:S.ph===2?1:S.ph,p:S.p}),load:v=>{if(!v)return;S.got=v.got||{};S.ph=v.ph|0;S.p=+v.p||0;apply()}};
+ XT.n5OnWin=()=>{};
+ setInterval(()=>safe(apply),1500);apply();
+ // ---------- the Endless night (night 6): never ends, harder every hour, best time kept ----------
+ XT.endlessK=()=>1+.12*Math.max(0,XT.hour()-18);
+ XT.endlessBest=()=>{try{return parseInt(localStorage.getItem('hushEndlessBest'))||0}catch(e){return 0}};
+ XT.endlessScore=()=>{if(XT.night!==6)return null;const mins=Math.max(0,Math.round((XT.hour()-18)*60)),best=XT.endlessBest(),nb=mins>best;if(nb)try{localStorage.setItem('hushEndlessBest',String(mins))}catch(e){}return {mins,best:Math.max(best,mins),nb}};
+ XT.fmtMins=m=>Math.floor(m/60)+' h '+String(m%60).padStart(2,'0')+' min';
+ let hrSeen=0;XT.onUpdate(()=>{if(XT.night!==6||!XT.live())return;const h=Math.floor(XT.hour());if(h>hrSeen&&h>18){if(hrSeen)subtitle('('+(h-18)+' hours. The house gets hungrier. Best: '+XT.fmtMins(XT.endlessBest())+'.)',3200);hrSeen=h}});
+ // ---------- lore scraps hinting at Night 5 (nights 1-4; separate from the notes you collect; nothing about the basement) ----------
+ const LORE=[
+  {x:3.3,f:0,z:6.4,t:'A scrap of paper, Ruth Pryor\'s handwriting',b:'"There is a fifth night. They never tell the sitter about it. On the fifth night nobody comes home, because nobody was ever going to."'},
+  {x:-2.7,f:F,z:-2.6,t:'A page torn from a hymnbook, pencil in the margin',b:'"Salt for the threshold. Chalk for the circle. Candles for the dark. A bell to call it, a mirror to show it what it is. By the front door, where it came in. Stay inside until the candles go out."'},
+  {x:-6.2,f:F,z:2.6,t:'A note folded very small',b:'"When the house knows it is losing, it moves the doors. If you open one onto the wrong room, keep walking. If the hall won\'t end, turn around."'}];
+ const lp=document.createElement('div');lp.id='n5Lore';lp.hidden=true;lp.style.cssText='position:fixed;inset:0;z-index:31;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(4,4,7,.7)';
+ lp.innerHTML='<div style="width:min(26rem,100%);box-sizing:border-box;background:#e9dfc6;color:#2a1c14;padding:1.1rem 1.2rem;border-radius:3px;transform:rotate(-.6deg);box-shadow:0 10px 40px rgba(0,0,0,.7);font-family:\'Caveat\',\'Segoe Print\',cursive"><p id="n5LT" style="margin:0 0 .5rem;font:600 .78rem system-ui,sans-serif;letter-spacing:.06em;color:#6a4a3a"></p><p id="n5LB" style="margin:0 0 .9rem;font-size:1.35rem;line-height:1.3"></p><div style="text-align:right"><button type="button" id="n5LC" style="font:600 .85rem system-ui,sans-serif;color:#f4ecdc;background:#3a1e1a;border:1px solid #5a2e28;border-radius:5px;padding:.5rem 1.1rem;min-height:44px;cursor:pointer">Put it back</button></div></div>';document.body.appendChild(lp);
+ const lclose=()=>{lp.hidden=true;safe(()=>{if(started&&!ended&&overlay.hidden&&!window.__cut&&!MPa()){overlay.hidden=false;setPaused(true)}},'close')};
+ ['click','pointerdown','mousedown','touchstart'].forEach(k=>lp.addEventListener(k,e=>e.stopPropagation(),{passive:true}));lp.querySelector('#n5LC').addEventListener('click',lclose);
+ addEventListener('keydown',e=>{if(!lp.hidden&&(e.code==='Escape'||e.code==='Enter'||e.code==='KeyE')){e.preventDefault();e.stopImmediatePropagation();lclose()}},true);
+ LORE.forEach(L=>{const g=new THREE.Mesh(new THREE.PlaneGeometry(.2,.15),new THREE.MeshPhongMaterial({color:0xe6dcc2,side:THREE.DoubleSide}));g.rotation.x=-Math.PI/2;g.rotation.z=Math.random()*.8;XT.place(g,L.x,L.f+.006,L.z);L.g=g;
+  const hb=new THREE.Mesh(BG(.35,.2,.35),hitM);XT.place(hb,L.x,L.f+.1,L.z);L.hb=hb;hb.userData.i={label:'Read: scrap of paper',act(){lp.querySelector('#n5LT').textContent=L.t;lp.querySelector('#n5LB').textContent=L.b;safe(()=>{if(document.pointerLockElement)document.exitPointerLock()},'unlock');if(!MPa())safe(()=>setPaused(true),'pause');overlay.hidden=true;lp.hidden=false;setTimeout(()=>safe(()=>lp.querySelector('#n5LC').focus({preventScroll:true})),50)}}});
+ XT.n5Lore=LORE;
+ setInterval(()=>safe(()=>{const on=(XT.night||1)<=4;LORE.forEach(L=>{L.g.visible=on;const i=inter.indexOf(L.hb);if(on&&i<0)inter.push(L.hb);if(!on&&i>=0)inter.splice(i,1)})},'lore'),1000);
+})();
+
 </script>
 <script type="text/x-hush">
 // ===== SEEN IT ALL v95 (Petra): the "Seen It All" achievement (every ending found) unlocks the reward looks in Customize (CUSTOMIZE: U().seen, LOCK ...:'seen').
